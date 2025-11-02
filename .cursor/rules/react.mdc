@@ -1,0 +1,453 @@
+---
+description: React patterns and conventions for Nowly
+globs: *.tsx
+alwaysApply: true
+---
+
+# React Guidelines for Nowly
+
+## 🎯 Next.js App Router First
+
+- **Default to Server Components** - Only add `'use client'` when necessary
+- **Use async Server Components** for data fetching at the component level
+- **Never use Server Components inside Client Components** - extract shared UI or pass as children
+- **Keep Client Components small and focused** - isolate interactivity boundaries
+
+```typescript
+// ✅ Server Component (default)
+export default async function TasksPage() {
+  const tasks = await fetchTasks();
+  return <TaskList tasks={tasks} />;
+}
+
+// ✅ Client Component (only when needed)
+("use client");
+
+export function TaskCard({ task }: TaskCardProps) {
+  const [isOpen, setIsOpen] = useState(false);
+  return <div onClick={() => setIsOpen(true)}>{task.title}</div>;
+}
+
+// ❌ Bad - Server Component in Client Component
+("use client");
+export function Wrapper() {
+  return <ServerComponent />; // Error!
+}
+
+// ✅ Good - Pass as children
+("use client");
+export function Wrapper({ children }: { children: React.ReactNode }) {
+  return <div>{children}</div>;
+}
+```
+
+---
+
+## 📦 Component Structure
+
+### Component Syntax
+
+- **Use function declarations** for components (enables async for Server Components)
+- **Keep components focused** - single responsibility, ~150 lines max
+- **Prefer composition** over complex conditional rendering
+
+```typescript
+// ✅ Good - Function declaration
+export function TaskCard({ task }: TaskCardProps) {
+  return <div>{task.title}</div>;
+}
+
+// ✅ Good - Async server component
+export default async function DailyPage() {
+  const tasks = await fetchTasks();
+  return <TaskList tasks={tasks} />;
+}
+
+// ❌ Bad - Arrow function (can't be async)
+export const TaskCard = ({ task }: TaskCardProps) => {
+  return <div>{task.title}</div>;
+};
+```
+
+### File Organization
+
+- One component per file (except small, tightly coupled helpers)
+- Co-locate components with their related hooks/utils if not shared
+- No `index.ts` re-exports - import directly from source files
+
+```
+TaskCard/
+  TaskCard.tsx          # Main component
+  useTaskActions.ts     # Component-specific hook
+  taskCard.utils.ts     # Component-specific utilities
+```
+
+---
+
+## 🎨 Props & TypeScript
+
+### Props Definition
+
+```typescript
+// ✅ Good - Explicit interface
+interface TaskCardProps {
+  task: Task;
+  isSelected?: boolean;
+  onSelect?: (taskId: string) => void;
+  className?: string;
+}
+
+export function TaskCard({
+  task,
+  isSelected = false,
+  onSelect,
+  className,
+}: TaskCardProps) {
+  // Implementation
+}
+
+// ❌ Bad - Inline type, no defaults
+export function TaskCard({
+  task,
+  isSelected,
+  onSelect,
+}: {
+  task: Task;
+  isSelected?: boolean;
+  onSelect?: (taskId: string) => void;
+}) {
+  // Implementation
+}
+```
+
+### Children Props
+
+```typescript
+// ✅ Simple children
+interface LayoutProps {
+  children: React.ReactNode;
+}
+
+// ✅ Typed children (render props)
+interface ListProps<T> {
+  items: T[];
+  renderItem: (item: T) => React.ReactNode;
+}
+
+// ✅ Using PropsWithChildren (when needed)
+type ButtonProps = React.PropsWithChildren<{
+  variant?: "primary" | "secondary";
+  onClick?: () => void;
+}>;
+```
+
+### Event Handlers
+
+```typescript
+// ✅ Good - Typed event handlers
+const handleSubmit = (event: FormEvent<HTMLFormElement>) => {
+  event.preventDefault();
+  // Handle submission
+};
+
+const handleChange = (event: ChangeEvent<HTMLInputElement>) => {
+  const value = event.target.value;
+  // Handle change
+};
+
+const handleClick = (event: MouseEvent<HTMLButtonElement>) => {
+  // Handle click
+};
+
+// ✅ Good - Custom callback (preferred for Server Actions)
+const handleSubmit = (formData: FormData) => {
+  // Process form data
+};
+```
+
+---
+
+## 🪝 Hooks
+
+### Hook Rules
+
+- **Only in Client Components** - Hooks require `'use client'`
+- **Call at top level** - Never inside conditions, loops, or nested functions
+- **Custom hooks start with `use`** - `useTaskActions`, `useCategories`
+- **Extract and name descriptive custom hooks** - Don't inline complex logic
+
+```typescript
+// ✅ Good - Custom hook extracted
+"use client";
+
+function useTaskSelection(tasks: Task[]) {
+  const [selectedId, setSelectedId] = useState<string | null>(null);
+  const selectedTask = tasks.find((t) => t.id === selectedId);
+
+  return { selectedTask, selectedId, setSelectedId };
+}
+
+export function TaskList({ tasks }: TaskListProps) {
+  const { selectedTask, setSelectedId } = useTaskSelection(tasks);
+  // Use the hook
+}
+
+// ❌ Bad - Complex logic inline
+export function TaskList({ tasks }: TaskListProps) {
+  const [selectedId, setSelectedId] = useState<string | null>(null);
+  const selectedTask = tasks.find((t) => t.id === selectedId);
+  // Repeated logic everywhere
+}
+```
+
+### useEffect Guidelines
+
+- **Avoid `useEffect` when possible** - Prefer event handlers, Server Components, or derived state
+- **Always provide dependency array** - Never omit it
+- **Clean up side effects** - Return cleanup function for subscriptions/timers
+
+```typescript
+// ❌ Bad - useEffect for data fetching (use Server Component instead)
+"use client";
+export function TaskList() {
+  const [tasks, setTasks] = useState<Task[]>([]);
+
+  useEffect(() => {
+    fetchTasks().then(setTasks);
+  }, []);
+
+  return <div>{/* ... */}</div>;
+}
+
+// ✅ Good - Server Component
+export default async function TaskList() {
+  const tasks = await fetchTasks();
+  return <div>{/* ... */}</div>;
+}
+
+// ✅ Good - useEffect with cleanup
+("use client");
+export function TaskSubscription({ taskId }: Props) {
+  useEffect(() => {
+    const subscription = subscribeToTask(taskId);
+
+    return () => {
+      subscription.unsubscribe();
+    };
+  }, [taskId]);
+}
+
+// ✅ Good - Derived state instead of useEffect
+export function TaskStats({ tasks }: Props) {
+  const completedCount = tasks.filter((t) => t.completed).length;
+  // No useEffect needed - just derive from props
+}
+```
+
+---
+
+## 🎭 React Query Integration
+
+### Query Hooks (Client Components)
+
+```typescript
+"use client";
+
+import { useQuery } from "@tanstack/react-query";
+
+export function TaskList() {
+  const {
+    data: tasks,
+    isLoading,
+    error,
+  } = useQuery({
+    queryKey: taskKeys.all,
+    queryFn: fetchTasks,
+  });
+
+  if (isLoading) return <Spinner />;
+  if (error) return <ErrorMessage error={error} />;
+  if (!tasks) return null;
+
+  return <div>{/* Render tasks */}</div>;
+}
+```
+
+### Mutation Hooks
+
+```typescript
+"use client";
+
+import { useMutation, useQueryClient } from "@tanstack/react-query";
+
+export function CreateTaskForm() {
+  const queryClient = useQueryClient();
+
+  const mutation = useMutation({
+    mutationFn: createTask,
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: taskKeys.all });
+    },
+  });
+
+  const handleSubmit = (data: CreateTaskRequest) => {
+    mutation.mutate(data);
+  };
+
+  return <form onSubmit={handleSubmit}>{/* ... */}</form>;
+}
+```
+
+---
+
+## ⚡ Performance
+
+### When to Optimize
+
+- **Don't premature optimize** - No `memo`, `useMemo`, `useCallback` by default
+- **Measure first** - Use React DevTools Profiler to identify issues
+- **Optimize when**:
+  - Component renders frequently with same props
+  - Expensive calculations in render
+  - Large lists causing performance issues
+
+```typescript
+// ❌ Bad - Premature optimization
+export const TaskCard = memo(({ task }: Props) => {
+  const formattedDate = useMemo(() => formatDate(task.date), [task.date]);
+  const handleClick = useCallback(() => onClick(task.id), [task.id, onClick]);
+  return <div>{/* ... */}</div>;
+});
+
+// ✅ Good - Optimize only when needed
+export function TaskCard({ task, onClick }: Props) {
+  return <div onClick={() => onClick(task.id)}>{formatDate(task.date)}</div>;
+}
+
+// ✅ Good - Optimize after measuring performance issue
+export const ExpensiveChart = memo(({ data }: Props) => {
+  const processedData = useMemo(() => processLargeDataset(data), [data]);
+  return <Chart data={processedData} />;
+});
+```
+
+### List Rendering
+
+```typescript
+// ✅ Good - Stable, unique keys
+export function TaskList({ tasks }: Props) {
+  return (
+    <ul>
+      {tasks.map((task) => (
+        <TaskCard key={task.id} task={task} />
+      ))}
+    </ul>
+  );
+}
+
+// ❌ Bad - Index as key (unstable)
+{
+  tasks.map((task, index) => <TaskCard key={index} task={task} />);
+}
+
+// ❌ Bad - Random key (creates new elements every render)
+{
+  tasks.map((task) => <TaskCard key={Math.random()} task={task} />);
+}
+```
+
+---
+
+## 🏗️ Component Patterns
+
+### Composition Pattern
+
+```typescript
+// ✅ Good - Composable components
+export function Dialog({ children }: { children: React.ReactNode }) {
+  return <div className="dialog">{children}</div>;
+}
+
+export function DialogHeader({ children }: { children: React.ReactNode }) {
+  return <div className="dialog-header">{children}</div>;
+}
+
+// Usage
+<Dialog>
+  <DialogHeader>
+    <h2>Create Task</h2>
+  </DialogHeader>
+  <CreateTaskForm />
+</Dialog>
+
+// ❌ Bad - Monolithic component with many props
+<Dialog
+  title="Create Task"
+  content={<CreateTaskForm />}
+  footer={<Button />}
+  showCloseButton={true}
+  size="large"
+/>
+```
+
+### Compound Components
+
+```typescript
+// ✅ Good - Self-contained sub-components
+export function TaskCard({ task, children }: TaskCardProps) {
+  return <div className="task-card">{children}</div>;
+}
+
+TaskCard.Title = function TaskCardTitle({
+  children,
+}: {
+  children: React.ReactNode;
+}) {
+  return <h3>{children}</h3>;
+};
+
+TaskCard.Description = function TaskCardDescription({
+  children,
+}: {
+  children: React.ReactNode;
+}) {
+  return <p>{children}</p>;
+};
+
+// Usage
+<TaskCard task={task}>
+  <TaskCard.Title>{task.title}</TaskCard.Title>
+  <TaskCard.Description>{task.description}</TaskCard.Description>
+</TaskCard>;
+```
+
+---
+
+## 🚫 Anti-Patterns
+
+### Avoid
+
+- ❌ Class components (use function components)
+- ❌ String refs (use `useRef` or callback refs)
+- ❌ Direct DOM manipulation (except via refs when necessary)
+- ❌ `defaultProps` on function components (use ES6 defaults)
+- ❌ PropTypes (use TypeScript)
+- ❌ Legacy Context API (use `createContext` + `useContext`)
+- ❌ `useEffect` for data fetching (use Server Components or React Query)
+
+---
+
+## 📋 Component Checklist
+
+Before committing a component:
+
+- [ ] Server Component unless interactivity requires `'use client'`
+- [ ] Props typed with interface/type
+- [ ] Event handlers properly typed
+- [ ] Keys used correctly in lists
+- [ ] Dependencies correct in hooks
+- [ ] Cleanup functions added where needed
+- [ ] No premature optimization (memo/useMemo/useCallback)
+- [ ] Component focused and under ~150 lines
+- [ ] No direct DOM manipulation
+- [ ] Proper error boundaries for error handling

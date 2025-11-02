@@ -1,0 +1,192 @@
+---
+description: Nowly Web App - Project Structure & Architecture Rules
+globs:
+alwaysApply: true
+---
+
+# 🦉 Nowly Web App Structure
+
+## 🧩 Overview
+
+**Nowly** is a productivity-focused **Next.js 15 App Router** web app built using **CLEAN architecture principles**.  
+It aims to deliver a “Today-first” task experience with Supabase as the backend.
+
+**Core Stack**
+
+- Framework: **Next.js 15 (App Router, React Server Components)**
+- Database + Auth: **Supabase**
+- Styling: **TailwindCSS + Shadcn/UI**
+- Forms: **React Hook Form + Zod**
+- State: **React Query (TanStack)**
+- CI/CD: **GitHub Actions + Vercel**
+- Language: **TypeScript**
+
+---
+
+## 📦 Project Structure
+
+```
+nowly/
+├── app/                                # Next.js App Router root
+│   ├── (public)/                       # Publicly accessible routes
+│   │   ├── page.tsx                    # Landing / marketing page
+│   │   ├── login/                      # Supabase Auth
+│   │   │   └── page.tsx
+│   │   └── signup/
+│   │       └── page.tsx
+│   │
+│   ├── (protected)/                    # Authenticated routes
+│   │   ├── layout.tsx                  # Dashboard layout (sidebar + header)
+│   │   ├── daily/                      # "Daily" focused task view (Defaults to "today")
+│   │   │   └── page.tsx
+│   │   ├── tasks/                      # Master list
+│   │   │   └── page.tsx
+│   │   └── settings/                   # Placeholder for later phases
+│   │       └── page.tsx
+│   │
+│   ├── actions/                        # Server actions
+│   │   ├── createTaskAction.ts
+│   │   └── updateTaskAction.ts
+│   │
+│   ├── layout.tsx                      # Root layout (theme, providers, metadata)
+│   ├── globals.css                     # Tailwind global styles
+│   └── page.tsx                        # Default redirect (e.g. to /login or /today)
+│
+├── src/
+│   ├── presentation/                   # UI layer (React components + hooks)
+│   │   ├── components/                 # UI components (Shadcn/UI, shared)
+│   │   ├── hooks/                      # UI state hooks (useUser, useTheme)
+│   │   ├── pages/                      # Optional shared UI views
+│   │   └── providers/                  # Theme, Query, Supabase providers
+│   │
+│   ├── application/                    # Use cases (business logic)
+│   │   ├── tasks/                      # Task-specific domain actions
+│   │   │   ├── createTask.usecase.ts
+│   │   │   ├── updateTask.usecase.ts
+│   │   │   ├── listTasks.usecase.ts
+│   │   │   └── deleteTask.usecase.ts
+│   │   └── categories/
+│   │       ├── createCategory.usecase.ts
+│   │       └── listCategories.usecase.ts
+│   │
+│   ├── domain/                         # Core entities and rules
+│   │   ├── models/                     # Entity definitions (no framework deps)
+│   │   │   ├── Task.ts
+│   │   │   ├── Category.ts
+│   │   │   └── User.ts
+│   │   ├── types/                      # Value objects, enums
+│   │   └── validation/                 # Zod schemas for domain validation
+│   │
+│   ├── infrastructure/                 # Framework & DB layer (Supabase)
+│   │   ├── supabase/                   # Supabase client & data adapters
+│   │   │   ├── client.ts
+│   │   │   └── taskRepository.ts
+│   │   ├── repositories/               # Repository interfaces + impls
+│   │   │   ├── ITaskRepository.ts
+│   │   │   ├── SupabaseCategoryRepository.ts
+│   │   │   └── SupabaseTaskRepository.ts
+│   │   ├── services/                   # External APIs, caching, etc.
+│   │   └── utils/                      # Infra-level utils
+│   │
+│   ├── config/                         # Env vars, constants
+│   │   ├── env.ts
+│   │   └── constants.ts
+│   │
+│   └── shared/                         # Common code
+│       ├── utils/                      # Formatting, dates, etc.
+│       ├── types/                      # Global types
+│       └── errors/                     # Custom error classes
+│
+├── public/
+├── tests/                              # Unit + integration tests
+│   ├── domain/
+│   ├── application/
+│   └── infrastructure/
+│
+├── .env.example
+├── tailwind.config.ts
+├── next.config.mjs
+└── package.json
+```
+
+---
+
+## 🔧 Development Conventions
+
+### 🧱 Architecture Rules
+
+- Follows **CLEAN architecture**:
+  - `app` → presentation (routing/UI)
+  - `src/presentation` → UI logic
+  - `src/application` → use cases (business logic)
+  - `src/domain` → entities + validation
+  - `src/infrastructure` → frameworks, DB, and APIs
+- Each layer **only depends inward** (presentation → application → domain).  
+  Infrastructure may depend on domain, but not vice versa.
+
+### 📥 Import Rules
+
+- `presentation` may import from `application` and `domain`
+- `application` may import from `domain` only
+- `domain` must import from no other layer
+- `infrastructure` may import from `domain` and `application`
+- Never import directly from `infrastructure` into `presentation`
+- Use `@/src/...` absolute paths for all imports
+
+### 🧩 File Naming
+
+| Type                       | Convention        |
+| -------------------------- | ----------------- |
+| Use case files             | `*.usecase.ts`    |
+| Repository implementations | `Supabase*.ts`    |
+| Entity models              | `PascalCase.ts`   |
+| Components                 | `PascalCase.tsx`  |
+| Hooks                      | `useSomething.ts` |
+| Utilities                  | `camelCase.ts`    |
+
+### 🧭 Naming & Folder Conventions
+
+- Folder names: **kebab-case**
+- File names: **camelCase or PascalCase** (depending on type)
+- No plural folder names unless they represent collections (e.g., `/tasks/`)
+
+### 💻 Component Rules
+
+- Prefer **Server Components** by default.
+- Add `"use client"` **only** when interactivity or state is required.
+- UI components live under `src/presentation/components/`.
+
+### 🔐 Server Actions
+
+- Defined in `app/actions/`
+- Must only call use cases or repositories.
+- Should never directly access Supabase client outside of infrastructure.
+
+### 🧾 Environment Variables
+
+- All environment variables are accessed via `src/config/env.ts`.
+- Never access `process.env` directly in components or hooks.
+
+### 🧪 Testing
+
+- Use **Vitest** for unit/integration tests.
+- Tests mirror the directory of the source code (e.g., `tests/domain` for domain).
+- No tests are placed in `/app`.
+
+### 🧩 Style & Package Rules
+
+- **Use npm only** (`npm install`, no yarn/pnpm)
+- **TailwindCSS** used for styling
+- **Shadcn/UI** for primitives and patterns
+- **ESLint + Prettier** enforce formatting
+
+## 🧠 Agent Guidance (for AI & Devs)
+
+When generating code:
+
+1. Identify which **layer** the file belongs to.
+2. Ensure imports follow the **CLEAN dependency direction**.
+3. Prefer **server-first** components in `/app`.
+4. Use **repositories** for any Supabase or external data calls.
+5. Wrap all root components in proper **providers** (Theme, Query, Supabase).
+6. Maintain **type safety** using **Zod** schemas and shared types.

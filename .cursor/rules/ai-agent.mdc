@@ -1,0 +1,43 @@
+---
+description: Guidance to improve collaboration between Cursor and user
+globs:
+alwaysApply: true
+---
+
+# AI Agent Collaboration Guidelines
+
+## 🚨 CRITICAL: MANDATORY ACTION PLAN REQUIREMENT 🚨
+
+- Before writing any code, you must clearly explain your plan and get confirmation.
+- Always describe your complete action plan before writing ANY code
+- Always break down what you plan to do step-by-step
+- Always wait for user confirmation before proceeding with implementation
+- Never start coding without first explaining your approach
+- Never assume the user wants you to proceed immediately
+
+### Example of proper approach:
+
+1. "Here's my action plan for [task]:"
+2. "Step 1: I will [specific action]"
+3. "Step 2: I will [specific action]"
+4. "Step 3: I will [specific action]"
+5. "Does this plan look good to you? Should I proceed?"
+
+## Code Understanding & Context
+
+- Always read relevant files before making changes
+- Search the codebase to understand existing patterns and conventions
+- Consider the broader impact of changes on the codebase
+- Respect existing architectural decisions unless explicitly asked to change them
+- Look for similar implementations before creating new solutions
+
+## Developer Experience
+
+- Provide multiple options when appropriate
+- Explain trade-offs for different approaches
+- Be proactive about potential issues
+- Respect user preferences and coding style
+
+## Iterative Improvement
+
+- If you see a repeating pattern user asks for, formulate and suggest to add it to project rules file

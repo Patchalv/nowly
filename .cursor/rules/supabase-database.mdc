@@ -1,0 +1,736 @@
+---
+description: Supabase database patterns and conventions for Nowly
+globs: *.sql,*Repository.ts,*supabase*
+alwaysApply: true
+---
+
+# Supabase & Database Guidelines for Nowly
+
+## 🎯 Core Principles
+
+- **Security first** - Row Level Security (RLS) on all tables
+- **Manual migrations** - SQL files version-controlled, applied via Dashboard
+- **Layer separation** - Database types stay in infrastructure layer
+- **Type safety** - Transform database types to domain types at repository boundary
+- **No local Supabase** - Use remote staging database for development
+
+---
+
+## 📁 Project Structure
+
+```
+supabase/
+├── migrations/
+│   ├── 001_initial_schema.sql
+│   ├── 002_add_categories.sql
+│   └── 003_add_recurring_tasks.sql
+└── README.md
+
+src/infrastructure/
+├── supabase/
+│   ├── client.ts              # Supabase client initialization
+│   ├── types.ts               # Database type definitions
+│   └── middleware.ts          # Auth helpers (if needed)
+└── repositories/
+    ├── IEntityRepository.ts   # Repository interface
+    └── SupabaseEntityRepository.ts
+```
+
+---
+
+## 🔐 Supabase Client Setup
+
+### Client Initialization
+
+```typescript
+// src/infrastructure/supabase/client.ts
+import { createClient } from "@supabase/supabase-js";
+import type { Database } from "./types";
+
+const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!;
+const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!;
+
+if (!supabaseUrl || !supabaseAnonKey) {
+  throw new Error("Missing Supabase environment variables");
+}
+
+// Client-side Supabase client
+export const supabase = createClient<Database>(supabaseUrl, supabaseAnonKey);
+
+// Server-side Supabase client (for Server Components/Actions)
+export function createServerClient() {
+  return createClient<Database>(supabaseUrl, supabaseAnonKey, {
+    auth: {
+      persistSession: false, // Don't persist on server
+    },
+  });
+}
+```
+
+### Usage in Different Contexts
+
+```typescript
+// ✅ Client Component
+"use client";
+import { supabase } from "@/src/infrastructure/supabase/client";
+
+export function ClientComponent() {
+  const { data } = await supabase.from("table_name").select("*");
+}
+
+// ✅ Server Component
+import { createServerClient } from "@/src/infrastructure/supabase/client";
+
+export default async function ServerComponent() {
+  const supabase = createServerClient();
+  const { data } = await supabase.from("table_name").select("*");
+}
+
+// ✅ Server Action
+("use server");
+import { createServerClient } from "@/src/infrastructure/supabase/client";
+
+export async function serverAction() {
+  const supabase = createServerClient();
+  const { data } = await supabase.from("table_name").select("*");
+}
+```
+
+---
+
+## 🗄️ Database Types
+
+### Type Definition Structure
+
+```typescript
+// src/infrastructure/supabase/types.ts
+
+// Database row type (snake_case, matches Supabase schema)
+export interface EntityRow {
+  id: string;
+  user_id: string;
+  some_field: string | null;
+  optional_field: string | null;
+  created_at: string; // ISO string from database
+  updated_at: string; // ISO string from database
+}
+
+// Database operations helper types
+export interface Database {
+  public: {
+    Tables: {
+      table_name: {
+        Row: EntityRow;
+        Insert: Omit<EntityRow, "id" | "created_at" | "updated_at">;
+        Update: Partial<Omit<EntityRow, "id" | "created_at" | "updated_at">>;
+      };
+    };
+  };
+}
+```
+
+### Naming Conventions
+
+```typescript
+// ✅ Database types (infrastructure layer)
+// - Use snake_case for all fields
+// - Suffix with "Row" to indicate database origin
+// - ISO strings for dates
+export interface TaskRow {
+  user_id: string;
+  scheduled_date: string | null;
+  created_at: string;
+}
+
+// ✅ Domain types (domain layer)
+// - Use camelCase for all fields
+// - No suffix (pure domain concept)
+// - Date objects for dates
+export interface Task {
+  userId: string;
+  scheduledDate: Date | null;
+  createdAt: Date;
+}
+```
+
+---
+
+## 🏛️ Repository Pattern
+
+### Repository Interface
+
+```typescript
+// src/infrastructure/repositories/IEntityRepository.ts
+import type { DomainEntity } from "@/src/domain/models/Entity";
+
+export interface EntityRepository {
+  create(
+    entity: Omit<DomainEntity, "id" | "createdAt" | "updatedAt">
+  ): Promise<DomainEntity>;
+  findById(id: string): Promise<DomainEntity | null>;
+  findByUserId(userId: string): Promise<DomainEntity[]>;
+  update(id: string, updates: Partial<DomainEntity>): Promise<DomainEntity>;
+  delete(id: string): Promise<void>;
+}
+```
+
+### Repository Implementation
+
+```typescript
+// src/infrastructure/repositories/SupabaseEntityRepository.ts
+import type { SupabaseClient } from "@supabase/supabase-js";
+import type { Database, EntityRow } from "../supabase/types";
+import type { DomainEntity } from "@/src/domain/models/Entity";
+import type { EntityRepository } from "./IEntityRepository";
+
+export class SupabaseEntityRepository implements EntityRepository {
+  constructor(private client: SupabaseClient<Database>) {}
+
+  // Transform database row to domain entity
+  private toDomain(row: EntityRow): DomainEntity {
+    return {
+      id: row.id,
+      userId: row.user_id,
+      someField: row.some_field,
+      optionalField: row.optional_field ?? undefined,
+      createdAt: new Date(row.created_at),
+      updatedAt: new Date(row.updated_at),
+    };
+  }
+
+  // Transform domain entity to database row
+  private toDatabase(entity: Partial<DomainEntity>): Partial<EntityRow> {
+    return {
+      user_id: entity.userId,
+      some_field: entity.someField,
+      optional_field: entity.optionalField ?? null,
+    };
+  }
+
+  async create(
+    entity: Omit<DomainEntity, "id" | "createdAt" | "updatedAt">
+  ): Promise<DomainEntity> {
+    const row = this.toDatabase(entity);
+
+    const { data, error } = await this.client
+      .from("table_name")
+      .insert(row)
+      .select()
+      .single();
+
+    if (error) throw new Error(`Failed to create entity: ${error.message}`);
+    if (!data) throw new Error("No data returned after creation");
+
+    return this.toDomain(data);
+  }
+
+  async findById(id: string): Promise<DomainEntity | null> {
+    const { data, error } = await this.client
+      .from("table_name")
+      .select("*")
+      .eq("id", id)
+      .single();
+
+    if (error) {
+      if (error.code === "PGRST116") return null; // Not found
+      throw new Error(`Failed to find entity: ${error.message}`);
+    }
+
+    return data ? this.toDomain(data) : null;
+  }
+
+  async findByUserId(userId: string): Promise<DomainEntity[]> {
+    const { data, error } = await this.client
+      .from("table_name")
+      .select("*")
+      .eq("user_id", userId)
+      .order("created_at", { ascending: false });
+
+    if (error) throw new Error(`Failed to find entities: ${error.message}`);
+    return data ? data.map((row) => this.toDomain(row)) : [];
+  }
+
+  async update(
+    id: string,
+    updates: Partial<DomainEntity>
+  ): Promise<DomainEntity> {
+    const row = this.toDatabase(updates);
+
+    const { data, error } = await this.client
+      .from("table_name")
+      .update(row)
+      .eq("id", id)
+      .select()
+      .single();
+
+    if (error) throw new Error(`Failed to update entity: ${error.message}`);
+    if (!data) throw new Error("No data returned after update");
+
+    return this.toDomain(data);
+  }
+
+  async delete(id: string): Promise<void> {
+    const { error } = await this.client
+      .from("table_name")
+      .delete()
+      .eq("id", id);
+
+    if (error) throw new Error(`Failed to delete entity: ${error.message}`);
+  }
+}
+```
+
+### Key Repository Patterns
+
+```typescript
+// ✅ Always handle errors explicitly
+const { data, error } = await this.client.from("table").select();
+if (error) throw new Error(`Operation failed: ${error.message}`);
+
+// ✅ Check for null data after operations
+if (!data) throw new Error("No data returned");
+
+// ✅ Transform at boundary
+return data.map((row) => this.toDomain(row));
+
+// ✅ Handle "not found" separately
+if (error?.code === "PGRST116") return null;
+
+// ❌ Don't expose database types
+// Bad: async findById(id: string): Promise<EntityRow | null>
+// Good: async findById(id: string): Promise<DomainEntity | null>
+
+// ❌ Don't handle business logic in repository
+// Bad: if (entity.status === 'active') { /* business logic */ }
+// Good: Keep repositories focused on data access only
+```
+
+---
+
+## 🔒 Row Level Security (RLS)
+
+### RLS Policy Patterns
+
+```sql
+-- Enable RLS on table
+ALTER TABLE table_name ENABLE ROW LEVEL SECURITY;
+
+-- Policy: Users can only read their own data
+CREATE POLICY "Users can view own data"
+ON table_name
+FOR SELECT
+USING (auth.uid() = user_id);
+
+-- Policy: Users can only insert their own data
+CREATE POLICY "Users can create own data"
+ON table_name
+FOR INSERT
+WITH CHECK (auth.uid() = user_id);
+
+-- Policy: Users can only update their own data
+CREATE POLICY "Users can update own data"
+ON table_name
+FOR UPDATE
+USING (auth.uid() = user_id)
+WITH CHECK (auth.uid() = user_id);
+
+-- Policy: Users can only delete their own data
+CREATE POLICY "Users can delete own data"
+ON table_name
+FOR DELETE
+USING (auth.uid() = user_id);
+```
+
+### Testing RLS Policies
+
+```typescript
+// Test RLS enforcement in repository tests
+describe("SupabaseEntityRepository", () => {
+  it("should not allow users to access other users data", async () => {
+    const user1Client = createClientForUser("user-1-id");
+    const user2Client = createClientForUser("user-2-id");
+
+    // User 1 creates data
+    const repo1 = new SupabaseEntityRepository(user1Client);
+    const entity = await repo1.create({ userId: "user-1-id" /* ... */ });
+
+    // User 2 tries to access it
+    const repo2 = new SupabaseEntityRepository(user2Client);
+    const result = await repo2.findById(entity.id);
+
+    expect(result).toBeNull(); // RLS blocks access
+  });
+});
+```
+
+### Critical RLS Rules
+
+- ✅ **Always enable RLS** on every table that contains user data
+- ✅ **Test RLS policies** - Write tests to verify cross-user access is blocked
+- ✅ **Use `auth.uid()`** to reference the current authenticated user
+- ✅ **Apply to all operations** - SELECT, INSERT, UPDATE, DELETE
+- ❌ **Never trust client input** for user_id - RLS ensures correct user
+- ❌ **Don't use service role key** in client-side code - bypasses RLS
+
+---
+
+## 📝 Database Migrations
+
+### Migration File Structure
+
+```
+supabase/migrations/
+├── 001_initial_schema.sql
+├── 002_add_categories.sql
+├── 003_add_recurring_tasks.sql
+└── 004_add_indexes.sql
+```
+
+### Migration Template
+
+```sql
+-- Migration: 001_initial_schema.sql
+-- Description: Create initial tables and RLS policies
+-- Date: 2025-01-15
+
+-- Create table
+CREATE TABLE IF NOT EXISTS table_name (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    user_id UUID NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE,
+    some_field TEXT NOT NULL,
+    optional_field TEXT,
+    created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+
+-- Create indexes
+CREATE INDEX idx_table_name_user_id ON table_name(user_id);
+CREATE INDEX idx_table_name_created_at ON table_name(created_at DESC);
+
+-- Enable RLS
+ALTER TABLE table_name ENABLE ROW LEVEL SECURITY;
+
+-- RLS Policies
+CREATE POLICY "Users can view own data"
+ON table_name FOR SELECT
+USING (auth.uid() = user_id);
+
+CREATE POLICY "Users can create own data"
+ON table_name FOR INSERT
+WITH CHECK (auth.uid() = user_id);
+
+CREATE POLICY "Users can update own data"
+ON table_name FOR UPDATE
+USING (auth.uid() = user_id)
+WITH CHECK (auth.uid() = user_id);
+
+CREATE POLICY "Users can delete own data"
+ON table_name FOR DELETE
+USING (auth.uid() = user_id);
+
+-- Create updated_at trigger
+CREATE OR REPLACE FUNCTION update_updated_at_column()
+RETURNS TRIGGER AS $$
+BEGIN
+    NEW.updated_at = NOW();
+    RETURN NEW;
+END;
+$$ LANGUAGE plpgsql;
+
+CREATE TRIGGER update_table_name_updated_at
+    BEFORE UPDATE ON table_name
+    FOR EACH ROW
+    EXECUTE FUNCTION update_updated_at_column();
+```
+
+### Migration Workflow
+
+1. **Create migration file** with sequential number and descriptive name
+
+   ```bash
+   supabase/migrations/00X_description.sql
+   ```
+
+2. **Write SQL** following the template above
+
+3. **Apply to staging** via Supabase Dashboard SQL Editor
+
+   - Copy migration SQL
+   - Paste into SQL Editor
+   - Run and verify success
+
+4. **Test on staging** environment
+
+   - Verify tables created
+   - Verify RLS policies work
+   - Test repository operations
+
+5. **Apply to production** (when ready) via Dashboard SQL Editor
+
+   - Use same SQL
+   - Verify success
+
+6. **Commit migration file** to git
+   ```bash
+   git add supabase/migrations/00X_description.sql
+   git commit -m "Add migration: description"
+   ```
+
+### Migration Best Practices
+
+- ✅ **Sequential numbering** - `001_`, `002_`, `003_`
+- ✅ **Descriptive names** - `add_categories`, `create_tasks_table`
+- ✅ **Include comments** - Migration description, date, purpose
+- ✅ **Idempotent migrations** - Use `IF NOT EXISTS`, `IF EXISTS`
+- ✅ **One concern per file** - Don't mix unrelated changes
+- ✅ **Test on staging first** - Never apply directly to production
+- ✅ **Include rollback SQL** - Comment with how to undo (optional but helpful)
+- ❌ **Never modify existing migrations** - Create new migration to change
+- ❌ **Don't skip numbers** - Keep sequential order
+
+---
+
+## 🔍 Database Constraints
+
+### Common Constraints
+
+```sql
+-- NOT NULL constraint
+some_field TEXT NOT NULL,
+
+-- UNIQUE constraint
+email TEXT UNIQUE NOT NULL,
+
+-- CHECK constraint
+priority TEXT CHECK (priority IN ('high', 'medium', 'low')),
+
+-- Foreign key with cascade
+user_id UUID REFERENCES auth.users(id) ON DELETE CASCADE,
+category_id UUID REFERENCES categories(id) ON DELETE SET NULL,
+
+-- Composite unique constraint
+UNIQUE(user_id, name),
+
+-- Check constraint with condition
+CHECK (due_date >= scheduled_date OR due_date IS NULL)
+```
+
+### Constraint Patterns
+
+```sql
+-- ✅ Good - Enforce data integrity at database level
+CREATE TABLE tasks (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    user_id UUID NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE,
+    title TEXT NOT NULL CHECK (length(title) > 0 AND length(title) <= 255),
+    priority TEXT CHECK (priority IN ('high', 'medium', 'low')),
+    scheduled_date DATE,
+    due_date DATE,
+    CHECK (due_date IS NULL OR scheduled_date IS NULL OR due_date >= scheduled_date)
+);
+
+-- ❌ Bad - Only validating in application code
+CREATE TABLE tasks (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    user_id UUID,
+    title TEXT,
+    priority TEXT,
+    scheduled_date DATE,
+    due_date DATE
+);
+```
+
+---
+
+## 📊 Indexes
+
+### Index Guidelines
+
+```sql
+-- ✅ Index foreign keys
+CREATE INDEX idx_table_name_user_id ON table_name(user_id);
+
+-- ✅ Index frequently queried columns
+CREATE INDEX idx_table_name_status ON table_name(status);
+
+-- ✅ Index date columns used in filtering
+CREATE INDEX idx_table_name_created_at ON table_name(created_at DESC);
+
+-- ✅ Composite index for common query patterns
+CREATE INDEX idx_table_name_user_date ON table_name(user_id, scheduled_date);
+
+-- ✅ Partial index for specific queries
+CREATE INDEX idx_table_name_active ON table_name(user_id)
+WHERE status = 'active';
+
+-- ❌ Don't over-index
+-- Each index has write overhead, only create what's needed
+```
+
+### When to Create Indexes
+
+- ✅ Foreign key columns (`user_id`, `category_id`)
+- ✅ Columns in WHERE clauses of common queries
+- ✅ Columns used in ORDER BY
+- ✅ Columns used in JOIN conditions
+- ✅ Columns with high cardinality (many unique values)
+- ❌ Small tables (< 1000 rows)
+- ❌ Columns rarely queried
+- ❌ Boolean columns (low cardinality) unless using partial index
+
+---
+
+## 🔧 Database Triggers
+
+### Common Trigger Patterns
+
+```sql
+-- Auto-update updated_at timestamp
+CREATE OR REPLACE FUNCTION update_updated_at_column()
+RETURNS TRIGGER AS $$
+BEGIN
+    NEW.updated_at = NOW();
+    RETURN NEW;
+END;
+$$ LANGUAGE plpgsql;
+
+CREATE TRIGGER update_table_name_updated_at
+    BEFORE UPDATE ON table_name
+    FOR EACH ROW
+    EXECUTE FUNCTION update_updated_at_column();
+
+-- Auto-set completed_at when completed
+CREATE OR REPLACE FUNCTION set_completed_at()
+RETURNS TRIGGER AS $$
+BEGIN
+    IF NEW.completed = TRUE AND OLD.completed = FALSE THEN
+        NEW.completed_at = NOW();
+    ELSIF NEW.completed = FALSE THEN
+        NEW.completed_at = NULL;
+    END IF;
+    RETURN NEW;
+END;
+$$ LANGUAGE plpgsql;
+
+CREATE TRIGGER set_task_completed_at
+    BEFORE UPDATE ON tasks
+    FOR EACH ROW
+    EXECUTE FUNCTION set_completed_at();
+
+-- Create default categories on user signup
+CREATE OR REPLACE FUNCTION create_default_categories()
+RETURNS TRIGGER AS $$
+BEGIN
+    INSERT INTO categories (user_id, name, color, emoji, position)
+    VALUES
+        (NEW.id, 'Work', '#3B82F6', '💼', 'a0'),
+        (NEW.id, 'Personal', '#10B981', '🏠', 'a1'),
+        (NEW.id, 'Health', '#EF4444', '❤️', 'a2');
+    RETURN NEW;
+END;
+$$ LANGUAGE plpgsql;
+
+CREATE TRIGGER on_user_created
+    AFTER INSERT ON auth.users
+    FOR EACH ROW
+    EXECUTE FUNCTION create_default_categories();
+```
+
+---
+
+## ⚠️ Error Handling
+
+### Supabase Error Patterns
+
+```typescript
+// ✅ Handle specific error codes
+const { data, error } = await supabase.from("table").select().single();
+
+if (error) {
+  if (error.code === "PGRST116") {
+    // Not found - return null or handle gracefully
+    return null;
+  }
+  if (error.code === "23505") {
+    // Unique constraint violation
+    throw new Error("Record already exists");
+  }
+  if (error.code === "23503") {
+    // Foreign key constraint violation
+    throw new Error("Referenced record does not exist");
+  }
+  // Generic error
+  throw new Error(`Database error: ${error.message}`);
+}
+
+// ✅ Check for null data after successful operations
+if (!data) {
+  throw new Error("No data returned from database");
+}
+```
+
+### Common Supabase Error Codes
+
+- `PGRST116` - Not found (no rows returned)
+- `23505` - Unique constraint violation
+- `23503` - Foreign key constraint violation
+- `23502` - Not null constraint violation
+- `42P01` - Undefined table
+- `42703` - Undefined column
+
+---
+
+## 📋 Database Checklist
+
+Before applying any migration:
+
+- [ ] Migration file numbered sequentially
+- [ ] SQL is idempotent (`IF NOT EXISTS`, etc.)
+- [ ] RLS enabled on user data tables
+- [ ] RLS policies created for SELECT, INSERT, UPDATE, DELETE
+- [ ] Foreign keys include `ON DELETE` behavior
+- [ ] Indexes created for foreign keys and common queries
+- [ ] Constraints validate data integrity
+- [ ] `updated_at` trigger added if needed
+- [ ] Tested on staging environment
+- [ ] Repository implementation updated
+- [ ] Domain types updated if needed
+
+---
+
+## 🎓 Best Practices Summary
+
+### Security
+
+- Always enable RLS on user data tables
+- Never use service role key in client code
+- Test RLS policies thoroughly
+- Use `auth.uid()` for user identification
+
+### Type Safety
+
+- Keep database types in infrastructure layer
+- Transform at repository boundary
+- Use snake_case for database, camelCase for domain
+- ISO strings in DB, Date objects in domain
+
+### Migrations
+
+- Sequential, descriptive file names
+- Apply to staging first, then production
+- Never modify existing migrations
+- Include rollback instructions in comments
+
+### Performance
+
+- Index foreign keys and commonly queried columns
+- Use composite indexes for common query patterns
+- Avoid over-indexing
+- Use partial indexes when appropriate
+
+### Data Integrity
+
+- Enforce constraints at database level
+- Use CHECK constraints for enums
+- Set appropriate foreign key cascades
+- Validate data structure with NOT NULL, UNIQUE

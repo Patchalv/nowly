@@ -1,0 +1,699 @@
+---
+description: TypeScript coding patterns and conventions for Nowly
+globs: *.ts,*.tsx
+alwaysApply: true
+---
+
+# TypeScript Guidelines for Nowly
+
+## 🎯 Core Principles
+
+- **Type safety first**: Leverage TypeScript's type system to catch errors at compile time
+- **Domain-driven types**: Types should reflect the business domain and database schema
+- **Explicit over implicit**: Prefer explicit types over inference when it improves clarity
+- **No runtime surprises**: Types should accurately represent runtime behavior
+- **Layer separation**: Maintain strict type boundaries between architectural layers
+
+---
+
+## 📁 File Organization
+
+### File Extensions
+
+- Use `.tsx` for files containing JSX (React components)
+- Use `.ts` for pure TypeScript files (use cases, repositories, utilities)
+- Never use `.js` or `.jsx` files
+
+### Module Structure
+
+```typescript
+// ✅ Good: Organized imports with clear grouping
+import type { DomainEntity } from "@/src/domain/models";
+import type { Repository } from "@/src/infrastructure/repositories";
+import { utilityFunction } from "@/src/shared/utils";
+
+// ❌ Bad: Mixed types and values, no grouping
+import { DomainEntity } from "@/src/domain/models";
+import { utilityFunction, Repository } from "@/src/infrastructure";
+```
+
+### Import Order
+
+1. React and Next.js imports
+2. External library imports
+3. Type-only imports (`import type`)
+4. Internal absolute imports (`@/src/...`)
+5. Relative imports (avoid when possible)
+
+---
+
+## 🏗️ Type Definitions
+
+### Domain Models (src/domain/models)
+
+Models should mirror the database schema from the PRD:
+
+```typescript
+// Task.ts - Core domain entity
+export interface Task {
+  id: string;
+  userId: string;
+  title: string;
+  description: string | null;
+  scheduledDate: Date | null;
+  dueDate: Date | null;
+  completed: boolean;
+  completedAt: Date | null;
+  categoryId: string | null;
+  priority: TaskPriority | null;
+  dailySection: DailySection | null;
+  bonusSection: BonusSection | null;
+  position: string;
+  recurringItemId: string | null;
+  createdAt: Date;
+  updatedAt: Date;
+}
+
+// Category.ts
+export interface Category {
+  id: string;
+  userId: string;
+  name: string;
+  color: string;
+  emoji: string;
+  position: string;
+  createdAt: Date;
+  updatedAt: Date;
+}
+
+// RecurringTaskItem.ts
+export interface RecurringTaskItem {
+  id: string;
+  userId: string;
+  title: string;
+  description: string | null;
+  categoryId: string | null;
+  priority: TaskPriority | null;
+  dailySection: DailySection | null;
+  bonusSection: BonusSection | null;
+  rruleString: string;
+  frequency: RecurrenceFrequency;
+  startDate: Date;
+  endDate: Date | null;
+  dueOffsetDays: number;
+  lastGeneratedDate: Date | null;
+  tasksToGenerateAhead: number;
+  isActive: boolean;
+  createdAt: Date;
+  updatedAt: Date;
+}
+```
+
+### Enums and Union Types (src/domain/types)
+
+Use string literal unions for database enums:
+
+```typescript
+// Priority levels from PRD
+export type TaskPriority = "high" | "medium" | "low";
+
+// Daily sections from PRD
+export type DailySection = "morning" | "afternoon" | "evening";
+
+// Bonus section from PRD
+export type BonusSection = "essential" | "bonus";
+
+// Recurrence frequency from PRD
+export type RecurrenceFrequency =
+  | "daily"
+  | "weekly"
+  | "monthly"
+  | "yearly"
+  | "weekdays"
+  | "weekends";
+
+// Sort options from PRD
+export type TaskSortOption =
+  | "title-asc"
+  | "title-desc"
+  | "category-asc"
+  | "category-desc"
+  | "priority"
+  | "due-date"
+  | "created";
+
+// Group options from PRD
+export type TaskGroupOption =
+  | "category"
+  | "bonus-section"
+  | "daily-section"
+  | "priority"
+  | "none";
+```
+
+### Database Types (src/infrastructure/supabase)
+
+Supabase row types should extend domain models:
+
+```typescript
+// Database representation (snake_case)
+export interface TaskRow {
+  id: string;
+  user_id: string;
+  title: string;
+  description: string | null;
+  scheduled_date: string | null; // ISO string from DB
+  due_date: string | null;
+  completed: boolean;
+  completed_at: string | null;
+  category_id: string | null;
+  priority: TaskPriority | null;
+  daily_section: DailySection | null;
+  bonus_section: BonusSection | null;
+  position: string;
+  recurring_item_id: string | null;
+  created_at: string;
+  updated_at: string;
+}
+
+// Helper type for database tables
+export interface Database {
+  public: {
+    Tables: {
+      tasks: {
+        Row: TaskRow;
+        Insert: Omit<TaskRow, "id" | "created_at" | "updated_at">;
+        Update: Partial<TaskRow>;
+      };
+      categories: {
+        Row: CategoryRow;
+        Insert: Omit<CategoryRow, "id" | "created_at" | "updated_at">;
+        Update: Partial<CategoryRow>;
+      };
+      recurring_task_items: {
+        Row: RecurringTaskItemRow;
+        Insert: Omit<RecurringTaskItemRow, "id" | "created_at" | "updated_at">;
+        Update: Partial<RecurringTaskItemRow>;
+      };
+      user_profiles: {
+        Row: UserProfileRow;
+        Insert: Omit<UserProfileRow, "id" | "created_at" | "updated_at">;
+        Update: Partial<UserProfileRow>;
+      };
+    };
+  };
+}
+```
+
+---
+
+## 🔄 Data Transformation
+
+### Repository Layer Mappers
+
+Always transform between database and domain types:
+
+```typescript
+// src/infrastructure/repositories/SupabaseTaskRepository.ts
+export class SupabaseTaskRepository implements TaskRepository {
+  private toDomain(row: TaskRow): Task {
+    return {
+      id: row.id,
+      userId: row.user_id,
+      title: row.title,
+      description: row.description,
+      scheduledDate: row.scheduled_date ? new Date(row.scheduled_date) : null,
+      dueDate: row.due_date ? new Date(row.due_date) : null,
+      completed: row.completed,
+      completedAt: row.completed_at ? new Date(row.completed_at) : null,
+      categoryId: row.category_id,
+      priority: row.priority,
+      dailySection: row.daily_section,
+      bonusSection: row.bonus_section,
+      position: row.position,
+      recurringItemId: row.recurring_item_id,
+      createdAt: new Date(row.created_at),
+      updatedAt: new Date(row.updated_at),
+    };
+  }
+
+  private toDatabase(task: Partial<Task>): Partial<TaskRow> {
+    return {
+      title: task.title,
+      description: task.description ?? null,
+      scheduled_date: task.scheduledDate?.toISOString() ?? null,
+      due_date: task.dueDate?.toISOString() ?? null,
+      completed: task.completed,
+      category_id: task.categoryId ?? null,
+      priority: task.priority ?? null,
+      daily_section: task.dailySection ?? null,
+      bonus_section: task.bonusSection ?? null,
+      position: task.position,
+      recurring_item_id: task.recurringItemId ?? null,
+    };
+  }
+}
+```
+
+---
+
+## 🎨 Component Props
+
+### Props Interfaces
+
+```typescript
+// ✅ Good: Explicit, descriptive props
+interface TaskListProps {
+  tasks: Task[];
+  selectedTaskId?: string;
+  onTaskClick: (taskId: string) => void;
+  onToggleComplete: (taskId: string, completed: boolean) => void;
+  showCompleted?: boolean;
+  className?: string;
+}
+
+// ❌ Bad: Unclear, missing documentation
+interface TaskListProps {
+  data: any[];
+  onClick: (id: string) => void;
+  flag?: boolean;
+}
+```
+
+### Component Type Patterns
+
+```typescript
+// Server Component (no props type needed if simple)
+export default function DailyPage() {
+  // ...
+}
+
+// Client Component with props
+("use client");
+
+interface TaskCardProps {
+  task: Task;
+  onEdit: (task: Task) => void;
+}
+
+export function TaskCard({ task, onEdit }: TaskCardProps) {
+  // ...
+}
+
+// Generic component
+interface ListProps<T> {
+  items: T[];
+  renderItem: (item: T, index: number) => React.ReactNode;
+  keyExtractor: (item: T) => string;
+}
+
+export function List<T>({ items, renderItem, keyExtractor }: ListProps<T>) {
+  return (
+    <ul>
+      {items.map((item, index) => (
+        <li key={keyExtractor(item)}>{renderItem(item, index)}</li>
+      ))}
+    </ul>
+  );
+}
+```
+
+---
+
+## 🏛️ Use Case Types
+
+### Input/Output Types
+
+```typescript
+// src/application/tasks/createTask.usecase.ts
+
+// Input DTO (Data Transfer Object)
+export interface CreateTaskInput {
+  title: string;
+  description?: string;
+  scheduledDate?: Date;
+  dueDate?: Date;
+  categoryId?: string;
+  priority?: TaskPriority;
+  dailySection?: DailySection;
+  bonusSection?: BonusSection;
+}
+
+// Output DTO
+export interface CreateTaskOutput {
+  task: Task;
+  success: boolean;
+  error?: string;
+}
+
+// Use case function signature
+export async function createTask(
+  input: CreateTaskInput,
+  userId: string
+): Promise<CreateTaskOutput> {
+  // Implementation
+}
+```
+
+### Repository Interfaces
+
+```typescript
+// src/infrastructure/repositories/ITaskRepository.ts
+export interface TaskRepository {
+  create(task: Omit<Task, "id" | "createdAt" | "updatedAt">): Promise<Task>;
+  findById(id: string): Promise<Task | null>;
+  findByUserId(userId: string): Promise<Task[]>;
+  findByDate(userId: string, date: Date): Promise<Task[]>;
+  update(id: string, updates: Partial<Task>): Promise<Task>;
+  delete(id: string): Promise<void>;
+  findByRecurringItemId(recurringItemId: string): Promise<Task[]>;
+}
+
+// src/infrastructure/repositories/ICategoryRepository.ts
+export interface CategoryRepository {
+  create(
+    category: Omit<Category, "id" | "createdAt" | "updatedAt">
+  ): Promise<Category>;
+  findById(id: string): Promise<Category | null>;
+  findByUserId(userId: string): Promise<Category[]>;
+  update(id: string, updates: Partial<Category>): Promise<Category>;
+  delete(id: string): Promise<void>;
+}
+```
+
+---
+
+## 🛡️ Type Guards & Validation
+
+### Runtime Type Checking with Zod
+
+```typescript
+// src/domain/validation/task.schema.ts
+import { z } from "zod";
+
+export const taskPrioritySchema = z.enum(["high", "medium", "low"]);
+export const dailySectionSchema = z.enum(["morning", "afternoon", "evening"]);
+export const bonusSectionSchema = z.enum(["essential", "bonus"]);
+
+export const createTaskSchema = z
+  .object({
+    title: z.string().min(1, "Title is required").max(255),
+    description: z.string().max(5000).optional(),
+    scheduledDate: z.date().optional(),
+    dueDate: z.date().optional(),
+    categoryId: z.string().uuid().optional(),
+    priority: taskPrioritySchema.optional(),
+    dailySection: dailySectionSchema.optional(),
+    bonusSection: bonusSectionSchema.optional(),
+  })
+  .refine(
+    (data) =>
+      !data.dueDate ||
+      !data.scheduledDate ||
+      data.dueDate >= data.scheduledDate,
+    { message: "Due date must be after scheduled date", path: ["dueDate"] }
+  );
+
+export type CreateTaskSchema = z.infer<typeof createTaskSchema>;
+```
+
+### Type Guards
+
+```typescript
+// src/shared/utils/typeGuards.ts
+
+export function isTask(value: unknown): value is Task {
+  return (
+    typeof value === "object" &&
+    value !== null &&
+    "id" in value &&
+    "title" in value &&
+    "userId" in value
+  );
+}
+
+export function isTaskArray(value: unknown): value is Task[] {
+  return Array.isArray(value) && value.every(isTask);
+}
+
+// Narrowing helper
+export function assertTask(value: unknown): asserts value is Task {
+  if (!isTask(value)) {
+    throw new Error("Value is not a Task");
+  }
+}
+```
+
+---
+
+## 🔧 Utility Types
+
+### Common Patterns
+
+```typescript
+// Pick specific fields for forms
+export type TaskFormData = Pick<
+  Task,
+  | "title"
+  | "description"
+  | "scheduledDate"
+  | "dueDate"
+  | "categoryId"
+  | "priority"
+  | "dailySection"
+  | "bonusSection"
+>;
+
+// Omit sensitive fields for API responses
+export type TaskPublic = Omit<Task, "userId">;
+
+// Make all fields optional for updates
+export type TaskUpdate = Partial<Task>;
+
+// Required fields for creation
+export type TaskCreate = Pick<Task, "title" | "userId"> &
+  Partial<Omit<Task, "id" | "title" | "userId" | "createdAt" | "updatedAt">>;
+
+// Result type pattern
+export type Result<T, E = Error> =
+  | { success: true; data: T }
+  | { success: false; error: E };
+
+// Async result
+export type AsyncResult<T, E = Error> = Promise<Result<T, E>>;
+```
+
+### Domain-Specific Utility Types
+
+```typescript
+// Filter parameters from PRD
+export interface TaskFilters {
+  categoryId?: string;
+  priority?: TaskPriority;
+  dailySection?: DailySection;
+  bonusSection?: BonusSection;
+  completed?: boolean;
+  scheduledDate?: Date;
+  search?: string;
+}
+
+// Sorting and grouping
+export interface TaskQueryOptions {
+  sortBy: TaskSortOption;
+  groupBy: TaskGroupOption;
+  filters: TaskFilters;
+  showCompleted: boolean;
+  page?: number;
+  pageSize?: number;
+}
+
+// View state for Daily/Master List
+export interface TaskViewState {
+  selectedDate: Date;
+  filters: TaskFilters;
+  sortBy: TaskSortOption;
+  groupBy: TaskGroupOption;
+  showCompleted: boolean;
+  filterByCategory: boolean;
+}
+```
+
+---
+
+## 🎯 React Query Types
+
+### Query Keys
+
+```typescript
+// src/shared/types/queryKeys.ts
+export const taskKeys = {
+  all: ["tasks"] as const,
+  lists: () => [...taskKeys.all, "list"] as const,
+  list: (filters: TaskFilters) => [...taskKeys.lists(), filters] as const,
+  details: () => [...taskKeys.all, "detail"] as const,
+  detail: (id: string) => [...taskKeys.details(), id] as const,
+  byDate: (date: Date) =>
+    [...taskKeys.all, "byDate", date.toISOString()] as const,
+};
+
+export const categoryKeys = {
+  all: ["categories"] as const,
+  lists: () => [...categoryKeys.all, "list"] as const,
+  list: (userId: string) => [...categoryKeys.lists(), userId] as const,
+  details: () => [...categoryKeys.all, "detail"] as const,
+  detail: (id: string) => [...categoryKeys.details(), id] as const,
+};
+```
+
+### Query/Mutation Types
+
+```typescript
+// src/presentation/hooks/useTasks.ts
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import type { UseQueryResult, UseMutationResult } from "@tanstack/react-query";
+
+export function useTasks(date: Date): UseQueryResult<Task[], Error> {
+  return useQuery({
+    queryKey: taskKeys.byDate(date),
+    queryFn: () => listTasksByDate({ date }),
+    staleTime: 5 * 60 * 1000, // 5 minutes
+  });
+}
+
+export function useCreateTask(): UseMutationResult<
+  Task,
+  Error,
+  CreateTaskInput
+> {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (input: CreateTaskInput) => createTask(input),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: taskKeys.all });
+    },
+  });
+}
+```
+
+---
+
+## 🚫 Anti-Patterns to Avoid
+
+### ❌ Don't Use `any`
+
+```typescript
+// ❌ Bad
+function processTask(task: any) {
+  return task.title;
+}
+
+// ✅ Good
+function processTask(task: Task) {
+  return task.title;
+}
+
+// ✅ Good (when type is truly unknown)
+function processUnknown(value: unknown) {
+  if (isTask(value)) {
+    return value.title;
+  }
+  throw new Error("Not a task");
+}
+```
+
+### ❌ Don't Use Type Assertions Unnecessarily
+
+```typescript
+// ❌ Bad
+const task = data as Task;
+
+// ✅ Good
+if (!isTask(data)) {
+  throw new Error("Invalid task data");
+}
+const task = data;
+```
+
+### ❌ Don't Mix Database and Domain Types
+
+```typescript
+// ❌ Bad - exposing database types in use cases
+export async function createTask(input: TaskRow): Promise<TaskRow> {
+  // ...
+}
+
+// ✅ Good - using domain types
+export async function createTask(input: CreateTaskInput): Promise<Task> {
+  // ...
+}
+```
+
+### ❌ Don't Ignore Null Safety
+
+```typescript
+// ❌ Bad
+function getTaskTitle(task: Task) {
+  return task.category.name; // Could crash if category is null
+}
+
+// ✅ Good
+function getTaskTitle(task: Task, categories: Category[]) {
+  const category = categories.find((c) => c.id === task.categoryId);
+  return category?.name ?? "No category";
+}
+```
+
+---
+
+## 📋 Checklist for New Files
+
+Before committing any TypeScript file:
+
+- [ ] All types are explicitly defined (no implicit `any`)
+- [ ] Domain types match the PRD specification
+- [ ] Database types use snake_case, domain types use camelCase
+- [ ] Transformation functions exist between layers
+- [ ] Zod schemas defined for user input
+- [ ] Type guards implemented for runtime checks
+- [ ] Null/undefined handled explicitly
+- [ ] Generic types have constraints when needed
+- [ ] Complex types are documented with JSDoc
+- [ ] No circular dependencies between modules
+- [ ] Imports follow the established order
+
+---
+
+## 🔍 Type Inference Best Practices
+
+```typescript
+// ✅ Good: Let TypeScript infer return types for simple functions
+export function calculatePosition(before: string, after: string) {
+  return lexorank.between(before, after);
+}
+
+// ✅ Good: Explicit return type for complex functions
+export async function generateRecurringTasks(
+  recurringItem: RecurringTaskItem,
+  count: number
+): Promise<Task[]> {
+  // Complex logic
+}
+
+// ✅ Good: Infer generic types from usage
+const tasks = await repository.findByUserId<Task>(userId);
+
+// ✅ Good: Explicit generic constraints
+function groupBy<T, K extends keyof T>(items: T[], key: K): Map<T[K], T[]> {
+  // Implementation
+}
+```
+
+---
+
+## 🎓 Learning Resources
+
+- [TypeScript Handbook](https://www.typescriptlang.org/docs/handbook/intro.html)
+- [Zod Documentation](https://zod.dev/)
+- [React TypeScript Cheatsheet](https://react-typescript-cheatsheet.netlify.app/)
+- [TanStack Query TypeScript Guide](https://tanstack.com/query/latest/docs/react/typescript)

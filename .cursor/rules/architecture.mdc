@@ -1,0 +1,678 @@
+---
+description: Clean Architecture enforcement and patterns for Nowly
+globs: *.ts,*.tsx
+alwaysApply: true
+---
+
+# Architecture Guidelines for Nowly
+
+## 🎯 Core Principles
+
+- **Dependency Rule** - Dependencies point inward only: presentation → application → domain
+- **Layer Isolation** - Each layer has clear responsibilities and boundaries
+- **Framework Independence** - Domain and application layers have no framework dependencies
+- **Testability** - Business logic testable without UI, database, or frameworks
+
+---
+
+## 📐 Layer Structure
+
+```
+app/                    # Next.js routing & Server Components
+src/
+├── presentation/       # UI components, hooks, providers (React/Next.js)
+├── application/        # Use cases (business logic)
+├── domain/            # Entities, types, validation (pure TypeScript)
+├── infrastructure/    # Supabase, repositories, external services
+├── config/            # Environment variables, constants
+└── shared/            # Common utilities, types
+```
+
+---
+
+## 🔒 Dependency Rules
+
+### What Each Layer Can Import
+
+```typescript
+// ✅ Domain - NOTHING (pure TypeScript)
+// No imports from other layers
+
+// ✅ Application - domain only
+import type { Entity } from "@/src/domain/models/Entity";
+import { entitySchema } from "@/src/domain/validation/entity.schema";
+
+// ✅ Infrastructure - domain, application
+import type { Entity } from "@/src/domain/models/Entity";
+import type { EntityRepository } from "@/src/infrastructure/repositories/IEntityRepository";
+
+// ✅ Presentation - application, domain (NOT infrastructure)
+import { createEntity } from "@/src/application/entities/createEntity.usecase";
+import type { Entity } from "@/src/domain/models/Entity";
+
+// ❌ Presentation CANNOT import infrastructure
+import { SupabaseEntityRepository } from "@/src/infrastructure/repositories/SupabaseEntityRepository"; // WRONG!
+```
+
+### Dependency Flow
+
+```
+presentation (React/Next.js)
+      ↓
+application (use cases)
+      ↓
+domain (entities, validation)
+      ↑
+infrastructure (Supabase, repos)
+```
+
+---
+
+## 🏗️ Domain Layer
+
+**Purpose:** Pure business entities and rules  
+**Location:** `src/domain/`  
+**Dependencies:** NONE (pure TypeScript)
+
+### Structure
+
+```
+domain/
+├── models/              # Entity definitions
+│   ├── Task.ts
+│   └── Category.ts
+├── types/              # Enums, value objects
+│   └── index.ts
+└── validation/         # Zod schemas
+    └── task.schema.ts
+```
+
+### Domain Entity Pattern
+
+```typescript
+// src/domain/models/Task.ts
+export interface Task {
+  id: string;
+  userId: string;
+  title: string;
+  completed: boolean;
+  createdAt: Date;
+  updatedAt: Date;
+}
+```
+
+### Domain Types Pattern
+
+```typescript
+// src/domain/types/index.ts
+export type Priority = "high" | "medium" | "low";
+export type Status = "active" | "inactive";
+```
+
+### Domain Validation Pattern
+
+```typescript
+// src/domain/validation/task.schema.ts
+import { z } from "zod";
+
+export const createTaskSchema = z.object({
+  title: z.string().min(1).max(255),
+  priority: z.enum(["high", "medium", "low"]).optional(),
+});
+
+export type CreateTaskInput = z.infer<typeof createTaskSchema>;
+```
+
+**Rules:**
+
+- ✅ No framework imports (React, Next.js, Supabase)
+- ✅ Only pure TypeScript types and interfaces
+- ✅ Zod for validation (allowed as it's pure)
+- ❌ No database types (snake_case, ISO strings)
+- ❌ No UI concerns
+
+---
+
+## 💼 Application Layer
+
+**Purpose:** Business logic and use cases  
+**Location:** `src/application/`  
+**Dependencies:** domain only
+
+### Structure
+
+```
+application/
+├── tasks/
+│   ├── createTask.usecase.ts
+│   ├── updateTask.usecase.ts
+│   └── listTasks.usecase.ts
+└── categories/
+    └── createCategory.usecase.ts
+```
+
+### Use Case Pattern
+
+```typescript
+// src/application/tasks/createTask.usecase.ts
+import type { Task } from "@/src/domain/models/Task";
+import type { CreateTaskInput } from "@/src/domain/validation/task.schema";
+import type { TaskRepository } from "@/src/infrastructure/repositories/ITaskRepository";
+
+export interface CreateTaskRequest {
+  title: string;
+  priority?: "high" | "medium" | "low";
+}
+
+export interface CreateTaskResponse {
+  task: Task;
+  success: boolean;
+  error?: string;
+}
+
+export async function createTask(
+  request: CreateTaskRequest,
+  userId: string,
+  repository: TaskRepository
+): Promise<CreateTaskResponse> {
+  try {
+    const task = await repository.create({
+      ...request,
+      userId,
+      completed: false,
+    });
+
+    return { success: true, task };
+  } catch (error) {
+    return {
+      success: false,
+      error: "Failed to create task",
+      task: null as any,
+    };
+  }
+}
+```
+
+**Rules:**
+
+- ✅ Pure business logic only
+- ✅ Accept repositories as parameters (dependency injection)
+- ✅ Return domain entities
+- ✅ Use Request/Response types
+- ❌ No direct Supabase client usage
+- ❌ No React hooks or components
+- ❌ No database-specific logic
+
+---
+
+## 🗄️ Infrastructure Layer
+
+**Purpose:** External services, database, repositories  
+**Location:** `src/infrastructure/`  
+**Dependencies:** domain, application
+
+### Structure
+
+```
+infrastructure/
+├── supabase/
+│   ├── client.ts           # Supabase client setup
+│   └── types.ts            # Database types (snake_case)
+└── repositories/
+    ├── ITaskRepository.ts  # Interface (domain-focused)
+    └── SupabaseTaskRepository.ts  # Implementation
+```
+
+### Repository Interface Pattern
+
+```typescript
+// src/infrastructure/repositories/ITaskRepository.ts
+import type { Task } from "@/src/domain/models/Task";
+
+export interface TaskRepository {
+  create(task: Omit<Task, "id" | "createdAt" | "updatedAt">): Promise<Task>;
+  findById(id: string): Promise<Task | null>;
+  findByUserId(userId: string): Promise<Task[]>;
+  update(id: string, updates: Partial<Task>): Promise<Task>;
+  delete(id: string): Promise<void>;
+}
+```
+
+### Repository Implementation Pattern
+
+```typescript
+// src/infrastructure/repositories/SupabaseTaskRepository.ts
+import type { SupabaseClient } from "@supabase/supabase-js";
+import type { TaskRepository } from "./ITaskRepository";
+import type { Task } from "@/src/domain/models/Task";
+import type { TaskRow } from "../supabase/types";
+
+export class SupabaseTaskRepository implements TaskRepository {
+  constructor(private client: SupabaseClient) {}
+
+  private toDomain(row: TaskRow): Task {
+    return {
+      id: row.id,
+      userId: row.user_id,
+      title: row.title,
+      completed: row.completed,
+      createdAt: new Date(row.created_at),
+      updatedAt: new Date(row.updated_at),
+    };
+  }
+
+  private toDatabase(task: Partial<Task>): Partial<TaskRow> {
+    return {
+      user_id: task.userId,
+      title: task.title,
+      completed: task.completed,
+    };
+  }
+
+  async create(
+    task: Omit<Task, "id" | "createdAt" | "updatedAt">
+  ): Promise<Task> {
+    const { data, error } = await this.client
+      .from("tasks")
+      .insert(this.toDatabase(task))
+      .select()
+      .single();
+
+    if (error) throw new Error(`Failed to create task: ${error.message}`);
+    return this.toDomain(data);
+  }
+
+  async findByUserId(userId: string): Promise<Task[]> {
+    const { data, error } = await this.client
+      .from("tasks")
+      .select("*")
+      .eq("user_id", userId);
+
+    if (error) throw new Error(`Failed to fetch tasks: ${error.message}`);
+    return data.map((row) => this.toDomain(row));
+  }
+}
+```
+
+**Rules:**
+
+- ✅ Transform between database types (snake_case) and domain types (camelCase)
+- ✅ Repository methods return domain entities
+- ✅ Handle all database-specific logic here
+- ✅ Implement repository interfaces
+- ❌ Don't expose database types outside this layer
+- ❌ Don't put business logic in repositories
+
+---
+
+## 🎨 Presentation Layer
+
+**Purpose:** UI components, hooks, and React/Next.js specific code  
+**Location:** `src/presentation/`, `app/`  
+**Dependencies:** application, domain (NOT infrastructure)
+
+### Structure
+
+```
+presentation/
+├── components/         # React components
+│   ├── TaskCard.tsx
+│   └── TaskList.tsx
+├── hooks/             # Custom React hooks
+│   └── useTasks.ts
+└── providers/         # React context providers
+    └── QueryProvider.tsx
+
+app/                   # Next.js App Router
+├── (protected)/       # Protected routes
+│   └── tasks/
+│       └── page.tsx   # Server Component
+└── actions/           # Server Actions
+    └── createTaskAction.ts
+```
+
+### Server Component Pattern
+
+```typescript
+// app/(protected)/tasks/page.tsx
+import { createServerClient } from "@/src/infrastructure/supabase/client";
+import { SupabaseTaskRepository } from "@/src/infrastructure/repositories/SupabaseTaskRepository";
+import { TaskList } from "@/src/presentation/components/TaskList";
+
+export default async function TasksPage() {
+  const supabase = createServerClient();
+  const repository = new SupabaseTaskRepository(supabase);
+
+  const tasks = await repository.findByUserId("user-id");
+
+  return <TaskList tasks={tasks} />;
+}
+```
+
+### Client Component Pattern
+
+```typescript
+// src/presentation/components/TaskCard.tsx
+"use client";
+
+import type { Task } from "@/src/domain/models/Task";
+
+interface TaskCardProps {
+  task: Task;
+  onToggle: (id: string) => void;
+}
+
+export function TaskCard({ task, onToggle }: TaskCardProps) {
+  return (
+    <div onClick={() => onToggle(task.id)}>
+      <h3>{task.title}</h3>
+    </div>
+  );
+}
+```
+
+### React Query Hook Pattern
+
+```typescript
+// src/presentation/hooks/useTasks.ts
+"use client";
+
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { createTask } from "@/src/application/tasks/createTask.usecase";
+import type { CreateTaskRequest } from "@/src/application/tasks/createTask.usecase";
+
+export function useCreateTask() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async (request: CreateTaskRequest) => {
+      // Repository injected here (presentation layer responsibility)
+      const repository = getTaskRepository(); // Helper function
+      return createTask(request, "user-id", repository);
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["tasks"] });
+    },
+  });
+}
+```
+
+### Server Action Pattern
+
+```typescript
+// app/actions/createTaskAction.ts
+"use server";
+
+import { revalidatePath } from "next/cache";
+import { createTask } from "@/src/application/tasks/createTask.usecase";
+import { createTaskSchema } from "@/src/domain/validation/task.schema";
+import { createServerClient } from "@/src/infrastructure/supabase/client";
+import { SupabaseTaskRepository } from "@/src/infrastructure/repositories/SupabaseTaskRepository";
+
+export async function createTaskAction(formData: FormData) {
+  const result = createTaskSchema.safeParse({
+    title: formData.get("title"),
+  });
+
+  if (!result.success) {
+    return { success: false, errors: result.error.flatten().fieldErrors };
+  }
+
+  const supabase = createServerClient();
+  const repository = new SupabaseTaskRepository(supabase);
+
+  const response = await createTask(result.data, "user-id", repository);
+
+  if (response.success) {
+    revalidatePath("/tasks");
+  }
+
+  return response;
+}
+```
+
+**Rules:**
+
+- ✅ Server Components can instantiate repositories directly
+- ✅ Client Components use hooks that abstract repository access
+- ✅ Server Actions handle repository instantiation
+- ✅ Import from application and domain layers
+- ❌ NEVER import infrastructure repositories in Client Components
+- ❌ Don't put business logic in components
+
+---
+
+## 🔄 Data Flow Examples
+
+### Creating a Task (Client Component)
+
+```
+User Form Input
+      ↓
+TaskForm Component (presentation)
+      ↓
+useCreateTask Hook (presentation)
+      ↓
+createTask Use Case (application)
+      ↓
+TaskRepository Interface (infrastructure)
+      ↓
+SupabaseTaskRepository (infrastructure)
+      ↓
+Supabase Database
+```
+
+### Creating a Task (Server Action)
+
+```
+Form Submission
+      ↓
+createTaskAction (Server Action in app/actions)
+      ↓
+Validation (domain schema)
+      ↓
+createTask Use Case (application)
+      ↓
+SupabaseTaskRepository (infrastructure)
+      ↓
+Supabase Database
+      ↓
+revalidatePath (Next.js)
+```
+
+### Fetching Tasks (Server Component)
+
+```
+TasksPage (Server Component in app)
+      ↓
+SupabaseTaskRepository (infrastructure)
+      ↓
+Supabase Database
+      ↓
+Domain Entities (Task[])
+      ↓
+TaskList Component (presentation)
+```
+
+---
+
+## 🧪 Testing Strategy
+
+### Domain Layer Tests
+
+```typescript
+// Pure unit tests - no mocks needed
+import { createTaskSchema } from "@/src/domain/validation/task.schema";
+
+describe("createTaskSchema", () => {
+  it("should validate valid task data", () => {
+    const result = createTaskSchema.safeParse({ title: "Test" });
+    expect(result.success).toBe(true);
+  });
+});
+```
+
+### Application Layer Tests
+
+```typescript
+// Test use cases with mock repositories
+import { createTask } from "@/src/application/tasks/createTask.usecase";
+import type { TaskRepository } from "@/src/infrastructure/repositories/ITaskRepository";
+
+describe("createTask", () => {
+  it("should create a task", async () => {
+    const mockRepo: TaskRepository = {
+      create: vi.fn().mockResolvedValue({ id: "1", title: "Test" }),
+      // ... other methods
+    };
+
+    const result = await createTask({ title: "Test" }, "user-id", mockRepo);
+
+    expect(result.success).toBe(true);
+    expect(mockRepo.create).toHaveBeenCalled();
+  });
+});
+```
+
+### Infrastructure Layer Tests
+
+```typescript
+// Integration tests with real database (or test database)
+import { SupabaseTaskRepository } from "@/src/infrastructure/repositories/SupabaseTaskRepository";
+
+describe("SupabaseTaskRepository", () => {
+  it("should create and retrieve a task", async () => {
+    const repo = new SupabaseTaskRepository(testClient);
+    const task = await repo.create({ title: "Test", userId: "user-1" });
+    const found = await repo.findById(task.id);
+
+    expect(found).toEqual(task);
+  });
+});
+```
+
+---
+
+## 🚫 Common Violations
+
+### ❌ Importing Infrastructure in Presentation (Client)
+
+```typescript
+// ❌ BAD - Client Component directly importing repository
+"use client";
+import { SupabaseTaskRepository } from "@/src/infrastructure/repositories/SupabaseTaskRepository";
+
+export function TaskList() {
+  const repo = new SupabaseTaskRepository(); // WRONG!
+}
+```
+
+### ✅ Correct Approach
+
+```typescript
+// ✅ GOOD - Use hook that abstracts repository access
+"use client";
+import { useTasks } from "@/src/presentation/hooks/useTasks";
+
+export function TaskList() {
+  const { data: tasks } = useTasks();
+}
+```
+
+### ❌ Business Logic in Component
+
+```typescript
+// ❌ BAD - Business logic in component
+export function TaskForm() {
+  const onSubmit = (data: TaskInput) => {
+    if (data.dueDate < data.scheduledDate) {
+      // Business rule
+      setError("Invalid dates");
+    }
+  };
+}
+```
+
+### ✅ Correct Approach
+
+```typescript
+// ✅ GOOD - Business logic in domain validation
+export const createTaskSchema = z
+  .object({
+    scheduledDate: z.date(),
+    dueDate: z.date(),
+  })
+  .refine((data) => data.dueDate >= data.scheduledDate, {
+    message: "Due date must be after scheduled date",
+  });
+```
+
+### ❌ Domain Types with Framework Dependencies
+
+```typescript
+// ❌ BAD - Domain type with React dependency
+import type { ReactNode } from "react";
+
+export interface Task {
+  id: string;
+  title: ReactNode; // WRONG!
+}
+```
+
+### ✅ Correct Approach
+
+```typescript
+// ✅ GOOD - Pure TypeScript
+export interface Task {
+  id: string;
+  title: string;
+}
+```
+
+---
+
+## 📋 Architecture Checklist
+
+Before committing code:
+
+### Domain Layer
+
+- [ ] No framework imports (React, Next.js, Supabase)
+- [ ] Only pure TypeScript types and interfaces
+- [ ] No references to database types (snake_case, ISO strings)
+- [ ] Validation schemas use Zod
+
+### Application Layer
+
+- [ ] Use cases accept repositories as parameters
+- [ ] Return domain entities, not database types
+- [ ] No direct Supabase client usage
+- [ ] No React/Next.js specific code
+
+### Infrastructure Layer
+
+- [ ] Repositories implement interfaces
+- [ ] Transform data at boundary (toDomain/toDatabase)
+- [ ] Return domain entities from repository methods
+- [ ] No business logic in repositories
+
+### Presentation Layer
+
+- [ ] Server Components can instantiate repositories
+- [ ] Client Components use hooks (no direct repository imports)
+- [ ] Server Actions handle repository instantiation
+- [ ] No business logic in components
+- [ ] Import from application/domain only (not infrastructure repositories)
+
+---
+
+## 🎯 Quick Reference
+
+**When to use each layer:**
+
+- **Domain** - Define entities, types, validation schemas
+- **Application** - Implement business logic and use cases
+- **Infrastructure** - Database access, external APIs, repository implementations
+- **Presentation** - UI components, hooks, Server Components, Server Actions
+
+**Key Rule:** Arrows point inward. Outer layers depend on inner layers, never the reverse.

@@ -1,0 +1,24 @@
+---
+description:
+globs:
+alwaysApply: true
+---
+
+# Project Rules & Guidelines
+
+## AI Agent
+
+- [General rules](mdc:ai-agent.mdc)
+
+## Core Rules
+
+- [Code Style Guidelines](mdc:code-style.mdc)
+- [Best React Practices](mdc:react.mdc)
+- [Best TypeScript Practices](mdc:typescript.mdc)
+- [Project structure](mdc:project-structure.mdc)
+- [Clean architecture patterns guidelines](mdc:architecture.mdc)
+- [Supabase and database guidelines](mdc:supabase-database.mdc)
+
+## Other rules and guidelines
+
+- [Best Forms Practices](mdc:forms.mdc)
