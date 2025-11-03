@@ -306,18 +306,30 @@ npm run format:check
 
 ### Recommended Workflow
 
-1. **Before committing:**
+1. **On starting any planned changes:** Create a feature branch:
+   Create a feature branch: `git checkout -b feature/your-feature-name`
+
+2. **Make changes:**
+
+3. **Before committing:**
 
    ```bash
    npm run format && npm run lint:fix
    ```
 
-2. **Pre-commit hooks** (Husky) will automatically:
+4. **Pre-commit hooks** (Husky) will automatically:
    - Format staged files with Prettier
    - Lint staged files with ESLint
    - Block commits if there are errors
 
-3. **Writing code:**
+5. **Push branch** `git push origin feature/your-feature-name`
+
+6. **Create Pull Request on GitHub**
+   - Review changes in PR
+   - Review changes in Preview branch
+   - Merge to main
+
+7. **Writing code:**
    - Follow the [Architecture Guidelines](./.cursor/rules/architecture.mdc)
    - Use type-safe environment variables from `src/config/env.ts`
    - Import constants from `src/config/constants.ts`
