@@ -268,6 +268,13 @@ Open [http://localhost:3000](http://localhost:3000) in your browser to see the a
 
 ## 💻 Development Workflow
 
+1.  Create a feature branch: `git checkout -b feature/your-feature-name`
+2.  Make changes and commit
+3.  Push branch: `git push origin feature/your-feature-name`
+4.  Create Pull Request on GitHub
+5.  Review changes in PR
+6.  Merge to main
+
 ### Running the App
 
 ```bash
