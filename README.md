@@ -28,8 +28,7 @@ A modern, productivity-focused task management application built with Next.js 15
 - **Recurring tasks** - Automatically generate tasks based on custom recurrence patterns
 - **Flexible scheduling** - Schedule tasks, set due dates, and manage priorities
 - **Responsive design** - Beautiful, modern UI built with TailwindCSS and Shadcn/UI
-
----
+  Production url: https://nowly-sand.vercel.app/
 
 ## 🛠️ Tech Stack
 
@@ -265,15 +264,6 @@ Open [http://localhost:3000](http://localhost:3000) in your browser to see the a
 - Able to access the landing page
 
 ---
-
-## 💻 Development Workflow
-
-1.  Create a feature branch: `git checkout -b feature/your-feature-name`
-2.  Make changes and commit
-3.  Push branch: `git push origin feature/your-feature-name`
-4.  Create Pull Request on GitHub
-5.  Review changes in PR
-6.  Merge to main
 
 ### Running the App
 
