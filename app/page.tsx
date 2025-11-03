@@ -1,8 +1,11 @@
+import { Button } from '@/src/presentation/components/ui/button';
+
 export default function Home() {
   return (
     <main className="flex min-h-screen flex-col items-center justify-center p-24">
       <h1 className="text-4xl font-bold">Nowly</h1>
       <p className="mt-4">Task management app coming soon...</p>
+      <Button>Click me</Button>
     </main>
   );
 }
