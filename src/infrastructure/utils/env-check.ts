@@ -6,7 +6,7 @@ import { env, isDevelopment } from '@/src/config/env';
  * Remove or restrict to non-production after verification
  */
 
-export function getEnvironmentInfo() {
+function getEnvironmentInfo() {
   return {
     environment: env.NODE_ENV || 'unknown',
     supabaseUrl: env.NEXT_PUBLIC_SUPABASE_URL || 'not set',
