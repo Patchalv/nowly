@@ -18,15 +18,27 @@
  * - Use this module for all environment variable access
  * - Public variables (NEXT_PUBLIC_*) are safe for client-side use
  * - Private variables are only accessible server-side
+ *
+ * Implementation Note:
+ * - NEXT_PUBLIC_* variables MUST use direct property access (process.env.NEXT_PUBLIC_*)
+ *   NOT dynamic access (process.env[key]) because Next.js performs build-time replacement
+ *   only for direct property access. Dynamic access will fail on the client-side.
  */
 
 /**
- * Validates that a required environment variable exists
+ * Gets an optional environment variable with a fallback value
+ * Used for server-side only variables (non NEXT_PUBLIC_*)
+ */
+function getOptionalEnv(key: string, fallback: string = ''): string {
+  return process.env[key] || fallback;
+}
+
+/**
+ * Gets a public environment variable (NEXT_PUBLIC_*)
+ * Uses direct property access for Next.js build-time replacement
  * @throws Error if the variable is missing
  */
-function getRequiredEnv(key: string): string {
-  const value = process.env[key];
-
+function getRequiredPublicEnv(value: string | undefined, key: string): string {
   if (!value || value.trim() === '') {
     throw new Error(
       `Missing required environment variable: ${key}\n` +
@@ -39,26 +51,31 @@ function getRequiredEnv(key: string): string {
 }
 
 /**
- * Gets an optional environment variable with a fallback value
+ * Gets an optional public environment variable
+ * Uses direct property access for Next.js build-time replacement
  */
-function getOptionalEnv(key: string, fallback: string = ''): string {
-  return process.env[key] || fallback;
+function getOptionalPublicEnv(
+  value: string | undefined,
+  fallback: string = ''
+): string {
+  return value || fallback;
 }
 
 /**
  * Validates environment configuration on module load
  * This ensures critical variables are present before the app starts
+ * Uses direct property access for Next.js compatibility
  */
 function validateEnvironment(): void {
-  const requiredVars = [
-    'NEXT_PUBLIC_SUPABASE_URL',
-    'NEXT_PUBLIC_SUPABASE_ANON_KEY',
-  ];
+  const missing: string[] = [];
 
-  const missing = requiredVars.filter((key) => {
-    const value = process.env[key];
-    return !value || value.trim() === '';
-  });
+  // Check required public variables using direct property access
+  if (!process.env.NEXT_PUBLIC_SUPABASE_URL?.trim()) {
+    missing.push('NEXT_PUBLIC_SUPABASE_URL');
+  }
+  if (!process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY?.trim()) {
+    missing.push('NEXT_PUBLIC_SUPABASE_ANON_KEY');
+  }
 
   if (missing.length > 0) {
     throw new Error(
@@ -82,20 +99,24 @@ export const env = {
   // ------------------------------------------------------------------------------
   // Next.js Configuration
   // ------------------------------------------------------------------------------
-  NODE_ENV: getOptionalEnv('NODE_ENV', 'development') as
+  NODE_ENV: (process.env.NODE_ENV || 'development') as
     | 'development'
     | 'production'
     | 'test',
-  NEXT_PUBLIC_APP_URL: getOptionalEnv(
-    'NEXT_PUBLIC_APP_URL',
+  NEXT_PUBLIC_APP_URL: getOptionalPublicEnv(
+    process.env.NEXT_PUBLIC_APP_URL,
     'http://localhost:3000'
   ),
 
   // ------------------------------------------------------------------------------
   // Supabase Configuration (Public - safe for client-side)
   // ------------------------------------------------------------------------------
-  NEXT_PUBLIC_SUPABASE_URL: getRequiredEnv('NEXT_PUBLIC_SUPABASE_URL'),
-  NEXT_PUBLIC_SUPABASE_ANON_KEY: getRequiredEnv(
+  NEXT_PUBLIC_SUPABASE_URL: getRequiredPublicEnv(
+    process.env.NEXT_PUBLIC_SUPABASE_URL,
+    'NEXT_PUBLIC_SUPABASE_URL'
+  ),
+  NEXT_PUBLIC_SUPABASE_ANON_KEY: getRequiredPublicEnv(
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY,
     'NEXT_PUBLIC_SUPABASE_ANON_KEY'
   ),
 
@@ -139,19 +160,26 @@ export const env = {
   // Feature Flags (Optional)
   // ------------------------------------------------------------------------------
   NEXT_PUBLIC_ENABLE_ANALYTICS:
-    getOptionalEnv('NEXT_PUBLIC_ENABLE_ANALYTICS', 'false') === 'true',
+    getOptionalPublicEnv(process.env.NEXT_PUBLIC_ENABLE_ANALYTICS, 'false') ===
+    'true',
   NEXT_PUBLIC_ENABLE_RECURRING_TASKS:
-    getOptionalEnv('NEXT_PUBLIC_ENABLE_RECURRING_TASKS', 'true') === 'true',
+    getOptionalPublicEnv(
+      process.env.NEXT_PUBLIC_ENABLE_RECURRING_TASKS,
+      'true'
+    ) === 'true',
   NEXT_PUBLIC_ENABLE_CATEGORIES:
-    getOptionalEnv('NEXT_PUBLIC_ENABLE_CATEGORIES', 'true') === 'true',
+    getOptionalPublicEnv(process.env.NEXT_PUBLIC_ENABLE_CATEGORIES, 'true') ===
+    'true',
 
   // ------------------------------------------------------------------------------
   // Analytics & Monitoring (Optional)
   // ------------------------------------------------------------------------------
-  NEXT_PUBLIC_GOOGLE_ANALYTICS_ID: getOptionalEnv(
-    'NEXT_PUBLIC_GOOGLE_ANALYTICS_ID'
+  NEXT_PUBLIC_GOOGLE_ANALYTICS_ID: getOptionalPublicEnv(
+    process.env.NEXT_PUBLIC_GOOGLE_ANALYTICS_ID
   ),
-  NEXT_PUBLIC_SENTRY_DSN: getOptionalEnv('NEXT_PUBLIC_SENTRY_DSN'),
+  NEXT_PUBLIC_SENTRY_DSN: getOptionalPublicEnv(
+    process.env.NEXT_PUBLIC_SENTRY_DSN
+  ),
 
   // ------------------------------------------------------------------------------
   // API Configuration (Optional)
