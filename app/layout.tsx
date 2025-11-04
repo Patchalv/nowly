@@ -1,3 +1,4 @@
+import { env } from '@/src/config/env';
 import Providers from '@/src/presentation/providers/Providers';
 import type { Metadata } from 'next';
 import { Geist, Geist_Mono } from 'next/font/google';
@@ -23,6 +24,7 @@ export default function RootLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  console.log('NODE_ENV', env.NODE_ENV);
   return (
     <html lang="en">
       <body
