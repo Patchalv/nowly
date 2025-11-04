@@ -101,7 +101,8 @@ export const env = {
   // ------------------------------------------------------------------------------
   NODE_ENV: (process.env.NODE_ENV || 'development') as
     | 'development'
-    | 'production',
+    | 'production'
+    | 'preview',
   NEXT_PUBLIC_APP_URL: getOptionalPublicEnv(
     process.env.NEXT_PUBLIC_APP_URL,
     'http://localhost:3000'
@@ -203,6 +204,7 @@ export type Env = typeof env;
  */
 export const isDevelopment = env.NODE_ENV === 'development';
 export const isProduction = env.NODE_ENV === 'production';
+export const isPreview = env.NODE_ENV === 'preview';
 
 /**
  * Helper to check if we're on the server or client
