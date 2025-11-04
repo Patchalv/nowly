@@ -11,7 +11,6 @@ function getEnvironmentInfo() {
     environment: env.VERCEL_ENV || 'unknown',
     supabaseUrl: env.NEXT_PUBLIC_SUPABASE_URL || 'not set',
     hasAnonKey: !!env.NEXT_PUBLIC_SUPABASE_ANON_KEY,
-    nodeEnv: env.NODE_ENV || 'unknown',
   };
 }
 

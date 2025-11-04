@@ -24,10 +24,7 @@ export default function RootLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
-  console.log('hello');
-  console.log('process.env.VERCEL_ENV', process.env.VERCEL_ENV || 'none');
-  console.log('NEXT_PUBLIC_VERCEL_ENV', env.VERCEL_ENV || 'none');
-  console.log('NODE_ENV', env.NODE_ENV);
+  console.log('process.env.VERCEL_ENV', env.VERCEL_ENV);
   return (
     <html lang="en">
       <body

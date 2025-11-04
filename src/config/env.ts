@@ -99,10 +99,6 @@ export const env = {
   // ------------------------------------------------------------------------------
   // Next.js Configuration
   // ------------------------------------------------------------------------------
-  NODE_ENV: (process.env.NODE_ENV || 'development') as
-    | 'development'
-    | 'production'
-    | 'preview',
   VERCEL_ENV: process.env.NEXT_PUBLIC_VERCEL_ENV,
 
   NEXT_PUBLIC_APP_URL: getOptionalPublicEnv(

@@ -1,3 +1,4 @@
+import { isDevelopment } from '@/src/config/env';
 import { toast } from 'sonner';
 import type { AppError } from './app-errors';
 import { parseSupabaseError } from './parser';
@@ -6,7 +7,7 @@ import { parseSupabaseError } from './parser';
  * Log error to Sentry (will be implemented with Sentry setup)
  */
 function logToSentry(error: AppError) {
-  if (process.env.NODE_ENV === 'development') {
+  if (isDevelopment) {
     console.error('[Error]', error);
   }
 
