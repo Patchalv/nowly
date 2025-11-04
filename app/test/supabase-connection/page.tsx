@@ -1,5 +1,6 @@
 'use client';
 
+import { env } from '@/src/config/env';
 import { supabase } from '@/src/infrastructure/supabase';
 import { useEffect, useState } from 'react';
 
@@ -39,11 +40,9 @@ export default function TestSupabasePage() {
       {status === 'connected' && (
         <div className="text-green-600">
           <p className="font-semibold">✓ Connected to Supabase successfully!</p>
-          <p className="text-sm mt-2">
-            Environment: {process.env.NEXT_PUBLIC_APP_ENV}
-          </p>
+          <p className="text-sm mt-2">Environment: {env.VERCEL_ENV}</p>
           <p className="text-sm">
-            Supabase URL: {process.env.NEXT_PUBLIC_SUPABASE_URL}
+            Supabase URL: {env.NEXT_PUBLIC_SUPABASE_URL}
           </p>
         </div>
       )}
