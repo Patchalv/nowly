@@ -80,6 +80,7 @@ nowly/
 │   ├── infrastructure/                 # Framework & DB layer (Supabase)
 │   │   ├── supabase/                   # Supabase client & data adapters
 │   │   │   ├── client.ts
+│   │   │   ├── types.ts                # Database types (snake_case)
 │   │   │   └── taskRepository.ts
 │   │   ├── repositories/               # Repository interfaces + impls
 │   │   │   ├── ITaskRepository.ts
