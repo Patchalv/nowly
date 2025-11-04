@@ -1,12 +1,20 @@
 'use client';
 import { isDevelopment } from '@/src/config/env';
+import { logEnvironmentInfo } from '@/src/infrastructure/utils/env-check';
 import { QueryClientProvider } from '@tanstack/react-query';
 import { ReactQueryDevtools } from '@tanstack/react-query-devtools';
 import type * as React from 'react';
+import { useEffect } from 'react';
+import { Toaster } from '../components/ui/sonner';
 import { getQueryClient } from './QueryProvider';
 
 export default function Providers({ children }: { children: React.ReactNode }) {
   const queryClient = getQueryClient();
+
+  // Log environment info in development
+  useEffect(() => {
+    logEnvironmentInfo();
+  }, []);
 
   return (
     <QueryClientProvider client={queryClient}>
@@ -17,6 +25,7 @@ export default function Providers({ children }: { children: React.ReactNode }) {
           buttonPosition="bottom-right"
         />
       )}
+      <Toaster />
     </QueryClientProvider>
   );
 }

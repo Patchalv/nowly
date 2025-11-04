@@ -1,3 +1,4 @@
+import { env } from '@/src/config/env';
 import Providers from '@/src/presentation/providers/Providers';
 import type { Metadata } from 'next';
 import { Geist, Geist_Mono } from 'next/font/google';
@@ -23,6 +24,7 @@ export default function RootLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  console.log('process.env.VERCEL_ENV', env.VERCEL_ENV);
   return (
     <html lang="en">
       <body

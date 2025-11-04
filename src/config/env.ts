@@ -99,10 +99,8 @@ export const env = {
   // ------------------------------------------------------------------------------
   // Next.js Configuration
   // ------------------------------------------------------------------------------
-  NODE_ENV: (process.env.NODE_ENV || 'development') as
-    | 'development'
-    | 'production'
-    | 'test',
+  VERCEL_ENV: process.env.NEXT_PUBLIC_VERCEL_ENV,
+
   NEXT_PUBLIC_APP_URL: getOptionalPublicEnv(
     process.env.NEXT_PUBLIC_APP_URL,
     'http://localhost:3000'
@@ -202,9 +200,9 @@ export type Env = typeof env;
 /**
  * Helper to check if we're in a specific environment
  */
-export const isDevelopment = env.NODE_ENV === 'development';
-export const isProduction = env.NODE_ENV === 'production';
-export const isTest = env.NODE_ENV === 'test';
+export const isDevelopment = env.VERCEL_ENV === 'development';
+export const isProduction = env.VERCEL_ENV === 'production';
+export const isPreview = env.VERCEL_ENV === 'preview';
 
 /**
  * Helper to check if we're on the server or client
