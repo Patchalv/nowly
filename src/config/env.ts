@@ -103,10 +103,7 @@ export const env = {
     | 'development'
     | 'production'
     | 'preview',
-  VERCEL_ENV: process.env.NEXT_PUBLIC_VERCEL_ENV as
-    | 'development'
-    | 'production'
-    | 'preview',
+  VERCEL_ENV: process.env.NEXT_PUBLIC_VERCEL_ENV,
 
   NEXT_PUBLIC_APP_URL: getOptionalPublicEnv(
     process.env.NEXT_PUBLIC_APP_URL,
