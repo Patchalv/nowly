@@ -25,6 +25,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   console.log('hello');
+  console.log('VERCEL_ENV', process.env.VERCEL_ENV || 'none');
   console.log('NODE_ENV', env.NODE_ENV);
   return (
     <html lang="en">
