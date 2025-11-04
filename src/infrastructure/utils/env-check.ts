@@ -1,4 +1,4 @@
-import { env, isDevelopment } from '@/src/config/env';
+import { env, isProduction } from '@/src/config/env';
 
 /**
  * Environment Check Utility
@@ -16,7 +16,7 @@ function getEnvironmentInfo() {
 }
 
 export function logEnvironmentInfo() {
-  if (isDevelopment) {
+  if (!isProduction) {
     const info = getEnvironmentInfo();
     console.log('🌍 Environment Info:', info);
   }
