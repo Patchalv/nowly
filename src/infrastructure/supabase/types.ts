@@ -26,3 +26,32 @@ export interface Database {
     };
   };
 }
+
+/**
+ * Common types for Supabase utilities
+ */
+
+export type SupabaseResponse<T> = {
+  data: T | null;
+  error: Error | null;
+};
+
+export type SupabaseError = {
+  message: string;
+  code?: string;
+  details?: string;
+  hint?: string;
+};
+
+export type AuthUser = {
+  id: string;
+  email: string | undefined;
+  created_at: string;
+};
+
+export type QueryOptions = {
+  orderBy?: string;
+  ascending?: boolean;
+  limit?: number;
+  offset?: number;
+};
