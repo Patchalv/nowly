@@ -1,4 +1,5 @@
 import { supabase } from '@/src/infrastructure/supabase/client';
+import { handleError } from '@/src/shared/errors';
 import type { AuthUser, SupabaseResponse } from '../types';
 
 /**
@@ -25,7 +26,14 @@ export async function signUp(
       },
     });
 
-    if (error) throw error;
+    if (error) {
+      // This will parse the error, log it, and show a toast
+      const appError = handleError.toast(error);
+      return {
+        data: null,
+        error: new Error(appError.message),
+      };
+    }
 
     return {
       data: data.user
@@ -38,15 +46,16 @@ export async function signUp(
       error: null,
     };
   } catch (error) {
+    const appError = handleError.toast(error);
     return {
       data: null,
-      error: error instanceof Error ? error : new Error('Sign up failed'),
+      error: new Error(appError.message),
     };
   }
 }
 
 /**
- * Sign in with email and password
+ * Sign in with email and password (with error handling)
  */
 export async function signIn(
   email: string,
@@ -58,7 +67,14 @@ export async function signIn(
       password,
     });
 
-    if (error) throw error;
+    if (error) {
+      // This will parse the error, log it, and show a toast
+      const appError = handleError.toast(error);
+      return {
+        data: null,
+        error: new Error(appError.message),
+      };
+    }
 
     return {
       data: data.user
@@ -71,30 +87,40 @@ export async function signIn(
       error: null,
     };
   } catch (error) {
+    const appError = handleError.toast(error);
     return {
       data: null,
-      error: error instanceof Error ? error : new Error('Sign in failed'),
+      error: new Error(appError.message),
     };
   }
 }
-
 /**
  * Sign out the current user
  */
 export async function signOut(): Promise<SupabaseResponse<null>> {
+  const customMessage = 'Sign out failed';
+
   try {
     const { error } = await supabase.auth.signOut();
 
-    if (error) throw error;
+    if (error) {
+      // This will parse the error, log it, and show a toast
+      const appError = handleError.toast(error, customMessage);
+      return {
+        data: null,
+        error: new Error(appError.message),
+      };
+    }
 
     return {
       data: null,
       error: null,
     };
   } catch (error) {
+    const appError = handleError.toast(error, customMessage);
     return {
       data: null,
-      error: error instanceof Error ? error : new Error('Sign out failed'),
+      error: new Error(appError.message),
     };
   }
 }
@@ -106,7 +132,14 @@ export async function getSession(): Promise<SupabaseResponse<AuthUser>> {
   try {
     const { data, error } = await supabase.auth.getSession();
 
-    if (error) throw error;
+    if (error) {
+      // This will parse the error, log it, and show a toast
+      const appError = handleError.toast(error, 'Get session failed');
+      return {
+        data: null,
+        error: new Error(appError.message),
+      };
+    }
 
     return {
       data: data.session?.user
@@ -119,9 +152,10 @@ export async function getSession(): Promise<SupabaseResponse<AuthUser>> {
       error: null,
     };
   } catch (error) {
+    const appError = handleError.toast(error, 'Get session failed');
     return {
       data: null,
-      error: error instanceof Error ? error : new Error('Get session failed'),
+      error: new Error(appError.message),
     };
   }
 }
@@ -133,7 +167,14 @@ export async function getCurrentUser(): Promise<SupabaseResponse<AuthUser>> {
   try {
     const { data, error } = await supabase.auth.getUser();
 
-    if (error) throw error;
+    if (error) {
+      // This will parse the error, log it, and show a toast
+      const appError = handleError.toast(error);
+      return {
+        data: null,
+        error: new Error(appError.message),
+      };
+    }
 
     return {
       data: data.user
@@ -146,9 +187,10 @@ export async function getCurrentUser(): Promise<SupabaseResponse<AuthUser>> {
       error: null,
     };
   } catch (error) {
+    const appError = handleError.toast(error, 'Get user failed');
     return {
       data: null,
-      error: error instanceof Error ? error : new Error('Get user failed'),
+      error: new Error(appError.message),
     };
   }
 }
@@ -164,17 +206,24 @@ export async function resetPassword(
       redirectTo: `${window.location.origin}/reset-password/confirm`,
     });
 
-    if (error) throw error;
+    if (error) {
+      // This will parse the error, log it, and show a toast
+      const appError = handleError.toast(error);
+      return {
+        data: null,
+        error: new Error(appError.message),
+      };
+    }
 
     return {
       data: null,
       error: null,
     };
   } catch (error) {
+    const appError = handleError.toast(error, 'Password reset failed');
     return {
       data: null,
-      error:
-        error instanceof Error ? error : new Error('Password reset failed'),
+      error: new Error(appError.message),
     };
   }
 }
@@ -190,17 +239,24 @@ export async function updatePassword(
       password: newPassword,
     });
 
-    if (error) throw error;
+    if (error) {
+      // This will parse the error, log it, and show a toast
+      const appError = handleError.toast(error);
+      return {
+        data: null,
+        error: new Error(appError.message),
+      };
+    }
 
     return {
       data: null,
       error: null,
     };
   } catch (error) {
+    const appError = handleError.toast(error, 'Password update failed');
     return {
       data: null,
-      error:
-        error instanceof Error ? error : new Error('Password update failed'),
+      error: new Error(appError.message),
     };
   }
 }

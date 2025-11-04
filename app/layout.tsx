@@ -1,4 +1,3 @@
-import { Toaster } from '@/src/presentation/components/ui/sonner';
 import Providers from '@/src/presentation/providers/Providers';
 import type { Metadata } from 'next';
 import { Geist, Geist_Mono } from 'next/font/google';
@@ -29,10 +28,7 @@ export default function RootLayout({
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
-        <Providers>
-          {children}
-          <Toaster />
-        </Providers>
+        <Providers>{children}</Providers>
       </body>
     </html>
   );
