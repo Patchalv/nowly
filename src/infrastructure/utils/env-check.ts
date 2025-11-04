@@ -8,7 +8,7 @@ import { env, isProduction } from '@/src/config/env';
 
 function getEnvironmentInfo() {
   return {
-    environment: env.NODE_ENV || 'unknown',
+    environment: env.VERCEL_ENV || 'unknown',
     supabaseUrl: env.NEXT_PUBLIC_SUPABASE_URL || 'not set',
     hasAnonKey: !!env.NEXT_PUBLIC_SUPABASE_ANON_KEY,
     nodeEnv: env.NODE_ENV || 'unknown',
