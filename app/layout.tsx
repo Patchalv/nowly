@@ -24,6 +24,7 @@ export default function RootLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  console.log('hello');
   console.log('NODE_ENV', env.NODE_ENV);
   return (
     <html lang="en">
