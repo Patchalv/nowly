@@ -326,6 +326,17 @@ npm run format:check
    - Prefer Server Components over Client Components
    - Transform database types at repository boundaries
 
+## Working with Preview Branches
+
+Nowly uses Supabase database branching to provide isolated database environments for testing.
+
+### Quick Overview
+
+- **Preview branches auto-create** when you open a Pull Request
+- **Vercel preview deployments** automatically connect to preview database
+- **Test in isolation** - changes don't affect main database
+- **Auto-cleanup** - preview branches delete when PR merges
+
 ---
 
 ## 🏗️ Architecture

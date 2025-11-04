@@ -44,14 +44,14 @@ src/infrastructure/
 
 ```typescript
 // src/infrastructure/supabase/client.ts
-import { createClient } from "@supabase/supabase-js";
-import type { Database } from "./types";
+import { createClient } from '@supabase/supabase-js';
+import type { Database } from './types';
 
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!;
 const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!;
 
 if (!supabaseUrl || !supabaseAnonKey) {
-  throw new Error("Missing Supabase environment variables");
+  throw new Error('Missing Supabase environment variables');
 }
 
 // Client-side Supabase client
@@ -71,28 +71,28 @@ export function createServerClient() {
 
 ```typescript
 // ✅ Client Component
-"use client";
-import { supabase } from "@/src/infrastructure/supabase/client";
+'use client';
+import { supabase } from '@/src/infrastructure/supabase/client';
 
 export function ClientComponent() {
-  const { data } = await supabase.from("table_name").select("*");
+  const { data } = await supabase.from('table_name').select('*');
 }
 
 // ✅ Server Component
-import { createServerClient } from "@/src/infrastructure/supabase/client";
+import { createServerClient } from '@/src/infrastructure/supabase/client';
 
 export default async function ServerComponent() {
   const supabase = createServerClient();
-  const { data } = await supabase.from("table_name").select("*");
+  const { data } = await supabase.from('table_name').select('*');
 }
 
 // ✅ Server Action
-("use server");
-import { createServerClient } from "@/src/infrastructure/supabase/client";
+('use server');
+import { createServerClient } from '@/src/infrastructure/supabase/client';
 
 export async function serverAction() {
   const supabase = createServerClient();
-  const { data } = await supabase.from("table_name").select("*");
+  const { data } = await supabase.from('table_name').select('*');
 }
 ```
 
@@ -121,8 +121,8 @@ export interface Database {
     Tables: {
       table_name: {
         Row: EntityRow;
-        Insert: Omit<EntityRow, "id" | "created_at" | "updated_at">;
-        Update: Partial<Omit<EntityRow, "id" | "created_at" | "updated_at">>;
+        Insert: Omit<EntityRow, 'id' | 'created_at' | 'updated_at'>;
+        Update: Partial<Omit<EntityRow, 'id' | 'created_at' | 'updated_at'>>;
       };
     };
   };
@@ -161,11 +161,11 @@ export interface Task {
 
 ```typescript
 // src/infrastructure/repositories/IEntityRepository.ts
-import type { DomainEntity } from "@/src/domain/models/Entity";
+import type { DomainEntity } from '@/src/domain/models/Entity';
 
 export interface EntityRepository {
   create(
-    entity: Omit<DomainEntity, "id" | "createdAt" | "updatedAt">
+    entity: Omit<DomainEntity, 'id' | 'createdAt' | 'updatedAt'>
   ): Promise<DomainEntity>;
   findById(id: string): Promise<DomainEntity | null>;
   findByUserId(userId: string): Promise<DomainEntity[]>;
@@ -178,10 +178,10 @@ export interface EntityRepository {
 
 ```typescript
 // src/infrastructure/repositories/SupabaseEntityRepository.ts
-import type { SupabaseClient } from "@supabase/supabase-js";
-import type { Database, EntityRow } from "../supabase/types";
-import type { DomainEntity } from "@/src/domain/models/Entity";
-import type { EntityRepository } from "./IEntityRepository";
+import type { SupabaseClient } from '@supabase/supabase-js';
+import type { Database, EntityRow } from '../supabase/types';
+import type { DomainEntity } from '@/src/domain/models/Entity';
+import type { EntityRepository } from './IEntityRepository';
 
 export class SupabaseEntityRepository implements EntityRepository {
   constructor(private client: SupabaseClient<Database>) {}
@@ -208,31 +208,31 @@ export class SupabaseEntityRepository implements EntityRepository {
   }
 
   async create(
-    entity: Omit<DomainEntity, "id" | "createdAt" | "updatedAt">
+    entity: Omit<DomainEntity, 'id' | 'createdAt' | 'updatedAt'>
   ): Promise<DomainEntity> {
     const row = this.toDatabase(entity);
 
     const { data, error } = await this.client
-      .from("table_name")
+      .from('table_name')
       .insert(row)
       .select()
       .single();
 
     if (error) throw new Error(`Failed to create entity: ${error.message}`);
-    if (!data) throw new Error("No data returned after creation");
+    if (!data) throw new Error('No data returned after creation');
 
     return this.toDomain(data);
   }
 
   async findById(id: string): Promise<DomainEntity | null> {
     const { data, error } = await this.client
-      .from("table_name")
-      .select("*")
-      .eq("id", id)
+      .from('table_name')
+      .select('*')
+      .eq('id', id)
       .single();
 
     if (error) {
-      if (error.code === "PGRST116") return null; // Not found
+      if (error.code === 'PGRST116') return null; // Not found
       throw new Error(`Failed to find entity: ${error.message}`);
     }
 
@@ -241,10 +241,10 @@ export class SupabaseEntityRepository implements EntityRepository {
 
   async findByUserId(userId: string): Promise<DomainEntity[]> {
     const { data, error } = await this.client
-      .from("table_name")
-      .select("*")
-      .eq("user_id", userId)
-      .order("created_at", { ascending: false });
+      .from('table_name')
+      .select('*')
+      .eq('user_id', userId)
+      .order('created_at', { ascending: false });
 
     if (error) throw new Error(`Failed to find entities: ${error.message}`);
     return data ? data.map((row) => this.toDomain(row)) : [];
@@ -257,23 +257,23 @@ export class SupabaseEntityRepository implements EntityRepository {
     const row = this.toDatabase(updates);
 
     const { data, error } = await this.client
-      .from("table_name")
+      .from('table_name')
       .update(row)
-      .eq("id", id)
+      .eq('id', id)
       .select()
       .single();
 
     if (error) throw new Error(`Failed to update entity: ${error.message}`);
-    if (!data) throw new Error("No data returned after update");
+    if (!data) throw new Error('No data returned after update');
 
     return this.toDomain(data);
   }
 
   async delete(id: string): Promise<void> {
     const { error } = await this.client
-      .from("table_name")
+      .from('table_name')
       .delete()
-      .eq("id", id);
+      .eq('id', id);
 
     if (error) throw new Error(`Failed to delete entity: ${error.message}`);
   }
@@ -284,17 +284,17 @@ export class SupabaseEntityRepository implements EntityRepository {
 
 ```typescript
 // ✅ Always handle errors explicitly
-const { data, error } = await this.client.from("table").select();
+const { data, error } = await this.client.from('table').select();
 if (error) throw new Error(`Operation failed: ${error.message}`);
 
 // ✅ Check for null data after operations
-if (!data) throw new Error("No data returned");
+if (!data) throw new Error('No data returned');
 
 // ✅ Transform at boundary
 return data.map((row) => this.toDomain(row));
 
 // ✅ Handle "not found" separately
-if (error?.code === "PGRST116") return null;
+if (error?.code === 'PGRST116') return null;
 
 // ❌ Don't expose database types
 // Bad: async findById(id: string): Promise<EntityRow | null>
@@ -345,14 +345,14 @@ USING (auth.uid() = user_id);
 
 ```typescript
 // Test RLS enforcement in repository tests
-describe("SupabaseEntityRepository", () => {
-  it("should not allow users to access other users data", async () => {
-    const user1Client = createClientForUser("user-1-id");
-    const user2Client = createClientForUser("user-2-id");
+describe('SupabaseEntityRepository', () => {
+  it('should not allow users to access other users data', async () => {
+    const user1Client = createClientForUser('user-1-id');
+    const user2Client = createClientForUser('user-2-id');
 
     // User 1 creates data
     const repo1 = new SupabaseEntityRepository(user1Client);
-    const entity = await repo1.create({ userId: "user-1-id" /* ... */ });
+    const entity = await repo1.create({ userId: 'user-1-id' /* ... */ });
 
     // User 2 tries to access it
     const repo2 = new SupabaseEntityRepository(user2Client);
@@ -443,7 +443,13 @@ CREATE TRIGGER update_table_name_updated_at
     EXECUTE FUNCTION update_updated_at_column();
 ```
 
-### Migration Workflow
+## 🔄 Migration Workflow
+
+### Overview
+
+Migrations are tested on preview branches before applying to main.
+
+### Workflow
 
 1. **Create migration file** with sequential number and descriptive name
 
@@ -453,28 +459,35 @@ CREATE TRIGGER update_table_name_updated_at
 
 2. **Write SQL** following the template above
 
-3. **Apply to staging** via Supabase Dashboard SQL Editor
+3. **Open PR** to trigger preview branch creation
+   - Preview branch automatically created
+   - All existing migrations run automatically
+   - New migration NOT applied yet (test manually first)
 
-   - Copy migration SQL
-   - Paste into SQL Editor
+4. **Test migration on preview branch** via Supabase Dashboard SQL Editor
+   - Switch to preview branch
+   - Paste migration SQL
    - Run and verify success
 
-4. **Test on staging** environment
+5. **Merge PR** (migration file goes to main)
 
-   - Verify tables created
-   - Verify RLS policies work
-   - Test repository operations
-
-5. **Apply to production** (when ready) via Dashboard SQL Editor
-
+6. **Apply to main branch** via Dashboard SQL Editor
+   - Switch to main branch
    - Use same SQL
    - Verify success
 
-6. **Commit migration file** to git
-   ```bash
-   git add supabase/migrations/00X_description.sql
-   git commit -m "Add migration: description"
-   ```
+`7. **Commit migration file** to git (if not already committed)
+```bash`
+
+git add supabase/migrations/00X_description.sql
+git commit -m "feat: add migration description"
+
+`### Preview Branch Behavior
+
+- ✅ Existing migrations run automatically on preview branch creation
+- ✅ New migrations must be tested manually before merging
+- ✅ Preview branches are copies of main database
+- ✅ Changes in preview do NOT affect main
 
 ### Migration Best Practices
 
@@ -644,20 +657,20 @@ CREATE TRIGGER on_user_created
 
 ```typescript
 // ✅ Handle specific error codes
-const { data, error } = await supabase.from("table").select().single();
+const { data, error } = await supabase.from('table').select().single();
 
 if (error) {
-  if (error.code === "PGRST116") {
+  if (error.code === 'PGRST116') {
     // Not found - return null or handle gracefully
     return null;
   }
-  if (error.code === "23505") {
+  if (error.code === '23505') {
     // Unique constraint violation
-    throw new Error("Record already exists");
+    throw new Error('Record already exists');
   }
-  if (error.code === "23503") {
+  if (error.code === '23503') {
     // Foreign key constraint violation
-    throw new Error("Referenced record does not exist");
+    throw new Error('Referenced record does not exist');
   }
   // Generic error
   throw new Error(`Database error: ${error.message}`);
@@ -665,7 +678,7 @@ if (error) {
 
 // ✅ Check for null data after successful operations
 if (!data) {
-  throw new Error("No data returned from database");
+  throw new Error('No data returned from database');
 }
 ```
 
