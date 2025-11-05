@@ -101,7 +101,9 @@ export const env = {
   // ------------------------------------------------------------------------------
   VERCEL_ENV: process.env.NEXT_PUBLIC_VERCEL_ENV,
 
-  NEXT_PUBLIC_VERCEL_URL: getOptionalPublicEnv(process.env.NEXT_PUBLIC_APP_URL),
+  NEXT_PUBLIC_VERCEL_URL: getOptionalPublicEnv(
+    process.env.NEXT_PUBLIC_VERCEL_URL
+  ),
 
   NEXT_PUBLIC_APP_URL: getOptionalPublicEnv(
     process.env.NEXT_PUBLIC_APP_URL,
@@ -225,7 +227,12 @@ export function getDeploymentUrl(): string {
   // Vercel deployments - check for exposed VERCEL_URL
   const vercelUrl = env.NEXT_PUBLIC_VERCEL_URL;
 
-  if (vercelUrl && !vercelUrl.startsWith('http')) {
+  if (vercelUrl) {
+    // If URL already has protocol, return as-is
+    if (vercelUrl.startsWith('http')) {
+      return vercelUrl;
+    }
+    // Otherwise add https://
     return `https://${vercelUrl}`;
   }
 
