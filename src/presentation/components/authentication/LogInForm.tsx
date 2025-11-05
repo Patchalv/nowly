@@ -19,8 +19,11 @@ import {
   FieldLabel,
 } from '../ui/field';
 import { Input } from '../ui/input';
+import { loginAction } from '@/app/actions/loginAction';
+import { useTransition } from 'react';
 
 export function LogInForm() {
+  const [isPending, startTransition] = useTransition();
   const form = useForm<LoginFormData>({
     resolver: zodResolver(loginSchema),
     defaultValues: {
@@ -29,13 +32,34 @@ export function LogInForm() {
     },
   });
 
-  const onSubmit = (data: LoginFormData) => {
-    toast.success('Login successful', {
-      description: (
-        <pre className="bg-code mt-2 w-[320px] overflow-x-auto rounded-md p-4">
-          <code>{JSON.stringify(data, null, 2)}</code>
-        </pre>
-      ),
+  const onSubmit = async (data: LoginFormData) => {
+    startTransition(async () => {
+      // Convert form data to FormData for server action
+      const formData = new FormData();
+      formData.append('email', data.email);
+      formData.append('password', data.password);
+
+      // Call server action
+      const result = await loginAction(formData);
+
+      // Handle errors (success case redirects automatically)
+      if (!result.success) {
+        toast.error('Login failed', {
+          description: result.error,
+        });
+
+        // Set field-specific errors if provided
+        if (result.fieldErrors) {
+          Object.entries(result.fieldErrors).forEach(([field, errors]) => {
+            if (errors && errors.length > 0) {
+              form.setError(field as keyof LoginFormData, {
+                type: 'manual',
+                message: errors[0],
+              });
+            }
+          });
+        }
+      }
     });
   };
 
@@ -115,8 +139,8 @@ export function LogInForm() {
       </CardContent>
       <CardFooter className="flex-col gap-2">
         <Field>
-          <Button type="submit" form="login-form">
-            Login
+          <Button type="submit" form="login-form" disabled={isPending}>
+            {isPending ? 'Logging in...' : 'Login'}
           </Button>
           <FieldDescription className="text-center">
             Don&apos;t have an account?{' '}
