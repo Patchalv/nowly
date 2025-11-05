@@ -1,5 +1,6 @@
 'use client';
 
+import { loginAction } from '@/app/actions/loginAction';
 import { ROUTES } from '@/src/config/constants';
 import {
   LoginFormData,
@@ -7,6 +8,7 @@ import {
 } from '@/src/domain/validation/auth.schema';
 import { zodResolver } from '@hookform/resolvers/zod';
 import Link from 'next/link';
+import { useTransition } from 'react';
 import { Controller, useForm } from 'react-hook-form';
 import { toast } from 'sonner';
 import { Button } from '../ui/button';
@@ -19,8 +21,6 @@ import {
   FieldLabel,
 } from '../ui/field';
 import { Input } from '../ui/input';
-import { loginAction } from '@/app/actions/loginAction';
-import { useTransition } from 'react';
 
 export function LogInForm() {
   const [isPending, startTransition] = useTransition();
@@ -149,6 +149,11 @@ export function LogInForm() {
             </Link>
           </FieldDescription>
         </Field>
+        <FieldDescription className="text-right">
+          <Link href={ROUTES.RESET_PASSWORD} className="text-primary text-sm">
+            Forgot password?
+          </Link>
+        </FieldDescription>
       </CardFooter>
     </Card>
   );
