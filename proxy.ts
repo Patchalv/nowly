@@ -61,8 +61,14 @@ export async function proxy(request: NextRequest) {
   // Helper: check if pathname matches a public route
   const isPublicRoute = (pathname: string): boolean => {
     return PUBLIC_ROUTES.some((route) => {
-      // Exact match or starts with route + slash
-      return pathname === route || pathname.startsWith(`${route}/`);
+      // Exact match
+      if (pathname === route) return true;
+
+      // For non-root routes, check if pathname starts with route + slash
+      // Skip startsWith check for "/" to avoid matching all paths
+      if (route !== '/' && pathname.startsWith(`${route}/`)) return true;
+
+      return false;
     });
   };
 
