@@ -185,6 +185,15 @@ export const ROUTES = {
 } as const;
 
 // ------------------------------------------------------------------------------
+// Public Routes (for authentication proxy)
+// ------------------------------------------------------------------------------
+export const PUBLIC_ROUTES = [
+  ROUTES.HOME, // '/'
+  ROUTES.LOGIN, // '/login'
+  ROUTES.SIGNUP, // '/signup'
+] as const;
+
+// ------------------------------------------------------------------------------
 // Local Storage Keys
 // ------------------------------------------------------------------------------
 export const STORAGE_KEYS = {

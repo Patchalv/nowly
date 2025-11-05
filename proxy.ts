@@ -1,3 +1,4 @@
+import { PUBLIC_ROUTES, ROUTES } from '@/src/config/constants';
 import { env } from '@/src/config/env';
 import { createServerClient } from '@supabase/ssr';
 import { NextResponse, type NextRequest } from 'next/server';
@@ -53,7 +54,52 @@ export async function proxy(request: NextRequest) {
   );
 
   // Refresh session if expired - this is critical for maintaining auth state
-  await supabase.auth.getUser();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+
+  // Helper: check if pathname matches a public route
+  const isPublicRoute = (pathname: string): boolean => {
+    return PUBLIC_ROUTES.some((route) => {
+      // Exact match
+      if (pathname === route) return true;
+
+      // For non-root routes, check if pathname starts with route + slash
+      // Skip startsWith check for "/" to avoid matching all paths
+      if (route !== '/' && pathname.startsWith(`${route}/`)) return true;
+
+      return false;
+    });
+  };
+
+  // Get current pathname
+  const { pathname } = request.nextUrl;
+
+  // Handle root path redirect
+  if (pathname === ROUTES.HOME) {
+    if (user) {
+      // Authenticated: redirect to daily view
+      return NextResponse.redirect(new URL(ROUTES.DAILY, request.url));
+    } else {
+      // Unauthenticated: redirect to login
+      return NextResponse.redirect(new URL(ROUTES.LOGIN, request.url));
+    }
+  }
+
+  // Check if route is public
+  const isPublic = isPublicRoute(pathname);
+
+  // Protect all non-public routes (secure by default)
+  if (!isPublic && !user) {
+    // Not authenticated, redirect to login
+    return NextResponse.redirect(new URL(ROUTES.LOGIN, request.url));
+  }
+
+  // If already on auth page and authenticated, redirect to daily
+  const isAuthPage = pathname === ROUTES.LOGIN || pathname === ROUTES.SIGNUP;
+  if (isAuthPage && user) {
+    return NextResponse.redirect(new URL(ROUTES.DAILY, request.url));
+  }
 
   return response;
 }

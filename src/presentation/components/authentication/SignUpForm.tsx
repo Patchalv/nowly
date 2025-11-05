@@ -13,13 +13,7 @@ import { useState } from 'react';
 import { Controller, useForm } from 'react-hook-form';
 import { toast } from 'sonner';
 import { Button } from '../ui/button';
-import {
-  Card,
-  CardContent,
-  CardFooter,
-  CardHeader,
-  CardTitle,
-} from '../ui/card';
+import { Card, CardContent, CardFooter } from '../ui/card';
 import {
   Field,
   FieldDescription,
@@ -72,10 +66,6 @@ export function SignUpForm() {
 
   return (
     <Card className="w-full max-w-sm">
-      <CardHeader>
-        <CardTitle className="text-center">SIGNUP</CardTitle>
-      </CardHeader>
-
       <CardContent>
         {/* <FieldGroup>
           <Field>
@@ -108,7 +98,7 @@ export function SignUpForm() {
               control={form.control}
               name="firstName"
               render={({ field, fieldState }) => (
-                <Field data-invalid={fieldState.invalid}>
+                <Field data-invalid={fieldState.invalid} className="gap-2">
                   <FieldLabel htmlFor={field.name}>First Name</FieldLabel>
                   <Input
                     id={field.name}
@@ -124,7 +114,7 @@ export function SignUpForm() {
               control={form.control}
               name="lastName"
               render={({ field, fieldState }) => (
-                <Field data-invalid={fieldState.invalid}>
+                <Field data-invalid={fieldState.invalid} className="gap-2">
                   <FieldLabel htmlFor={field.name}>Last Name</FieldLabel>
                   <Input
                     id={field.name}
@@ -140,7 +130,7 @@ export function SignUpForm() {
               control={form.control}
               name="email"
               render={({ field, fieldState }) => (
-                <Field data-invalid={fieldState.invalid}>
+                <Field data-invalid={fieldState.invalid} className="gap-2">
                   <FieldLabel htmlFor={field.name}>Email</FieldLabel>
                   <Input
                     id={field.name}
@@ -161,7 +151,7 @@ export function SignUpForm() {
               control={form.control}
               name="password"
               render={({ field, fieldState }) => (
-                <Field data-invalid={fieldState.invalid}>
+                <Field data-invalid={fieldState.invalid} className="gap-2">
                   <FieldLabel htmlFor={field.name}>Password</FieldLabel>
                   <Input
                     id={field.name}
@@ -182,7 +172,7 @@ export function SignUpForm() {
               control={form.control}
               name="confirmPassword"
               render={({ field, fieldState }) => (
-                <Field data-invalid={fieldState.invalid}>
+                <Field data-invalid={fieldState.invalid} className="gap-2">
                   <FieldLabel htmlFor={field.name}>Confirm Password</FieldLabel>
                   <Input
                     id={field.name}
