@@ -101,6 +101,8 @@ export const env = {
   // ------------------------------------------------------------------------------
   VERCEL_ENV: process.env.NEXT_PUBLIC_VERCEL_ENV,
 
+  NEXT_PUBLIC_VERCEL_URL: getOptionalPublicEnv(process.env.NEXT_PUBLIC_APP_URL),
+
   NEXT_PUBLIC_APP_URL: getOptionalPublicEnv(
     process.env.NEXT_PUBLIC_APP_URL,
     'http://localhost:3000'
@@ -221,9 +223,9 @@ export function getDeploymentUrl(): string {
   }
 
   // Vercel deployments - check for exposed VERCEL_URL
-  const vercelUrl = process.env.NEXT_PUBLIC_VERCEL_URL;
+  const vercelUrl = env.NEXT_PUBLIC_VERCEL_URL;
 
-  if (vercelUrl) {
+  if (vercelUrl && !vercelUrl.startsWith('http')) {
     return `https://${vercelUrl}`;
   }
 
