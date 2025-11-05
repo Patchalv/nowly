@@ -12,7 +12,7 @@ import { NextResponse, type NextRequest } from 'next/server';
  *
  * @see https://supabase.com/docs/guides/auth/server-side/nextjs
  */
-export async function middleware(request: NextRequest) {
+export async function proxy(request: NextRequest) {
   let response = NextResponse.next({
     request: {
       headers: request.headers,
