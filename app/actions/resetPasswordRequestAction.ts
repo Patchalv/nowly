@@ -44,10 +44,11 @@ export async function resetPasswordRequestAction(
     const supabase = await createClient();
 
     // Attempt to send password reset email
+    // Redirect goes through /auth/confirm handler to exchange token server-side
     const { error } = await supabase.auth.resetPasswordForEmail(
       result.data.email,
       {
-        redirectTo: `${getDeploymentUrl()}/reset-password/confirm`,
+        redirectTo: `${getDeploymentUrl()}/auth/confirm?next=/reset-password/confirm`,
       }
     );
 
