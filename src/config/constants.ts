@@ -168,6 +168,8 @@ export const ROUTES = {
   HOME: '/',
   LOGIN: '/login',
   SIGNUP: '/signup',
+  RESET_PASSWORD: '/reset-password',
+  RESET_PASSWORD_CONFIRM: '/reset-password/confirm',
 
   // Protected routes
   DAILY: '/daily',
@@ -191,6 +193,8 @@ export const PUBLIC_ROUTES = [
   ROUTES.HOME, // '/'
   ROUTES.LOGIN, // '/login'
   ROUTES.SIGNUP, // '/signup'
+  ROUTES.RESET_PASSWORD, // '/reset-password'
+  ROUTES.RESET_PASSWORD_CONFIRM, // '/reset-password/confirm'
 ] as const;
 
 // ------------------------------------------------------------------------------
