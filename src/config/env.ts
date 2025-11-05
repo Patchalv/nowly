@@ -101,6 +101,10 @@ export const env = {
   // ------------------------------------------------------------------------------
   VERCEL_ENV: process.env.NEXT_PUBLIC_VERCEL_ENV,
 
+  NEXT_PUBLIC_VERCEL_URL: getOptionalPublicEnv(
+    process.env.NEXT_PUBLIC_VERCEL_URL
+  ),
+
   NEXT_PUBLIC_APP_URL: getOptionalPublicEnv(
     process.env.NEXT_PUBLIC_APP_URL,
     'http://localhost:3000'
@@ -209,3 +213,29 @@ export const isPreview = env.VERCEL_ENV === 'preview';
  */
 export const isServer = typeof window === 'undefined';
 export const isClient = typeof window !== 'undefined';
+
+/**
+ * Gets the current deployment URL dynamically
+ * Works for local dev, preview deployments, and production
+ */
+export function getDeploymentUrl(): string {
+  // Local development
+  if (typeof window === 'undefined' && !process.env.VERCEL) {
+    return env.NEXT_PUBLIC_APP_URL;
+  }
+
+  // Vercel deployments - check for exposed VERCEL_URL
+  const vercelUrl = env.NEXT_PUBLIC_VERCEL_URL;
+
+  if (vercelUrl) {
+    // If URL already has protocol, return as-is
+    if (vercelUrl.startsWith('http')) {
+      return vercelUrl;
+    }
+    // Otherwise add https://
+    return `https://${vercelUrl}`;
+  }
+
+  // Fallback to configured app URL
+  return env.NEXT_PUBLIC_APP_URL;
+}
