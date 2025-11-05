@@ -1,4 +1,5 @@
 import { env } from '@/src/config/env';
+import { PUBLIC_ROUTES } from '@/src/config/constants';
 import { createServerClient } from '@supabase/ssr';
 import { NextResponse, type NextRequest } from 'next/server';
 
@@ -57,23 +58,41 @@ export async function proxy(request: NextRequest) {
     data: { user },
   } = await supabase.auth.getUser();
 
-  // Define route types based on Next.js route groups
-  const isProtectedRoute =
-    request.nextUrl.pathname.startsWith('/daily') ||
-    request.nextUrl.pathname.startsWith('/(protected)');
-  const isAuthRoute = ['/login', '/signup'].includes(request.nextUrl.pathname);
+  // Helper: check if pathname matches a public route
+  const isPublicRoute = (pathname: string): boolean => {
+    return PUBLIC_ROUTES.some((route) => {
+      // Exact match or starts with route + slash
+      return pathname === route || pathname.startsWith(`${route}/`);
+    });
+  };
 
-  // Redirect logic for authentication
-  if (isProtectedRoute && !user) {
-    // Not authenticated, redirect to login
-    const redirectUrl = new URL('/login', request.url);
-    return NextResponse.redirect(redirectUrl);
+  // Get current pathname
+  const { pathname } = request.nextUrl;
+
+  // Handle root path redirect
+  if (pathname === '/') {
+    if (user) {
+      // Authenticated: redirect to daily view
+      return NextResponse.redirect(new URL('/daily', request.url));
+    } else {
+      // Unauthenticated: redirect to login
+      return NextResponse.redirect(new URL('/login', request.url));
+    }
   }
 
-  if (isAuthRoute && user) {
-    // Already authenticated, redirect to daily view
-    const redirectUrl = new URL('/daily', request.url);
-    return NextResponse.redirect(redirectUrl);
+  // Check if route is public
+  const isPublic = isPublicRoute(pathname);
+
+  // Protect all non-public routes (secure by default)
+  if (!isPublic && !user) {
+    // Not authenticated, redirect to login
+    return NextResponse.redirect(new URL('/login', request.url));
+  }
+
+  // If already on auth page and authenticated, redirect to daily
+  const isAuthPage = ['/login', '/signup'].includes(pathname);
+  if (isAuthPage && user) {
+    return NextResponse.redirect(new URL('/daily', request.url));
   }
 
   return response;
