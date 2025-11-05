@@ -53,7 +53,28 @@ export async function proxy(request: NextRequest) {
   );
 
   // Refresh session if expired - this is critical for maintaining auth state
-  await supabase.auth.getUser();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+
+  // Define route types based on Next.js route groups
+  const isProtectedRoute =
+    request.nextUrl.pathname.startsWith('/daily') ||
+    request.nextUrl.pathname.startsWith('/(protected)');
+  const isAuthRoute = ['/login', '/signup'].includes(request.nextUrl.pathname);
+
+  // Redirect logic for authentication
+  if (isProtectedRoute && !user) {
+    // Not authenticated, redirect to login
+    const redirectUrl = new URL('/login', request.url);
+    return NextResponse.redirect(redirectUrl);
+  }
+
+  if (isAuthRoute && user) {
+    // Already authenticated, redirect to daily view
+    const redirectUrl = new URL('/daily', request.url);
+    return NextResponse.redirect(redirectUrl);
+  }
 
   return response;
 }
