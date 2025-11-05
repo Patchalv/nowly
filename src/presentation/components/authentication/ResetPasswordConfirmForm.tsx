@@ -2,6 +2,7 @@
 
 import { resetPasswordConfirmAction } from '@/app/actions/resetPasswordConfirmAction';
 import { ROUTES } from '@/src/config/constants';
+import { isProduction } from '@/src/config/env';
 import {
   ResetPasswordConfirmFormData,
   resetPasswordConfirmSchema,
@@ -48,7 +49,9 @@ export function ResetPasswordConfirmForm() {
           const { error: exchangeError } =
             await supabase.auth.exchangeCodeForSession(code);
           if (exchangeError) {
-            console.error('Token exchange error:', exchangeError);
+            if (!isProduction) {
+              console.error('Token exchange error:', exchangeError);
+            }
             setHasValidToken(false);
             setIsValidating(false);
             return;
