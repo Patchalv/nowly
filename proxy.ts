@@ -1,4 +1,4 @@
-import { PUBLIC_ROUTES } from '@/src/config/constants';
+import { PUBLIC_ROUTES, ROUTES } from '@/src/config/constants';
 import { env } from '@/src/config/env';
 import { createServerClient } from '@supabase/ssr';
 import { NextResponse, type NextRequest } from 'next/server';
@@ -70,13 +70,13 @@ export async function proxy(request: NextRequest) {
   const { pathname } = request.nextUrl;
 
   // Handle root path redirect
-  if (pathname === '/') {
+  if (pathname === ROUTES.HOME) {
     if (user) {
       // Authenticated: redirect to daily view
-      return NextResponse.redirect(new URL('/daily', request.url));
+      return NextResponse.redirect(new URL(ROUTES.DAILY, request.url));
     } else {
       // Unauthenticated: redirect to login
-      return NextResponse.redirect(new URL('/login', request.url));
+      return NextResponse.redirect(new URL(ROUTES.LOGIN, request.url));
     }
   }
 
@@ -86,13 +86,13 @@ export async function proxy(request: NextRequest) {
   // Protect all non-public routes (secure by default)
   if (!isPublic && !user) {
     // Not authenticated, redirect to login
-    return NextResponse.redirect(new URL('/login', request.url));
+    return NextResponse.redirect(new URL(ROUTES.LOGIN, request.url));
   }
 
   // If already on auth page and authenticated, redirect to daily
-  const isAuthPage = ['/login', '/signup'].includes(pathname);
+  const isAuthPage = pathname === ROUTES.LOGIN || pathname === ROUTES.SIGNUP;
   if (isAuthPage && user) {
-    return NextResponse.redirect(new URL('/daily', request.url));
+    return NextResponse.redirect(new URL(ROUTES.DAILY, request.url));
   }
 
   return response;
