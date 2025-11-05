@@ -19,7 +19,7 @@ export function AuthFormContainer({ form }: AuthFormContainerProps) {
       >
         <div className="relative h-64 w-64">
           <Image
-            src="/images/owl-flat.png"
+            src="/images/logo/nowly-icon-bg.png"
             alt="Nowly Owl"
             fill
             className="object-contain"

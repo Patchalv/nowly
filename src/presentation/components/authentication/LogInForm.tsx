@@ -6,17 +6,12 @@ import {
   loginSchema,
 } from '@/src/domain/validation/auth.schema';
 import { zodResolver } from '@hookform/resolvers/zod';
+import Image from 'next/image';
 import Link from 'next/link';
 import { Controller, useForm } from 'react-hook-form';
 import { toast } from 'sonner';
 import { Button } from '../ui/button';
-import {
-  Card,
-  CardContent,
-  CardFooter,
-  CardHeader,
-  CardTitle,
-} from '../ui/card';
+import { Card, CardContent, CardFooter, CardHeader } from '../ui/card';
 import {
   Field,
   FieldDescription,
@@ -48,7 +43,15 @@ export function LogInForm() {
   return (
     <Card className="w-full max-w-sm">
       <CardHeader>
-        <CardTitle className="text-center">LOGIN</CardTitle>
+        <div className="relative h-12">
+          <Image
+            src="/images/logo/nowly-text-grey.png"
+            alt="Nowly Text"
+            fill
+            className="object-contain"
+            priority
+          />
+        </div>
       </CardHeader>
 
       <CardContent>
