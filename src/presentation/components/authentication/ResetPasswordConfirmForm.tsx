@@ -9,6 +9,7 @@ import {
 import { supabase } from '@/src/infrastructure/supabase/client';
 import { zodResolver } from '@hookform/resolvers/zod';
 import Link from 'next/link';
+import { useSearchParams } from 'next/navigation';
 import { useEffect, useState, useTransition } from 'react';
 import { Controller, useForm } from 'react-hook-form';
 import { toast } from 'sonner';
@@ -27,6 +28,8 @@ export function ResetPasswordConfirmForm() {
   const [isPending, startTransition] = useTransition();
   const [isValidating, setIsValidating] = useState(true);
   const [hasValidToken, setHasValidToken] = useState(false);
+  const searchParams = useSearchParams();
+  const code = searchParams.get('code');
 
   const form = useForm<ResetPasswordConfirmFormData>({
     resolver: zodResolver(resetPasswordConfirmSchema),
@@ -36,10 +39,23 @@ export function ResetPasswordConfirmForm() {
     },
   });
 
-  // Check for valid reset token on mount
+  // Exchange recovery code and validate session
   useEffect(() => {
     const validateToken = async () => {
       try {
+        // Exchange the code from URL for a session (PKCE flow)
+        if (code) {
+          const { error: exchangeError } =
+            await supabase.auth.exchangeCodeForSession(code);
+          if (exchangeError) {
+            console.error('Token exchange error:', exchangeError);
+            setHasValidToken(false);
+            setIsValidating(false);
+            return;
+          }
+        }
+
+        // Check if we have a valid session after exchange
         const { data } = await supabase.auth.getSession();
         setHasValidToken(!!data.session);
       } catch (error) {
@@ -51,7 +67,7 @@ export function ResetPasswordConfirmForm() {
     };
 
     validateToken();
-  }, []);
+  }, [code]);
 
   const onSubmit = async (data: ResetPasswordConfirmFormData) => {
     startTransition(async () => {
