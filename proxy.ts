@@ -1,5 +1,5 @@
-import { env } from '@/src/config/env';
 import { PUBLIC_ROUTES } from '@/src/config/constants';
+import { env } from '@/src/config/env';
 import { createServerClient } from '@supabase/ssr';
 import { NextResponse, type NextRequest } from 'next/server';
 

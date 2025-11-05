@@ -1,6 +1,7 @@
+import { ROUTES } from '@/src/config/constants';
 import { createClient } from '@/src/infrastructure/supabase/server';
 import { redirect } from 'next/navigation';
-import type { SupabaseResponse, AuthUser } from '../types';
+import type { AuthUser, SupabaseResponse } from '../types';
 
 /**
  * Server-side session utilities
@@ -84,7 +85,7 @@ export async function requireAuth(): Promise<AuthUser> {
   const { data: user, error } = await getServerUser();
 
   if (!user || error) {
-    redirect('/login');
+    redirect(ROUTES.LOGIN);
   }
 
   return user;
@@ -105,7 +106,7 @@ export async function requireGuest(): Promise<void> {
   const { data: user } = await getServerUser();
 
   if (user) {
-    redirect('/daily');
+    redirect(ROUTES.DAILY);
   }
 }
 
