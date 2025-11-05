@@ -1,5 +1,6 @@
 'use server';
 
+import { getDeploymentUrl } from '@/src/config/env';
 import { resetPasswordRequestSchema } from '@/src/domain/validation/auth.schema';
 import { createClient } from '@/src/infrastructure/supabase/server';
 
@@ -46,7 +47,7 @@ export async function resetPasswordRequestAction(
     const { error } = await supabase.auth.resetPasswordForEmail(
       result.data.email,
       {
-        redirectTo: `${process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000'}/reset-password/confirm`,
+        redirectTo: `${getDeploymentUrl()}/reset-password/confirm`,
       }
     );
 

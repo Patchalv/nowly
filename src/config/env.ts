@@ -209,3 +209,24 @@ export const isPreview = env.VERCEL_ENV === 'preview';
  */
 export const isServer = typeof window === 'undefined';
 export const isClient = typeof window !== 'undefined';
+
+/**
+ * Gets the current deployment URL dynamically
+ * Works for local dev, preview deployments, and production
+ */
+export function getDeploymentUrl(): string {
+  // Local development
+  if (typeof window === 'undefined' && !process.env.VERCEL) {
+    return env.NEXT_PUBLIC_APP_URL;
+  }
+
+  // Vercel deployments - check for exposed VERCEL_URL
+  const vercelUrl = process.env.NEXT_PUBLIC_VERCEL_URL;
+
+  if (vercelUrl) {
+    return `https://${vercelUrl}`;
+  }
+
+  // Fallback to configured app URL
+  return env.NEXT_PUBLIC_APP_URL;
+}
