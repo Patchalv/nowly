@@ -6,12 +6,11 @@ import {
   loginSchema,
 } from '@/src/domain/validation/auth.schema';
 import { zodResolver } from '@hookform/resolvers/zod';
-import Image from 'next/image';
 import Link from 'next/link';
 import { Controller, useForm } from 'react-hook-form';
 import { toast } from 'sonner';
 import { Button } from '../ui/button';
-import { Card, CardContent, CardFooter, CardHeader } from '../ui/card';
+import { Card, CardContent, CardFooter } from '../ui/card';
 import {
   Field,
   FieldDescription,
@@ -42,18 +41,6 @@ export function LogInForm() {
 
   return (
     <Card className="w-full max-w-sm">
-      <CardHeader>
-        <div className="relative h-12">
-          <Image
-            src="/images/logo/nowly-text-grey.png"
-            alt="Nowly Text"
-            fill
-            className="object-contain"
-            priority
-          />
-        </div>
-      </CardHeader>
-
       <CardContent>
         {/* <FieldGroup>
           <Field>
@@ -86,7 +73,7 @@ export function LogInForm() {
               control={form.control}
               name="email"
               render={({ field, fieldState }) => (
-                <Field data-invalid={fieldState.invalid}>
+                <Field data-invalid={fieldState.invalid} className="gap-2">
                   <FieldLabel htmlFor={field.name}>Email</FieldLabel>
                   <Input
                     id={field.name}
@@ -107,7 +94,7 @@ export function LogInForm() {
               control={form.control}
               name="password"
               render={({ field, fieldState }) => (
-                <Field data-invalid={fieldState.invalid}>
+                <Field data-invalid={fieldState.invalid} className="gap-2">
                   <FieldLabel htmlFor={field.name}>Password</FieldLabel>
                   <Input
                     id={field.name}

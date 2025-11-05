@@ -9,7 +9,18 @@ export function AuthFormContainer({ form }: AuthFormContainerProps) {
     <div className="grid min-h-screen grid-cols-1 md:grid-cols-2">
       {/* Left Column - Form */}
       <div className="flex items-center justify-center bg-white px-4 py-12 sm:px-6 lg:px-8">
-        <div className="w-full max-w-md">{form}</div>
+        <div className="flex flex-col items-center w-full max-w-md gap-4">
+          <div className="relative h-16 w-full">
+            <Image
+              src="/images/logo/nowly-text-grey.png"
+              alt="Nowly Text"
+              fill
+              className="object-contain"
+              priority
+            />
+          </div>
+          {form}
+        </div>
       </div>
 
       {/* Right Column - Owl Image (hidden on tablet and below) */}
