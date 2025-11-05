@@ -85,6 +85,9 @@ export async function requireAuth(): Promise<AuthUser> {
   const { data: user, error } = await getServerUser();
 
   if (!user || error) {
+    if (error) {
+      console.error('Auth check failed:', error);
+    }
     redirect(ROUTES.LOGIN);
   }
 

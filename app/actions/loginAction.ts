@@ -1,9 +1,9 @@
 'use server';
 
-import { createClient } from '@/src/infrastructure/supabase/server';
-import { loginSchema } from '@/src/domain/validation/auth.schema';
-import { redirect } from 'next/navigation';
 import { ROUTES } from '@/src/config/constants';
+import { loginSchema } from '@/src/domain/validation/auth.schema';
+import { createClient } from '@/src/infrastructure/supabase/server';
+import { redirect } from 'next/navigation';
 
 /**
  * Server action result type for login
@@ -54,7 +54,11 @@ export async function loginAction(
       console.error('Login error:', error);
 
       // Handle specific authentication errors
-      if (error.message.includes('Invalid login credentials')) {
+      if (
+        error.status === 400 ||
+        error.name === 'AuthApiError' ||
+        error.message.includes('Invalid login credentials')
+      ) {
         return {
           success: false,
           error: 'Invalid email or password. Please try again.',

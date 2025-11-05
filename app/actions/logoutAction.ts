@@ -1,5 +1,6 @@
 'use server';
 
+import { ROUTES } from '@/src/config/constants';
 import { createClient } from '@/src/infrastructure/supabase/server';
 import { redirect } from 'next/navigation';
 
@@ -21,5 +22,5 @@ export async function logoutAction() {
     throw error;
   }
 
-  redirect('/login');
+  redirect(ROUTES.LOGIN);
 }
