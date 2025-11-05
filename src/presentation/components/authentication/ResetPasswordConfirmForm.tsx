@@ -6,9 +6,10 @@ import {
   ResetPasswordConfirmFormData,
   resetPasswordConfirmSchema,
 } from '@/src/domain/validation/auth.schema';
+import { supabase } from '@/src/infrastructure/supabase/client';
 import { zodResolver } from '@hookform/resolvers/zod';
 import Link from 'next/link';
-import { useTransition } from 'react';
+import { useEffect, useState, useTransition } from 'react';
 import { Controller, useForm } from 'react-hook-form';
 import { toast } from 'sonner';
 import { Button } from '../ui/button';
@@ -24,6 +25,9 @@ import { Input } from '../ui/input';
 
 export function ResetPasswordConfirmForm() {
   const [isPending, startTransition] = useTransition();
+  const [isValidating, setIsValidating] = useState(true);
+  const [hasValidToken, setHasValidToken] = useState(false);
+
   const form = useForm<ResetPasswordConfirmFormData>({
     resolver: zodResolver(resetPasswordConfirmSchema),
     defaultValues: {
@@ -31,6 +35,23 @@ export function ResetPasswordConfirmForm() {
       confirmPassword: '',
     },
   });
+
+  // Check for valid reset token on mount
+  useEffect(() => {
+    const validateToken = async () => {
+      try {
+        const { data } = await supabase.auth.getSession();
+        setHasValidToken(!!data.session);
+      } catch (error) {
+        console.error('Token validation error:', error);
+        setHasValidToken(false);
+      } finally {
+        setIsValidating(false);
+      }
+    };
+
+    validateToken();
+  }, []);
 
   const onSubmit = async (data: ResetPasswordConfirmFormData) => {
     startTransition(async () => {
@@ -63,6 +84,52 @@ export function ResetPasswordConfirmForm() {
     });
   };
 
+  // Show loading state while validating token
+  if (isValidating) {
+    return (
+      <Card className="w-full max-w-sm">
+        <CardContent className="py-8">
+          <div className="text-center">
+            <p className="text-muted-foreground">Validating reset link...</p>
+          </div>
+        </CardContent>
+      </Card>
+    );
+  }
+
+  // Show error state if no valid token
+  if (!hasValidToken) {
+    return (
+      <Card className="w-full max-w-sm">
+        <CardContent className="py-8">
+          <div className="text-center space-y-4">
+            <div className="space-y-2">
+              <h2 className="text-xl font-semibold">Invalid or Expired Link</h2>
+              <p className="text-sm text-muted-foreground">
+                This password reset link is invalid or has expired. Please
+                request a new one.
+              </p>
+            </div>
+          </div>
+        </CardContent>
+        <CardFooter className="flex-col gap-2">
+          <Field>
+            <Button asChild className="w-full">
+              <Link href={ROUTES.RESET_PASSWORD}>Request new reset link</Link>
+            </Button>
+            <FieldDescription className="text-center">
+              Remember your password?{' '}
+              <Link href={ROUTES.LOGIN} className="text-primary">
+                Back to login
+              </Link>
+            </FieldDescription>
+          </Field>
+        </CardFooter>
+      </Card>
+    );
+  }
+
+  // Show password reset form if valid token
   return (
     <Card className="w-full max-w-sm">
       <CardContent>
