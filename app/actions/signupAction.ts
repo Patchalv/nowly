@@ -1,7 +1,7 @@
 'use server';
 
 import { ROUTES } from '@/src/config/constants';
-import { getDeploymentUrl } from '@/src/config/env';
+import { getDeploymentUrl, isProduction } from '@/src/config/env';
 import {
   signupSchema,
   type SignupFormData,
@@ -42,6 +42,26 @@ export async function signupAction(
 
     // Create Supabase server client
     const supabase = await createClient();
+
+    // Check if email already exists
+    const { data: existingUsers, error: queryError } = await supabase
+      .from('user_profiles')
+      .select('user_id')
+      .eq('email', result.data.email)
+      .maybeSingle();
+
+    if (!isProduction && queryError) {
+      console.error('Error checking existing email:', queryError);
+      // Continue with signup attempt - don't block on query errors
+    }
+
+    if (existingUsers) {
+      return {
+        success: false,
+        error:
+          'An account with this email already exists. Please log in instead.',
+      };
+    }
 
     // Attempt to sign up
     const { data: authData, error } = await supabase.auth.signUp({
