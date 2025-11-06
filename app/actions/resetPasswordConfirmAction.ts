@@ -1,7 +1,10 @@
 'use server';
 
 import { ROUTES } from '@/src/config/constants';
-import { resetPasswordConfirmSchema } from '@/src/domain/validation/auth.schema';
+import {
+  resetPasswordConfirmSchema,
+  type ResetPasswordConfirmFormData,
+} from '@/src/domain/validation/auth.schema';
 import { createClient } from '@/src/infrastructure/supabase/server';
 import { redirect } from 'next/navigation';
 
@@ -16,21 +19,15 @@ type ResetPasswordConfirmActionResult =
  * Server action to confirm password reset with new password
  * Validates new password and updates via Supabase Auth
  *
- * @param formData - FormData containing password and confirmPassword
+ * @param data - ResetPasswordConfirmFormData containing password and confirmPassword
  * @returns ResetPasswordConfirmActionResult with success status or error details
  */
 export async function resetPasswordConfirmAction(
-  formData: FormData
+  data: ResetPasswordConfirmFormData
 ): Promise<ResetPasswordConfirmActionResult> {
   try {
-    // Extract and validate form data
-    const password = formData.get('password');
-    const confirmPassword = formData.get('confirmPassword');
-
-    const result = resetPasswordConfirmSchema.safeParse({
-      password,
-      confirmPassword,
-    });
+    // Validate form data
+    const result = resetPasswordConfirmSchema.safeParse(data);
 
     // Return validation errors
     if (!result.success) {

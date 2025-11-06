@@ -38,16 +38,8 @@ export function SignUpForm() {
 
   const onSubmit = async (data: SignupFormData) => {
     startTransition(async () => {
-      // Convert form data to FormData for server action
-      const formData = new FormData();
-      formData.append('email', data.email);
-      formData.append('password', data.password);
-      formData.append('confirmPassword', data.confirmPassword);
-      formData.append('firstName', data.firstName);
-      formData.append('lastName', data.lastName);
-
-      // Call server action
-      const result = await signupAction(formData);
+      // Call server action with typed data
+      const result = await signupAction(data);
 
       // Handle errors (success case redirects automatically)
       if (!result.success) {

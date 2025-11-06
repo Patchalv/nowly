@@ -33,12 +33,8 @@ export function ResetPasswordRequestForm() {
 
   const onSubmit = async (data: ResetPasswordRequestFormData) => {
     startTransition(async () => {
-      // Convert form data to FormData for server action
-      const formData = new FormData();
-      formData.append('email', data.email);
-
-      // Call server action
-      const result = await resetPasswordRequestAction(formData);
+      // Call server action with typed data
+      const result = await resetPasswordRequestAction(data);
 
       // Handle result
       if (!result.success) {

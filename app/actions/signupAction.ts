@@ -2,7 +2,10 @@
 
 import { ROUTES } from '@/src/config/constants';
 import { getDeploymentUrl } from '@/src/config/env';
-import { signupSchema } from '@/src/domain/validation/auth.schema';
+import {
+  signupSchema,
+  type SignupFormData,
+} from '@/src/domain/validation/auth.schema';
 import { createClient } from '@/src/infrastructure/supabase/server';
 import { redirect } from 'next/navigation';
 
@@ -20,14 +23,14 @@ type SignupActionResult =
  * The user must confirm their email before they can log in.
  * After successful signup, they are redirected to a success page.
  *
- * @param formData - FormData containing email, password, confirmPassword, firstName, lastName
+ * @param data - SignupFormData containing email, password, confirmPassword, firstName, lastName
  * @returns SignupActionResult with success status or error details
  */
 export async function signupAction(
-  formData: FormData
+  data: SignupFormData
 ): Promise<SignupActionResult> {
   try {
-    const result = signupSchema.safeParse(formData);
+    const result = signupSchema.safeParse(data);
     // Return validation errors
     if (!result.success) {
       return {
@@ -41,7 +44,7 @@ export async function signupAction(
     const supabase = await createClient();
 
     // Attempt to sign up
-    const { data, error } = await supabase.auth.signUp({
+    const { data: authData, error } = await supabase.auth.signUp({
       email: result.data.email,
       password: result.data.password,
       options: {
@@ -87,7 +90,7 @@ export async function signupAction(
     }
 
     // Verify user was created
-    if (!data.user) {
+    if (!authData.user) {
       return {
         success: false,
         error: 'Account creation failed. Please try again.',
@@ -105,5 +108,5 @@ export async function signupAction(
   }
 
   // Redirect on successful signup to a confirmation page
-  redirect(`${ROUTES.SIGNUP}/success`);
+  redirect(ROUTES.SIGNUP_SUCCESS);
 }

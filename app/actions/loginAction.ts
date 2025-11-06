@@ -1,7 +1,10 @@
 'use server';
 
 import { ROUTES } from '@/src/config/constants';
-import { loginSchema } from '@/src/domain/validation/auth.schema';
+import {
+  loginSchema,
+  type LoginFormData,
+} from '@/src/domain/validation/auth.schema';
 import { createClient } from '@/src/infrastructure/supabase/server';
 import { redirect } from 'next/navigation';
 
@@ -16,21 +19,15 @@ type LoginActionResult =
  * Server action to authenticate a user with email and password
  * Validates credentials, authenticates with Supabase, and redirects on success
  *
- * @param formData - FormData containing email and password
+ * @param data - LoginFormData containing email and password
  * @returns LoginActionResult with success status or error details
  */
 export async function loginAction(
-  formData: FormData
+  data: LoginFormData
 ): Promise<LoginActionResult> {
   try {
-    // Extract and validate form data
-    const email = formData.get('email');
-    const password = formData.get('password');
-
-    const result = loginSchema.safeParse({
-      email,
-      password,
-    });
+    // Validate form data
+    const result = loginSchema.safeParse(data);
 
     // Return validation errors
     if (!result.success) {
@@ -45,7 +42,7 @@ export async function loginAction(
     const supabase = await createClient();
 
     // Attempt to sign in
-    const { data, error } = await supabase.auth.signInWithPassword({
+    const { data: authData, error } = await supabase.auth.signInWithPassword({
       email: result.data.email,
       password: result.data.password,
     });
@@ -80,7 +77,7 @@ export async function loginAction(
     }
 
     // Verify user was authenticated
-    if (!data.user) {
+    if (!authData.user) {
       return {
         success: false,
         error: 'Authentication failed. Please try again.',

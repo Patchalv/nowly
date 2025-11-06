@@ -1,7 +1,10 @@
 'use server';
 
 import { getDeploymentUrl } from '@/src/config/env';
-import { resetPasswordRequestSchema } from '@/src/domain/validation/auth.schema';
+import {
+  resetPasswordRequestSchema,
+  type ResetPasswordRequestFormData,
+} from '@/src/domain/validation/auth.schema';
 import { createClient } from '@/src/infrastructure/supabase/server';
 
 /**
@@ -17,19 +20,15 @@ type ResetPasswordRequestActionResult =
  *
  * SECURITY: Always returns success to prevent email enumeration attacks
  *
- * @param formData - FormData containing email
+ * @param data - ResetPasswordRequestFormData containing email
  * @returns ResetPasswordRequestActionResult with success status
  */
 export async function resetPasswordRequestAction(
-  formData: FormData
+  data: ResetPasswordRequestFormData
 ): Promise<ResetPasswordRequestActionResult> {
   try {
-    // Extract and validate form data
-    const email = formData.get('email');
-
-    const result = resetPasswordRequestSchema.safeParse({
-      email,
-    });
+    // Validate form data
+    const result = resetPasswordRequestSchema.safeParse(data);
 
     // Return validation errors
     if (!result.success) {
