@@ -3,11 +3,12 @@
 import { WeekCarousel } from '@/src/presentation/components/week-carousel/WeekCarousel';
 import { formatDateForURL, parseDateFromURL } from '@/src/shared/utils';
 import { useRouter, useSearchParams } from 'next/navigation';
-import { Suspense } from 'react';
+import { Suspense, useTransition } from 'react';
 
 function DailyViewContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
+  const [, startTransition] = useTransition();
 
   // Get date from URL or default to today
   const dateParam = searchParams.get('date');
@@ -15,7 +16,11 @@ function DailyViewContent() {
 
   const handleDateChange = (newDate: Date) => {
     const formattedDate = formatDateForURL(newDate);
-    router.push(`/daily?date=${formattedDate}`);
+    // Use startTransition to make the navigation non-blocking
+    // This keeps the UI responsive while the URL updates
+    startTransition(() => {
+      router.push(`/daily?date=${formattedDate}`);
+    });
   };
 
   return (

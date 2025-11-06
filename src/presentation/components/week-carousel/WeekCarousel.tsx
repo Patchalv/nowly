@@ -28,9 +28,15 @@ export function WeekCarousel({
     return weekDates[0]; // Monday of the week containing selectedDate
   });
 
+  // Optimistic selected date for instant UI feedback
+  const [optimisticDate, setOptimisticDate] = useState<Date | null>(null);
+
   const today = new Date();
   const weekNumber = getISOWeek(visibleWeekStart);
   const weekDates = getWeekDates(visibleWeekStart);
+
+  // Use optimistic date if set, otherwise use the actual selected date
+  const displayedSelectedDate = optimisticDate || selectedDate;
 
   // Sync visible week when selected date changes to a different week
   // Only depends on selectedDate, not visibleWeekStart (to allow arrow navigation)
@@ -40,6 +46,9 @@ export function WeekCarousel({
 
     // Update visible week to show the selected date
     setVisibleWeekStart(selectedWeekMonday);
+
+    // Clear optimistic state once the real selected date updates
+    setOptimisticDate(null);
   }, [selectedDate]);
 
   const handlePreviousWeek = () => {
@@ -55,6 +64,8 @@ export function WeekCarousel({
   };
 
   const handleDateClick = (date: Date) => {
+    // Set optimistic date immediately for instant UI feedback
+    setOptimisticDate(date);
     // Update the selected date (which updates URL)
     onDateChange(date);
   };
@@ -63,7 +74,7 @@ export function WeekCarousel({
     date,
     dayOfWeek: weekDayLabels[index],
     dayOfMonth: date.getDate(),
-    isSelected: isSameDay(date, selectedDate),
+    isSelected: isSameDay(date, displayedSelectedDate),
     isToday: isSameDay(date, today),
   }));
 
