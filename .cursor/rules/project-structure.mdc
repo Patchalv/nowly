@@ -39,7 +39,7 @@ nowly/
 │   │   ├── layout.tsx                  # Dashboard layout (sidebar + header)
 │   │   ├── daily/                      # "Daily" focused task view (Defaults to "today")
 │   │   │   └── page.tsx
-│   │   ├── tasks/                      # Master list
+│   │   ├── all-tasks/                  # Master list
 │   │   │   └── page.tsx
 │   │   └── settings/                   # Placeholder for later phases
 │   │       └── page.tsx
