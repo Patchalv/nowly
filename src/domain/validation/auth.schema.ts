@@ -4,11 +4,56 @@ import { z } from 'zod';
  * Authentication form schemas
  */
 
+/**
+ * Password validation requirements (matches Supabase password policy)
+ * - At least 8 characters
+ * - At least one lowercase letter
+ * - At least one uppercase letter
+ * - At least one digit
+ * - At least one symbol
+ */
+const passwordSchema = z
+  .string()
+  .min(8, 'Password must be at least 8 characters')
+  .superRefine((password, ctx) => {
+    // Check for lowercase letter
+    if (!/[a-z]/.test(password)) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        message: 'Password must include at least one lowercase letter',
+      });
+    }
+
+    // Check for uppercase letter
+    if (!/[A-Z]/.test(password)) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        message: 'Password must include at least one uppercase letter',
+      });
+    }
+
+    // Check for digit
+    if (!/\d/.test(password)) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        message: 'Password must include at least one digit',
+      });
+    }
+
+    // Check for symbol/special character
+    if (!/[!@#$%^&*(),.?":{}|<>_\-+=[\]\\/'`~;]/.test(password)) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        message: 'Password must include at least one symbol',
+      });
+    }
+  });
+
 export const signupSchema = z
   .object({
     email: z.email('Please enter a valid email address'),
-    password: z.string().min(8, 'Password must be at least 8 characters'),
-    confirmPassword: z.string().min(8, 'Please confirm your password'),
+    password: passwordSchema,
+    confirmPassword: z.string().min(1, 'Please confirm your password'),
     firstName: z
       .string()
       .min(1, 'First name is required')
@@ -42,8 +87,8 @@ export type ResetPasswordRequestFormData = z.infer<
 
 export const resetPasswordConfirmSchema = z
   .object({
-    password: z.string().min(8, 'Password must be at least 8 characters'),
-    confirmPassword: z.string().min(8, 'Please confirm your password'),
+    password: passwordSchema,
+    confirmPassword: z.string().min(1, 'Please confirm your password'),
   })
   .refine((data) => data.password === data.confirmPassword, {
     message: "Passwords don't match",

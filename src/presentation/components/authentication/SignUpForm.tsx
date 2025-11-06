@@ -151,6 +151,9 @@ export function SignUpForm() {
                       {...field}
                     />
                   </FormControl>
+                  <FieldDescription>
+                    Must include: lowercase, uppercase, digit, and symbol
+                  </FieldDescription>
                   <FormMessage />
                 </FormItem>
               )}

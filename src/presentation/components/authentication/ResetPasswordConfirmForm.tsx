@@ -153,6 +153,9 @@ export function ResetPasswordConfirmForm() {
                       {...field}
                     />
                   </FormControl>
+                  <FieldDescription>
+                    Must include: lowercase, uppercase, digit, and symbol
+                  </FieldDescription>
                   <FormMessage />
                 </FormItem>
               )}
