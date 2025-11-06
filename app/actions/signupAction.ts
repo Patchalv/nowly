@@ -27,21 +27,7 @@ export async function signupAction(
   formData: FormData
 ): Promise<SignupActionResult> {
   try {
-    // Extract and validate form data
-    const email = formData.get('email');
-    const password = formData.get('password');
-    const confirmPassword = formData.get('confirmPassword');
-    const firstName = formData.get('firstName');
-    const lastName = formData.get('lastName');
-
-    const result = signupSchema.safeParse({
-      email,
-      password,
-      confirmPassword,
-      firstName,
-      lastName,
-    });
-
+    const result = signupSchema.safeParse(formData);
     // Return validation errors
     if (!result.success) {
       return {

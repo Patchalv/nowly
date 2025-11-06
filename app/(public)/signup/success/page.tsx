@@ -5,6 +5,7 @@ import {
   CardContent,
   CardFooter,
 } from '@/src/presentation/components/ui/card';
+import { Check } from 'lucide-react';
 import Link from 'next/link';
 
 export default function SignupSuccessPage() {
@@ -14,18 +15,9 @@ export default function SignupSuccessPage() {
         <CardContent className="py-8">
           <div className="text-center space-y-4">
             <div className="mx-auto w-12 h-12 bg-green-100 rounded-full flex items-center justify-center">
-              <svg
-                className="w-6 h-6 text-green-600"
-                fill="none"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth="2"
-                viewBox="0 0 24 24"
-                stroke="currentColor"
-              >
-                <path d="M5 13l4 4L19 7"></path>
-              </svg>
+              <Check className="w-6 h-6 text-green-600" />
             </div>
+
             <div className="space-y-2">
               <h1 className="text-2xl font-bold">Check Your Email</h1>
               <p className="text-sm text-muted-foreground">
