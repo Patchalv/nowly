@@ -44,26 +44,38 @@ export function WeekCarousel({
     const selectedWeekDates = getWeekDates(selectedDate);
     const selectedWeekMonday = selectedWeekDates[0];
 
-    // Only update visible week if it actually changed (prevents re-render loop)
-    // selectedDate is recreated on every render, so we compare by value not reference
-    setVisibleWeekStart((current) =>
-      isSameDay(current, selectedWeekMonday) ? current : selectedWeekMonday
-    );
+    // Don't sync visible week if we're in the middle of an optimistic update
+    // This prevents flickering when clicking a date in a different week
+    if (!optimisticDate) {
+      // Only update visible week if it actually changed (prevents re-render loop)
+      // selectedDate is recreated on every render, so we compare by value not reference
+      setVisibleWeekStart((current) =>
+        isSameDay(current, selectedWeekMonday) ? current : selectedWeekMonday
+      );
+    }
 
-    // Clear optimistic state once the real selected date updates
-    setOptimisticDate(null);
-  }, [selectedDate]);
+    // Clear optimistic state only if it matches the actual selected date
+    // This prevents flickering when URL is still updating
+    setOptimisticDate((current) => {
+      if (!current) return null;
+      return isSameDay(current, selectedDate) ? null : current;
+    });
+  }, [selectedDate, optimisticDate]);
 
   const handlePreviousWeek = () => {
     // Navigate to the previous week (just changes what's visible)
     const previousWeekMonday = addWeeks(visibleWeekStart, -1);
     setVisibleWeekStart(previousWeekMonday);
+    // Clear optimistic date when navigating weeks
+    setOptimisticDate(null);
   };
 
   const handleNextWeek = () => {
     // Navigate to the next week (just changes what's visible)
     const nextWeekMonday = addWeeks(visibleWeekStart, 1);
     setVisibleWeekStart(nextWeekMonday);
+    // Clear optimistic date when navigating weeks
+    setOptimisticDate(null);
   };
 
   const handleDateClick = (date: Date) => {
