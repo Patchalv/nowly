@@ -11,17 +11,19 @@ import { supabase } from '@/src/infrastructure/supabase/client';
 import { zodResolver } from '@hookform/resolvers/zod';
 import Link from 'next/link';
 import { useEffect, useState, useTransition } from 'react';
-import { Controller, useForm } from 'react-hook-form';
+import { useForm } from 'react-hook-form';
 import { toast } from 'sonner';
 import { Button } from '../ui/button';
 import { Card, CardContent, CardFooter } from '../ui/card';
+import { FieldDescription } from '../ui/field';
 import {
-  Field,
-  FieldDescription,
-  FieldError,
-  FieldGroup,
-  FieldLabel,
-} from '../ui/field';
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from '../ui/form';
 import { Input } from '../ui/input';
 
 export function ResetPasswordConfirmForm() {
@@ -113,17 +115,15 @@ export function ResetPasswordConfirmForm() {
           </div>
         </CardContent>
         <CardFooter className="flex-col gap-2">
-          <Field>
-            <Button asChild className="w-full">
-              <Link href={ROUTES.RESET_PASSWORD}>Request new reset link</Link>
-            </Button>
-            <FieldDescription className="text-center">
-              Remember your password?{' '}
-              <Link href={ROUTES.LOGIN} className="text-primary">
-                Back to login
-              </Link>
-            </FieldDescription>
-          </Field>
+          <Button asChild className="w-full">
+            <Link href={ROUTES.RESET_PASSWORD}>Request new reset link</Link>
+          </Button>
+          <FieldDescription className="text-center">
+            Remember your password?{' '}
+            <Link href={ROUTES.LOGIN} className="text-primary">
+              Back to login
+            </Link>
+          </FieldDescription>
         </CardFooter>
       </Card>
     );
@@ -133,73 +133,67 @@ export function ResetPasswordConfirmForm() {
   return (
     <Card className="w-full max-w-sm">
       <CardContent>
-        <form
-          id="reset-password-confirm-form"
-          onSubmit={form.handleSubmit(onSubmit)}
-        >
-          <FieldGroup>
-            <Controller
+        <Form {...form}>
+          <form
+            id="reset-password-confirm-form"
+            onSubmit={form.handleSubmit(onSubmit)}
+            className="space-y-4"
+          >
+            <FormField
               control={form.control}
               name="password"
-              render={({ field, fieldState }) => (
-                <Field data-invalid={fieldState.invalid} className="gap-2">
-                  <FieldLabel htmlFor={field.name}>New Password</FieldLabel>
-                  <Input
-                    id={field.name}
-                    type="password"
-                    placeholder="********"
-                    required
-                    aria-invalid={fieldState.invalid}
-                    {...field}
-                  />
-                  {fieldState.error && (
-                    <FieldError errors={[fieldState.error]} />
-                  )}
-                </Field>
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>New Password</FormLabel>
+                  <FormControl>
+                    <Input
+                      type="password"
+                      placeholder="********"
+                      autoComplete="new-password"
+                      {...field}
+                    />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
               )}
             />
 
-            <Controller
+            <FormField
               control={form.control}
               name="confirmPassword"
-              render={({ field, fieldState }) => (
-                <Field data-invalid={fieldState.invalid} className="gap-2">
-                  <FieldLabel htmlFor={field.name}>
-                    Confirm New Password
-                  </FieldLabel>
-                  <Input
-                    id={field.name}
-                    type="password"
-                    placeholder="********"
-                    required
-                    aria-invalid={fieldState.invalid}
-                    {...field}
-                  />
-                  {fieldState.error && (
-                    <FieldError errors={[fieldState.error]} />
-                  )}
-                </Field>
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Confirm New Password</FormLabel>
+                  <FormControl>
+                    <Input
+                      type="password"
+                      placeholder="********"
+                      autoComplete="new-password"
+                      {...field}
+                    />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
               )}
             />
-          </FieldGroup>
-        </form>
+          </form>
+        </Form>
       </CardContent>
       <CardFooter className="flex-col gap-2">
-        <Field>
-          <Button
-            type="submit"
-            form="reset-password-confirm-form"
-            disabled={isPending}
-          >
-            {isPending ? 'Resetting password...' : 'Reset password'}
-          </Button>
-          <FieldDescription className="text-center">
-            Remember your password?{' '}
-            <Link href={ROUTES.LOGIN} className="text-primary">
-              Back to login
-            </Link>
-          </FieldDescription>
-        </Field>
+        <Button
+          type="submit"
+          form="reset-password-confirm-form"
+          disabled={isPending}
+          className="w-full"
+        >
+          {isPending ? 'Resetting password...' : 'Reset password'}
+        </Button>
+        <FieldDescription className="text-center">
+          Remember your password?{' '}
+          <Link href={ROUTES.LOGIN} className="text-primary">
+            Back to login
+          </Link>
+        </FieldDescription>
       </CardFooter>
     </Card>
   );

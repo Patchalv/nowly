@@ -1,6 +1,6 @@
 'use client';
 
-import { isDevelopment } from '@/src/config/env';
+import { isProduction } from '@/src/config/env';
 import { logEnvironmentInfo } from '@/src/infrastructure/utils/env-check';
 import { QueryClientProvider } from '@tanstack/react-query';
 import { ReactQueryDevtools } from '@tanstack/react-query-devtools';
@@ -27,7 +27,7 @@ export default function Providers({ children }: { children: React.ReactNode }) {
         disableTransitionOnChange
       >
         {children}
-        {isDevelopment && (
+        {!isProduction && (
           <ReactQueryDevtools
             initialIsOpen={false}
             buttonPosition="bottom-right"
