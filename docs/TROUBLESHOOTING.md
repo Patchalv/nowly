@@ -279,50 +279,6 @@ npm run build
 
 # Access dashboard to wake it up
 
-`## Authentication Issues
-
-### Cannot Sign Up / Login
-
-**Problem:** Authentication fails with error
-
-**Solutions:**
-```bash`
-
-# Check 1: Verify auth is enabled- Supabase Dashboard > Authentication > Settings- Ensure "Enable email signup" is checked
-
-# Check 2: Check email confirmation settings- Dashboard > Authentication > Settings > Email Auth- If "Confirm email" enabled, check email- For development, disable email confirmation
-
-# Check 3: Check Supabase client initializationFile: src/infrastructure/supabase/client.tsVerify URL and anon key are correct
-
-# Check 4: Check browser console
-
-# F12 > Console tab
-
-# Look for CORS or network errors
-
-# Verify API calls are hitting correct URL
-
-`### Session Not Persisting
-
-**Problem:** User logged out on page refresh
-
-**Solutions:**
-```bash`
-
-# Check 1: Verify storage is working- Browser Dev Tools > Application > Local Storage- Should see supabase auth token
-
-# Check 2: Check cookie settings- Verify site allows cookies- Check browser privacy settings
-
-# Check 3: Verify auth configurationFile: src/infrastructure/supabase/client.tsEnsure persistSession is true (default)
-
-# Check 4: Check token expiration
-
-# Supabase Dashboard > Auth > Settings
-
-# Check JWT expiry time
-
-# Default is 1 hour
-
 ## Authentication Issues
 
 ### Email Confirmation Not Received

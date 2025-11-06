@@ -49,8 +49,15 @@ export function SignUpForm() {
 
         // Set field-specific errors if provided
         if (result.fieldErrors) {
+          const formFields = new Set<string>([
+            'email',
+            'password',
+            'confirmPassword',
+            'firstName',
+            'lastName',
+          ]);
           Object.entries(result.fieldErrors).forEach(([field, errors]) => {
-            if (errors && errors.length > 0) {
+            if (errors && errors.length > 0 && formFields.has(field)) {
               form.setError(field as keyof SignupFormData, {
                 type: 'manual',
                 message: errors[0],
