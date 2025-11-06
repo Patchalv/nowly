@@ -323,7 +323,277 @@ npm run build
 
 # Default is 1 hour
 
-`## Getting More Help
+## Authentication Issues
+
+### Email Confirmation Not Received
+
+**Problem:** User signs up but doesn't receive confirmation email
+
+**Solutions:**
+
+1. **Check spam folder**
+   - Email might be filtered as spam
+   - Add noreply@mail.app.supabase.io to contacts
+
+2. **Check email address**
+   - Verify email was typed correctly
+   - Try signing up again with correct email
+
+3. **Check Supabase email settings**
+   - Go to Supabase Dashboard → Authentication → Email Templates
+   - Verify "Confirm Signup" template is enabled
+   - Check rate limits: Default is 2 emails/hour in development
+
+4. **Check email template configuration**
+   - Template should use: `{{ .SiteURL }}/auth/confirm?token_hash={{ .TokenHash }}&type=email&next=/daily`
+   - See [AUTH_CONFIG.md](./AUTH_CONFIG.md) for details
+
+### PKCE Validation Failed Error
+
+**Problem:** User clicks email link but gets "PKCE validation failed" error
+
+**Cause:** Email template is using old `code` parameter instead of `token_hash`
+
+**Solution:**
+
+Update Supabase email templates (Dashboard → Authentication → Email Templates):
+
+**Password Reset:**
+\`\`\`
+{{ .SiteURL }}/auth/confirm?token_hash={{ .TokenHash }}&type=recovery&next=/reset-password/confirm
+\`\`\`
+
+**Email Confirmation:**
+\`\`\`
+{{ .SiteURL }}/auth/confirm?token_hash={{ .TokenHash }}&type=email&next=/daily
+\`\`\`
+
+### Authentication Link Invalid or Expired
+
+**Problem:** User clicks email link but sees "Authentication link is invalid or has expired"
+
+**Causes:**
+
+1. **Link expired** - Links are valid for 24 hours
+2. **Link already used** - Can only be used once
+3. **Email template misconfigured** - Wrong URL format
+
+**Solutions:**
+
+1. **Request new link**
+   - For password reset: Go to `/reset-password` and submit again
+   - For email confirmation: Contact support (can't resend automatically)
+
+2. **Check email template**
+   - Must include `token_hash`, `type`, and `next` parameters
+   - See [AUTH_CONFIG.md](./AUTH_CONFIG.md) for correct format
+
+3. **Check Supabase Auth logs**
+   - Dashboard → Authentication → Logs
+   - Look for detailed error messages
+
+### Session Expired or Not Found
+
+**Problem:** User arrives at password reset form but session is not found
+
+**Cause:** User navigated directly to `/reset-password/confirm` without going through email link
+
+**Solution:**
+
+1. **Use the email link**
+   - Password reset MUST go through email link
+   - Link exchanges token for valid session
+
+2. **Check redirect flow**
+   - Email → `/auth/confirm` → `/reset-password/confirm`
+   - If any step is skipped, session won't exist
+
+3. **Request new reset link**
+   - Go to `/reset-password`
+   - Enter email and submit
+   - Use the new link from email
+
+### Redirect Loop After Login
+
+**Problem:** After logging in, page keeps redirecting in a loop
+
+**Causes:**
+
+1. **Middleware not working** - Session not being set properly
+2. **Cookie issues** - Cookies blocked or not persisting
+3. **Proxy configuration** - Check `proxy.ts` export name
+
+**Solutions:**
+
+\`\`\`bash
+
+# Check 1: Verify proxy.ts exports correctly
+
+# File should export function named 'proxy'
+
+# File should have proper matcher config
+
+# Check 2: Clear browser cookies
+
+# Chrome: Settings → Privacy → Clear browsing data
+
+# Select "Cookies and other site data"
+
+# Check 3: Check browser console
+
+# Look for CORS errors or cookie warnings
+
+# Check 4: Verify environment variables
+
+cat .env.local
+
+# Should have NEXT_PUBLIC_SUPABASE_URL and NEXT_PUBLIC_SUPABASE_ANON_KEY
+
+\`\`\`
+
+### Cannot Login with Correct Credentials
+
+**Problem:** User enters correct email/password but login fails
+
+**Solutions:**
+
+1. **Email not confirmed**
+   - Check if email verification is required (it is by default)
+   - User must click confirmation link in signup email first
+   - Error message should say "Please verify your email address"
+
+2. **Check Supabase Auth logs**
+   - Dashboard → Authentication → Logs
+   - Look for failed login attempts
+   - Check specific error messages
+
+3. **Password requirements**
+   - Minimum 6 characters (Supabase default)
+   - Check if password meets requirements
+
+4. **Account locked**
+   - Too many failed attempts might lock account
+   - Wait 1 hour or contact support
+
+### Signup Form Not Working
+
+**Problem:** Signup form submits but nothing happens
+
+**Solutions:**
+
+\`\`\`bash
+
+# Check 1: Browser console errors
+
+# F12 → Console tab
+
+# Look for JavaScript errors or network failures
+
+# Check 2: Network tab
+
+# F12 → Network tab
+
+# Find the signup request
+
+# Check response status and error message
+
+# Check 3: Verify Server Action
+
+# File: app/actions/signupAction.ts
+
+# Should exist and be properly exported
+
+# Check 4: Check Supabase connection
+
+# Go to /test/supabase-connection
+
+# Should show successful connection
+
+\`\`\`
+
+### Session Not Persisting Across Reloads
+
+**Problem:** User logs in successfully but is logged out on page refresh
+
+**Causes:**
+
+1. **Cookies not saving** - Browser settings block cookies
+2. **Middleware not refreshing** - Session not being maintained
+3. **Incognito/Private mode** - Cookies cleared on close
+
+**Solutions:**
+
+\`\`\`bash
+
+# Check 1: Verify cookies are enabled
+
+# Browser settings → Privacy → Allow cookies
+
+# Check 2: Check browser storage
+
+# F12 → Application → Cookies
+
+# Should see supabase auth cookies
+
+# Check 3: Verify middleware is running
+
+# Add console.log in proxy.ts to verify it runs
+
+# Should see logs on every page navigation
+
+# Check 4: Check auth configuration
+
+# File: src/infrastructure/supabase/client.ts
+
+# createBrowserClient should NOT have persistSession: false
+
+\`\`\`
+
+### Cannot Access Protected Routes
+
+**Problem:** Logged in but still redirected to login page
+
+**Causes:**
+
+1. **Route not properly protected** - Check PUBLIC_ROUTES config
+2. **Session not recognized** - Middleware not reading session
+3. **Timing issue** - Session not loaded yet
+
+**Solutions:**
+
+\`\`\`bash
+
+# Check 1: Verify PUBLIC_ROUTES configuration
+
+# File: src/config/constants.ts
+
+# Protected routes should NOT be in PUBLIC_ROUTES array
+
+# Check 2: Check middleware logic
+
+# File: proxy.ts
+
+# Verify isPublicRoute function works correctly
+
+# Check 3: Check server logs
+
+# Look for auth errors in terminal
+
+# Middleware should call supabase.auth.getUser()
+
+# Check 4: Force refresh session
+
+# Log out completely
+
+# Clear browser cookies
+
+# Log in again
+
+\`\`\`
+
+---
+
+## Getting More Help
 
 ### Still Stuck?
 

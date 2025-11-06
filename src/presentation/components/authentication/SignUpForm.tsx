@@ -1,15 +1,14 @@
 'use client';
 
+import { signupAction } from '@/app/actions/signupAction';
 import { ROUTES } from '@/src/config/constants';
 import {
   SignupFormData,
   signupSchema,
 } from '@/src/domain/validation/auth.schema';
-import { signUp } from '@/src/infrastructure/supabase/utils/auth';
 import { zodResolver } from '@hookform/resolvers/zod';
 import Link from 'next/link';
-import { useRouter } from 'next/navigation';
-import { useState } from 'react';
+import { useTransition } from 'react';
 import { Controller, useForm } from 'react-hook-form';
 import { toast } from 'sonner';
 import { Button } from '../ui/button';
@@ -24,8 +23,7 @@ import {
 import { Input } from '../ui/input';
 
 export function SignUpForm() {
-  const router = useRouter();
-  const [isLoading, setIsLoading] = useState(false);
+  const [isPending, startTransition] = useTransition();
 
   const form = useForm<SignupFormData>({
     resolver: zodResolver(signupSchema),
@@ -39,29 +37,37 @@ export function SignUpForm() {
   });
 
   const onSubmit = async (data: SignupFormData) => {
-    setIsLoading(true);
-    try {
-      const { data: authData, error } = await signUp(
-        data.email,
-        data.password,
-        {
-          first_name: data.firstName,
-          last_name: data.lastName,
+    startTransition(async () => {
+      // Convert form data to FormData for server action
+      const formData = new FormData();
+      formData.append('email', data.email);
+      formData.append('password', data.password);
+      formData.append('confirmPassword', data.confirmPassword);
+      formData.append('firstName', data.firstName);
+      formData.append('lastName', data.lastName);
+
+      // Call server action
+      const result = await signupAction(formData);
+
+      // Handle errors (success case redirects automatically)
+      if (!result.success) {
+        toast.error('Signup failed', {
+          description: result.error,
+        });
+
+        // Set field-specific errors if provided
+        if (result.fieldErrors) {
+          Object.entries(result.fieldErrors).forEach(([field, errors]) => {
+            if (errors && errors.length > 0) {
+              form.setError(field as keyof SignupFormData, {
+                type: 'manual',
+                message: errors[0],
+              });
+            }
+          });
         }
-      );
-      if (error) {
-        // Error is already handled by signUp utility (toast shown)
-        return;
       }
-      if (authData) {
-        toast.success('Signup successful');
-        router.push(ROUTES.DAILY);
-      }
-    } catch {
-      // Error already handled
-    } finally {
-      setIsLoading(false);
-    }
+    });
   };
 
   return (
@@ -193,8 +199,8 @@ export function SignUpForm() {
       </CardContent>
       <CardFooter className="flex-col gap-2">
         <Field>
-          <Button type="submit" form="signup-form" disabled={isLoading}>
-            Signup
+          <Button type="submit" form="signup-form" disabled={isPending}>
+            {isPending ? 'Creating account...' : 'Signup'}
           </Button>
           <FieldDescription className="text-center">
             Already have an account?{' '}

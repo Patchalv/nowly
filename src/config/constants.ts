@@ -172,6 +172,7 @@ export const ROUTES = {
   RESET_PASSWORD_CONFIRM: '/reset-password/confirm',
   AUTH_CONFIRM: '/auth/confirm',
   ERROR: '/error',
+  SIGNUP_SUCCESS: '/signup/success',
 
   // Protected routes
   DAILY: '/daily',
@@ -199,6 +200,7 @@ export const PUBLIC_ROUTES = [
   ROUTES.RESET_PASSWORD_CONFIRM, // '/reset-password/confirm'
   ROUTES.AUTH_CONFIRM, // Auth confirmation handler (password reset, email verification)
   ROUTES.ERROR, // Error display page
+  ROUTES.SIGNUP_SUCCESS, // Signup success confirmation page
 ] as const;
 
 // ------------------------------------------------------------------------------

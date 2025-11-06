@@ -4,10 +4,23 @@ import type { AuthUser, SupabaseResponse } from '../types';
 
 /**
  * Auth utility functions
+ *
+ * @deprecated Most functions in this file are deprecated in favor of Server Actions.
+ * Use Server Actions in app/actions/ for all auth operations instead:
+ * - signupAction.ts for signup
+ * - loginAction.ts for login
+ * - resetPasswordRequestAction.ts for password reset
+ * - resetPasswordConfirmAction.ts for password update
+ *
+ * These client-side utilities are kept for backward compatibility but should not
+ * be used in new code. They will be removed in a future version.
  */
 
 /**
  * Sign up a new user with email and password
+ *
+ * @deprecated Use signupAction from app/actions/signupAction.ts instead.
+ * This client-side function is less secure and doesn't follow best practices.
  */
 export async function signUp(
   email: string,
@@ -56,6 +69,9 @@ export async function signUp(
 
 /**
  * Sign in with email and password (with error handling)
+ *
+ * @deprecated Use loginAction from app/actions/loginAction.ts instead.
+ * This client-side function is less secure and doesn't follow best practices.
  */
 export async function signIn(
   email: string,
@@ -197,11 +213,16 @@ export async function getCurrentUser(): Promise<SupabaseResponse<AuthUser>> {
 
 /**
  * Send password reset email
+ *
+ * @deprecated Use resetPasswordRequestAction from app/actions/resetPasswordRequestAction.ts instead.
+ * This client-side function uses outdated redirect URL and doesn't go through auth confirmation handler.
  */
 export async function resetPassword(
   email: string
 ): Promise<SupabaseResponse<null>> {
   try {
+    // DEPRECATED: This redirect URL is outdated and doesn't use auth confirmation handler
+    // Server Action uses: /auth/confirm?next=/reset-password/confirm
     const { error } = await supabase.auth.resetPasswordForEmail(email, {
       redirectTo: `${window.location.origin}/reset-password/confirm`,
     });
@@ -230,6 +251,9 @@ export async function resetPassword(
 
 /**
  * Update user password
+ *
+ * @deprecated Use resetPasswordConfirmAction from app/actions/resetPasswordConfirmAction.ts instead.
+ * This client-side function is less secure and doesn't follow best practices.
  */
 export async function updatePassword(
   newPassword: string

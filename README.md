@@ -11,6 +11,7 @@ A modern, productivity-focused task management application built with Next.js 15
 - [Getting Started](#getting-started)
 - [Development Workflow](#development-workflow)
 - [Architecture](#architecture)
+- [Authentication](#authentication)
 - [Scripts](#scripts)
 - [Troubleshooting](#troubleshooting)
 - [Contributing](#contributing)
@@ -411,6 +412,114 @@ export async function createTaskAction(formData: FormData) {
 - [React Guidelines](./.cursor/rules/react.mdc)
 - [Forms Guidelines](./.cursor/rules/forms.mdc)
 - [Supabase Guidelines](./.cursor/rules/supabase-database.mdc)
+
+---
+
+## 🔐 Authentication
+
+Nowly uses **Supabase Auth** with server-side token exchange following Next.js 16 best practices.
+
+### Authentication Architecture
+
+```
+┌─────────────────────────────────────────┐
+│  User Action (Login/Signup/Reset)      │
+└──────────────────┬──────────────────────┘
+                   │
+                   ▼
+┌─────────────────────────────────────────┐
+│  React Form (Client Component)          │
+│  • Validates with Zod                   │
+│  • Submits to Server Action             │
+└──────────────────┬──────────────────────┘
+                   │
+                   ▼
+┌─────────────────────────────────────────┐
+│  Server Action (app/actions/)           │
+│  • Validates again on server            │
+│  • Calls Supabase server client         │
+│  • Returns result or redirects          │
+└──────────────────┬──────────────────────┘
+                   │
+                   ▼
+┌─────────────────────────────────────────┐
+│  Auth Confirmation (for email links)    │
+│  • /auth/confirm route handler          │
+│  • Exchanges PKCE tokens server-side    │
+│  • Establishes session                  │
+│  • Redirects to destination             │
+└──────────────────┬──────────────────────┘
+                   │
+                   ▼
+┌─────────────────────────────────────────┐
+│  Proxy Middleware (proxy.ts)            │
+│  • Refreshes sessions on every request  │
+│  • Protects routes                      │
+│  • Handles redirects                    │
+└─────────────────────────────────────────┘
+```
+
+### Authentication Flows
+
+#### 1. **Login Flow**
+
+1. User enters credentials in `/login`
+2. Form submits to `loginAction` Server Action
+3. Server validates and authenticates with Supabase
+4. On success: redirect to `/daily`
+5. On error: display error message
+
+#### 2. **Signup Flow**
+
+1. User fills form at `/signup`
+2. Form submits to `signupAction` Server Action
+3. Server creates account and sends confirmation email
+4. User redirected to `/signup/success`
+5. User clicks email link → `/auth/confirm?token_hash=XXX&type=email&next=/daily`
+6. Auth handler verifies token and redirects to `/daily`
+
+#### 3. **Password Reset Flow**
+
+1. User requests reset at `/reset-password`
+2. Form submits to `resetPasswordRequestAction` Server Action
+3. Server sends reset email
+4. User clicks email link → `/auth/confirm?token_hash=XXX&type=recovery&next=/reset-password/confirm`
+5. Auth handler verifies token and redirects to reset form
+6. User enters new password
+7. Form submits to `resetPasswordConfirmAction` Server Action
+8. Password updated, user redirected to login
+
+### Key Security Features
+
+- ✅ **Server-side token exchange** - All auth tokens verified server-side
+- ✅ **PKCE flow** - Prevents token interception attacks
+- ✅ **Server Actions** - All form submissions go through secure Server Actions
+- ✅ **Session refresh** - Middleware automatically refreshes expired sessions
+- ✅ **Protected routes** - Middleware blocks unauthenticated access
+- ✅ **Email confirmation** - Required before users can log in
+- ✅ **Rate limiting** - Supabase provides built-in rate limiting
+
+### Authentication Configuration
+
+**Required Supabase Setup:**
+
+1. **Email Templates** must be configured in Supabase Dashboard:
+   - Password Reset: Use `/auth/confirm?token_hash={{ .TokenHash }}&type=recovery&next=/reset-password/confirm`
+   - Email Confirmation: Use `/auth/confirm?token_hash={{ .TokenHash }}&type=email&next=/daily`
+
+2. **Redirect URLs** configured in Supabase:
+   - Local: `http://localhost:3000/auth/confirm`
+   - Production: `https://*.vercel.app/auth/confirm`
+
+**See detailed configuration:** [docs/AUTH_CONFIG.md](./docs/AUTH_CONFIG.md)
+
+### Authentication Files
+
+- **Server Actions:** `app/actions/*Action.ts`
+- **Auth Confirmation:** `app/auth/confirm/route.ts`
+- **Proxy Middleware:** `proxy.ts`
+- **Client Forms:** `src/presentation/components/authentication/`
+- **Validation Schemas:** `src/domain/validation/auth.schema.ts`
 
 ---
 
