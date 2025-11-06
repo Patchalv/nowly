@@ -9,17 +9,20 @@ import {
 import { zodResolver } from '@hookform/resolvers/zod';
 import Link from 'next/link';
 import { useTransition } from 'react';
-import { Controller, useForm } from 'react-hook-form';
+import { useForm } from 'react-hook-form';
 import { toast } from 'sonner';
 import { Button } from '../ui/button';
 import { Card, CardContent, CardFooter } from '../ui/card';
+import { FieldDescription } from '../ui/field';
 import {
-  Field,
-  FieldDescription,
-  FieldError,
-  FieldGroup,
-  FieldLabel,
-} from '../ui/field';
+  Form,
+  FormControl,
+  FormDescription,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from '../ui/form';
 import { Input } from '../ui/input';
 
 export function ResetPasswordRequestForm() {
@@ -67,54 +70,52 @@ export function ResetPasswordRequestForm() {
   return (
     <Card className="w-full max-w-sm">
       <CardContent>
-        <form
-          id="reset-password-request-form"
-          onSubmit={form.handleSubmit(onSubmit)}
-        >
-          <FieldGroup>
-            <Controller
+        <Form {...form}>
+          <form
+            id="reset-password-request-form"
+            onSubmit={form.handleSubmit(onSubmit)}
+            className="space-y-4"
+          >
+            <FormField
               control={form.control}
               name="email"
-              render={({ field, fieldState }) => (
-                <Field data-invalid={fieldState.invalid} className="gap-2">
-                  <FieldLabel htmlFor={field.name}>Email</FieldLabel>
-                  <Input
-                    id={field.name}
-                    type="email"
-                    placeholder="m@example.com"
-                    required
-                    aria-invalid={fieldState.invalid}
-                    {...field}
-                  />
-                  {fieldState.error && (
-                    <FieldError errors={[fieldState.error]} />
-                  )}
-                  <FieldDescription>
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Email</FormLabel>
+                  <FormControl>
+                    <Input
+                      type="email"
+                      placeholder="m@example.com"
+                      autoComplete="email"
+                      {...field}
+                    />
+                  </FormControl>
+                  <FormDescription>
                     Enter your email address and we&apos;ll send you a link to
                     reset your password.
-                  </FieldDescription>
-                </Field>
+                  </FormDescription>
+                  <FormMessage />
+                </FormItem>
               )}
             />
-          </FieldGroup>
-        </form>
+          </form>
+        </Form>
       </CardContent>
       <CardFooter className="flex-col gap-2">
-        <Field>
-          <Button
-            type="submit"
-            form="reset-password-request-form"
-            disabled={isPending}
-          >
-            {isPending ? 'Sending...' : 'Send reset link'}
-          </Button>
-          <FieldDescription className="text-center">
-            Remember your password?{' '}
-            <Link href={ROUTES.LOGIN} className="text-primary">
-              Back to login
-            </Link>
-          </FieldDescription>
-        </Field>
+        <Button
+          type="submit"
+          form="reset-password-request-form"
+          disabled={isPending}
+          className="w-full"
+        >
+          {isPending ? 'Sending...' : 'Send reset link'}
+        </Button>
+        <FieldDescription className="text-center">
+          Remember your password?{' '}
+          <Link href={ROUTES.LOGIN} className="text-primary">
+            Back to login
+          </Link>
+        </FieldDescription>
       </CardFooter>
     </Card>
   );
