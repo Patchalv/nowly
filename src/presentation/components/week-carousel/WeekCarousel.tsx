@@ -44,8 +44,11 @@ export function WeekCarousel({
     const selectedWeekDates = getWeekDates(selectedDate);
     const selectedWeekMonday = selectedWeekDates[0];
 
-    // Update visible week to show the selected date
-    setVisibleWeekStart(selectedWeekMonday);
+    // Only update visible week if it actually changed (prevents re-render loop)
+    // selectedDate is recreated on every render, so we compare by value not reference
+    setVisibleWeekStart((current) =>
+      isSameDay(current, selectedWeekMonday) ? current : selectedWeekMonday
+    );
 
     // Clear optimistic state once the real selected date updates
     setOptimisticDate(null);

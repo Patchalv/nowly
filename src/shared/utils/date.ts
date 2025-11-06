@@ -79,15 +79,41 @@ export function formatDateForURL(date: Date): string {
 
 /**
  * Parse a date string from URL (YYYY-MM-DD format) or return today if null/invalid
+ * Parses in local timezone to avoid off-by-one errors for users in negative UTC offsets
  */
 export function parseDateFromURL(dateString: string | null): Date {
   if (!dateString) {
     return new Date();
   }
 
-  const parsed = new Date(dateString);
+  // Parse as local date to avoid timezone issues
+  // new Date("2025-11-06") interprets as UTC midnight, which can shift the day
+  // for users in negative UTC offset timezones (e.g., Americas)
+  const parts = dateString.split('-');
 
-  // Check if date is valid
+  // Validate format (should have 3 parts: year, month, day)
+  if (parts.length !== 3) {
+    return new Date();
+  }
+
+  const year = parseInt(parts[0], 10);
+  const month = parseInt(parts[1], 10);
+  const day = parseInt(parts[2], 10);
+
+  // Validate numeric parts
+  if (isNaN(year) || isNaN(month) || isNaN(day)) {
+    return new Date();
+  }
+
+  // Validate ranges
+  if (month < 1 || month > 12 || day < 1 || day > 31) {
+    return new Date();
+  }
+
+  // Create date in local timezone (month is 0-indexed)
+  const parsed = new Date(year, month - 1, day);
+
+  // Final validation - check if date is valid
   if (isNaN(parsed.getTime())) {
     return new Date();
   }
