@@ -34,13 +34,8 @@ export function LogInForm() {
 
   const onSubmit = async (data: LoginFormData) => {
     startTransition(async () => {
-      // Convert form data to FormData for server action
-      const formData = new FormData();
-      formData.append('email', data.email);
-      formData.append('password', data.password);
-
-      // Call server action
-      const result = await loginAction(formData);
+      // Call server action with typed data
+      const result = await loginAction(data);
 
       // Handle errors (success case redirects automatically)
       if (!result.success) {

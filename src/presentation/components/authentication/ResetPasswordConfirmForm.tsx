@@ -60,13 +60,8 @@ export function ResetPasswordConfirmForm() {
 
   const onSubmit = async (data: ResetPasswordConfirmFormData) => {
     startTransition(async () => {
-      // Convert form data to FormData for server action
-      const formData = new FormData();
-      formData.append('password', data.password);
-      formData.append('confirmPassword', data.confirmPassword);
-
-      // Call server action
-      const result = await resetPasswordConfirmAction(formData);
+      // Call server action with typed data
+      const result = await resetPasswordConfirmAction(data);
 
       // Handle errors (success case redirects automatically)
       if (!result.success) {

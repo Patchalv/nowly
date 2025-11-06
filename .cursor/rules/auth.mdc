@@ -1,0 +1,550 @@
+# Authentication Guidelines for Nowly
+
+## 🎯 Core Principles
+
+- **Server Actions for all auth operations** - Never use client-side auth utilities for form submissions
+- **PKCE flow for email links** - All email confirmations must use server-side token exchange
+- **Security first** - Always validate on server, never trust client input
+- **User-friendly errors** - Provide clear, actionable error messages
+- **Session management** - Let middleware handle session refresh automatically
+
+---
+
+## 📋 Authentication Patterns
+
+### When to Use What
+
+| Operation | Use This | Don't Use |
+|-----------|----------|-----------|
+| Login form submission | `loginAction` Server Action | Client-side `signIn()` |
+| Signup form submission | `signupAction` Server Action | Client-side `signUp()` |
+| Password reset request | `resetPasswordRequestAction` | Client-side `resetPassword()` |
+| Password update | `resetPasswordConfirmAction` | Client-side `updatePassword()` |
+| Email confirmation | `/auth/confirm` route handler | Client-side `exchangeCodeForSession()` |
+| Session check | `supabase.auth.getUser()` (server) | `supabase.auth.getSession()` (client) |
+| Get current user | Server Component with `createClient()` | Client Component direct call |
+
+---
+
+## 🔧 Creating New Auth Forms
+
+### Step 1: Define Zod Schema (Domain Layer)
+
+```typescript
+// src/domain/validation/auth.schema.ts
+import { z } from 'zod';
+
+export const myAuthSchema = z.object({
+  email: z.string().email('Invalid email format'),
+  // ... other fields
+});
+
+export type MyAuthFormData = z.infer<typeof myAuthSchema>;
+```
+
+### Step 2: Create Server Action (Application Layer)
+
+```typescript
+// app/actions/myAuthAction.ts
+'use server';
+
+import { redirect } from 'next/navigation';
+import { createClient } from '@/src/infrastructure/supabase/server';
+import { myAuthSchema } from '@/src/domain/validation/auth.schema';
+import { ROUTES } from '@/src/config/constants';
+
+type MyAuthActionResult =
+  | { success: true }
+  | { success: false; error: string; fieldErrors?: Record<string, string[]> };
+
+export async function myAuthAction(
+  formData: FormData
+): Promise<MyAuthActionResult> {
+  try {
+    // 1. Extract form data
+    const email = formData.get('email');
+    
+    // 2. Validate with Zod
+    const result = myAuthSchema.safeParse({ email });
+    
+    if (!result.success) {
+      return {
+        success: false,
+        error: 'Please check your input and try again',
+        fieldErrors: result.error.flatten().fieldErrors,
+      };
+    }
+    
+    // 3. Create Supabase server client
+    const supabase = await createClient();
+    
+    // 4. Perform auth operation
+    const { error } = await supabase.auth.someOperation(result.data.email);
+    
+    if (error) {
+      console.error('Auth error:', error);
+      
+      // Handle specific errors
+      if (error.message.includes('specific_case')) {
+        return { success: false, error: 'User-friendly message' };
+      }
+      
+      return { success: false, error: 'Generic error message' };
+    }
+    
+    // 5. Success - redirect (throws, so code after won't execute)
+  } catch (error) {
+    console.error('Action failed:', error);
+    return { success: false, error: 'Unexpected error occurred' };
+  }
+  
+  // 6. Redirect on success
+  redirect(ROUTES.DESTINATION);
+}
+```
+
+### Step 3: Create Form Component (Presentation Layer)
+
+```typescript
+// src/presentation/components/authentication/MyAuthForm.tsx
+'use client';
+
+import { myAuthAction } from '@/app/actions/myAuthAction';
+import { myAuthSchema, type MyAuthFormData } from '@/src/domain/validation/auth.schema';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { useTransition } from 'react';
+import { useForm, Controller } from 'react-hook-form';
+import { toast } from 'sonner';
+
+export function MyAuthForm() {
+  const [isPending, startTransition] = useTransition();
+  
+  const form = useForm<MyAuthFormData>({
+    resolver: zodResolver(myAuthSchema),
+    defaultValues: {
+      email: '',
+    },
+  });
+  
+  const onSubmit = async (data: MyAuthFormData) => {
+    startTransition(async () => {
+      // Convert to FormData for Server Action
+      const formData = new FormData();
+      formData.append('email', data.email);
+      
+      // Call Server Action
+      const result = await myAuthAction(formData);
+      
+      // Handle errors (success redirects automatically)
+      if (!result.success) {
+        toast.error('Operation failed', {
+          description: result.error,
+        });
+        
+        // Set field-specific errors
+        if (result.fieldErrors) {
+          Object.entries(result.fieldErrors).forEach(([field, errors]) => {
+            if (errors && errors.length > 0) {
+              form.setError(field as keyof MyAuthFormData, {
+                type: 'manual',
+                message: errors[0],
+              });
+            }
+          });
+        }
+      }
+    });
+  };
+  
+  return (
+    <form onSubmit={form.handleSubmit(onSubmit)}>
+      {/* Form fields */}
+      <button type="submit" disabled={isPending}>
+        {isPending ? 'Processing...' : 'Submit'}
+      </button>
+    </form>
+  );
+}
+```
+
+---
+
+## 🔐 Email Link Flows
+
+### For Password Reset
+
+**Server Action redirect URL:**
+```typescript
+const { error } = await supabase.auth.resetPasswordForEmail(email, {
+  redirectTo: `${getDeploymentUrl()}/auth/confirm?next=/reset-password/confirm`,
+});
+```
+
+**Supabase Email Template:**
+```
+{{ .SiteURL }}/auth/confirm?token_hash={{ .TokenHash }}&type=recovery&next=/reset-password/confirm
+```
+
+### For Email Confirmation
+
+**Server Action options:**
+```typescript
+const { error } = await supabase.auth.signUp({
+  email,
+  password,
+  options: {
+    emailRedirectTo: `${getDeploymentUrl()}/auth/confirm?next=/daily`,
+  },
+});
+```
+
+**Supabase Email Template:**
+```
+{{ .SiteURL }}/auth/confirm?token_hash={{ .TokenHash }}&type=email&next=/daily
+```
+
+### Auth Confirmation Handler Pattern
+
+```typescript
+// app/auth/confirm/route.ts
+import { type EmailOtpType } from '@supabase/supabase-js';
+import { type NextRequest } from 'next/server';
+import { createClient } from '@/src/infrastructure/supabase/server';
+import { redirect } from 'next/navigation';
+
+export async function GET(request: NextRequest) {
+  const { searchParams } = new URL(request.url);
+  const token_hash = searchParams.get('token_hash');
+  const type = searchParams.get('type') as EmailOtpType | null;
+  const next = searchParams.get('next') ?? '/';
+  
+  if (token_hash && type) {
+    const supabase = await createClient();
+    const { error } = await supabase.auth.verifyOtp({
+      type,
+      token_hash,
+    });
+    
+    if (!error) {
+      redirect(next);
+    }
+  }
+  
+  redirect('/error');
+}
+```
+
+---
+
+## 🛡️ Security Best Practices
+
+### 1. Never Expose Sensitive Data
+
+```typescript
+// ❌ BAD - Leaks information
+if (error.message === 'User not found') {
+  return { error: 'User not found' };
+}
+
+// ✅ GOOD - Generic message prevents email enumeration
+if (error) {
+  return { error: 'Invalid email or password' };
+}
+```
+
+### 2. Always Validate on Server
+
+```typescript
+// ❌ BAD - Only client validation
+const onSubmit = async (data: FormData) => {
+  await supabase.auth.signIn(data.email, data.password);
+};
+
+// ✅ GOOD - Server Action with validation
+export async function loginAction(formData: FormData) {
+  const result = loginSchema.safeParse({
+    email: formData.get('email'),
+    password: formData.get('password'),
+  });
+  
+  if (!result.success) {
+    return { success: false, error: 'Invalid input' };
+  }
+  
+  // Continue with validated data
+}
+```
+
+### 3. Use Server Client in Server Actions
+
+```typescript
+// ❌ BAD - Using browser client
+import { supabase } from '@/src/infrastructure/supabase/client';
+export async function loginAction() {
+  await supabase.auth.signInWithPassword(); // WRONG!
+}
+
+// ✅ GOOD - Using server client
+import { createClient } from '@/src/infrastructure/supabase/server';
+export async function loginAction() {
+  const supabase = await createClient();
+  await supabase.auth.signInWithPassword(); // Correct!
+}
+```
+
+### 4. Prevent Email Enumeration
+
+```typescript
+// ✅ GOOD - Password reset always returns success
+export async function resetPasswordRequestAction(formData: FormData) {
+  const { error } = await supabase.auth.resetPasswordForEmail(email);
+  
+  // Log error internally but don't expose to user
+  if (error) {
+    console.error('Password reset error:', error);
+  }
+  
+  // ALWAYS return success
+  return { success: true };
+}
+```
+
+### 5. Handle Sessions Securely
+
+```typescript
+// ❌ BAD - Using getSession() in server code
+const { data: { session } } = await supabase.auth.getSession();
+
+// ✅ GOOD - Using getUser() to verify against server
+const { data: { user }, error } = await supabase.auth.getUser();
+```
+
+---
+
+## 🎨 User Experience Patterns
+
+### Loading States
+
+```typescript
+// ✅ GOOD - Clear loading states
+<button type="submit" disabled={isPending}>
+  {isPending ? 'Signing in...' : 'Sign in'}
+</button>
+```
+
+### Error Messages
+
+```typescript
+// ✅ GOOD - User-friendly, actionable errors
+if (error.message.includes('Invalid login credentials')) {
+  return {
+    success: false,
+    error: 'Invalid email or password. Please try again.',
+  };
+}
+
+if (error.message.includes('Email not confirmed')) {
+  return {
+    success: false,
+    error: 'Please verify your email address before logging in.',
+  };
+}
+```
+
+### Success Feedback
+
+```typescript
+// ✅ GOOD - Clear success message
+toast.success('Password reset email sent', {
+  description: 'Check your inbox for the reset link',
+});
+```
+
+---
+
+## 📄 Form Field Patterns
+
+### Email Field
+
+```typescript
+<Field>
+  <FieldLabel htmlFor="email">Email</FieldLabel>
+  <Input
+    id="email"
+    type="email"
+    autoComplete="email"
+    required
+    aria-invalid={!!errors.email}
+    {...register('email')}
+  />
+  {errors.email && <FieldError errors={[errors.email]} />}
+</Field>
+```
+
+### Password Field
+
+```typescript
+<Field>
+  <FieldLabel htmlFor="password">Password</FieldLabel>
+  <Input
+    id="password"
+    type="password"
+    autoComplete="current-password"
+    required
+    aria-invalid={!!errors.password}
+    {...register('password')}
+  />
+  {errors.password && <FieldError errors={[errors.password]} />}
+</Field>
+```
+
+### Confirm Password Field
+
+```typescript
+<Field>
+  <FieldLabel htmlFor="confirmPassword">Confirm Password</FieldLabel>
+  <Input
+    id="confirmPassword"
+    type="password"
+    autoComplete="new-password"
+    required
+    aria-invalid={!!errors.confirmPassword}
+    {...register('confirmPassword')}
+  />
+  {errors.confirmPassword && <FieldError errors={[errors.confirmPassword]} />}
+</Field>
+```
+
+---
+
+## 🧪 Testing Auth Flows
+
+### Manual Testing Checklist
+
+**Login:**
+- [ ] Valid credentials → success
+- [ ] Invalid email → error
+- [ ] Invalid password → error
+- [ ] Unconfirmed email → specific error
+- [ ] Success redirects to /daily
+
+**Signup:**
+- [ ] Valid data → success
+- [ ] Duplicate email → specific error
+- [ ] Password mismatch → validation error
+- [ ] Weak password → validation error
+- [ ] Redirects to /signup/success
+- [ ] Email received
+
+**Password Reset:**
+- [ ] Valid email → success message (always)
+- [ ] Invalid email → success message (always)
+- [ ] Email received (if account exists)
+- [ ] Link works
+- [ ] Can set new password
+- [ ] Can login with new password
+
+**Email Confirmation:**
+- [ ] Signup email received
+- [ ] Link works
+- [ ] Redirects to /daily
+- [ ] User can login
+
+---
+
+## 🚫 Anti-Patterns
+
+### ❌ Don't Use Client-Side Auth Utilities
+
+```typescript
+// ❌ BAD
+'use client';
+import { signUp } from '@/src/infrastructure/supabase/utils/auth';
+
+export function SignUpForm() {
+  const onSubmit = async (data) => {
+    await signUp(data.email, data.password);
+  };
+}
+```
+
+### ❌ Don't Exchange Tokens Client-Side
+
+```typescript
+// ❌ BAD
+'use client';
+import { useSearchParams } from 'next/navigation';
+
+export function ConfirmForm() {
+  const searchParams = useSearchParams();
+  const code = searchParams.get('code');
+  
+  useEffect(() => {
+    supabase.auth.exchangeCodeForSession(code); // WRONG!
+  }, [code]);
+}
+```
+
+### ❌ Don't Skip Server Validation
+
+```typescript
+// ❌ BAD
+export async function loginAction(formData: FormData) {
+  const email = formData.get('email') as string;
+  // No validation!
+  const { error } = await supabase.auth.signInWithPassword({ email, password });
+}
+```
+
+### ❌ Don't Expose Detailed Errors to Users
+
+```typescript
+// ❌ BAD - Security risk
+if (error) {
+  return { success: false, error: error.message }; // Exposes internal details
+}
+```
+
+### ❌ Don't Use getSession() on Server
+
+```typescript
+// ❌ BAD
+const { data: { session } } = await supabase.auth.getSession(); // Not verified!
+
+// ✅ GOOD
+const { data: { user } } = await supabase.auth.getUser(); // Verified against server
+```
+
+---
+
+## 📋 Checklist for New Auth Features
+
+Before implementing any new auth feature:
+
+- [ ] Zod schema defined in domain layer
+- [ ] Server Action created in app/actions/
+- [ ] Server Action uses server Supabase client
+- [ ] Server Action validates input with Zod
+- [ ] Server Action handles errors gracefully
+- [ ] Server Action returns typed result
+- [ ] Client component uses useTransition
+- [ ] Client component calls Server Action
+- [ ] Client component handles errors
+- [ ] Client component shows loading state
+- [ ] Form fields have proper accessibility
+- [ ] Success case redirects appropriately
+- [ ] Error messages are user-friendly
+- [ ] Email templates configured (if applicable)
+- [ ] Public routes updated (if applicable)
+- [ ] Manual testing completed
+- [ ] Documentation updated
+
+---
+
+## 🔗 Related Documentation
+
+- [AUTH_FLOW.md](../../docs/AUTH_FLOW.md) - Detailed flow diagrams
+- [AUTH_CONFIG.md](../../docs/AUTH_CONFIG.md) - Supabase configuration
+- [TROUBLESHOOTING.md](../../docs/TROUBLESHOOTING.md) - Common issues
+- [forms.mdc](./forms.mdc) - Form patterns
+- [architecture.mdc](./architecture.mdc) - Architecture patterns

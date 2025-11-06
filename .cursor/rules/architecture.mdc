@@ -631,6 +631,217 @@ export interface Task {
 
 ---
 
+## 🔐 Authentication Layer Patterns
+
+### Authentication Architecture
+
+Authentication follows strict layer separation with Server Actions as the primary interface:
+
+```
+┌─────────────────────────────────────────────────────┐
+│  Presentation Layer (Client Components)             │
+│  • Auth Forms (Login, Signup, Reset)                │
+│  • Submit to Server Actions only                    │
+│  • Display errors and loading states                │
+└───────────────────────┬─────────────────────────────┘
+                        │
+                        ▼
+┌─────────────────────────────────────────────────────┐
+│  Application Layer (Server Actions)                 │
+│  • app/actions/*Action.ts                           │
+│  • Validate input with domain schemas               │
+│  • Call infrastructure auth services                │
+│  • Return success/error results                     │
+└───────────────────────┬─────────────────────────────┘
+                        │
+                        ▼
+┌─────────────────────────────────────────────────────┐
+│  Infrastructure Layer (Supabase Auth)               │
+│  • Server-side Supabase client                      │
+│  • Auth confirmation handler (/auth/confirm)        │
+│  • Session management (middleware)                  │
+└─────────────────────────────────────────────────────┘
+```
+
+### Server Action Pattern for Auth
+
+```typescript
+// app/actions/authAction.ts
+'use server';
+
+import { createClient } from '@/src/infrastructure/supabase/server';
+import { authSchema } from '@/src/domain/validation/auth.schema';
+import { redirect } from 'next/navigation';
+
+type AuthActionResult =
+  | { success: true }
+  | { success: false; error: string; fieldErrors?: Record<string, string[]> };
+
+export async function authAction(
+  formData: FormData
+): Promise<AuthActionResult> {
+  // 1. Validate with domain schema
+  const result = authSchema.safeParse({
+    email: formData.get('email'),
+  });
+  
+  if (!result.success) {
+    return {
+      success: false,
+      error: 'Invalid input',
+      fieldErrors: result.error.flatten().fieldErrors,
+    };
+  }
+  
+  // 2. Use server Supabase client
+  const supabase = await createClient();
+  
+  // 3. Perform auth operation
+  const { error } = await supabase.auth.someOperation(result.data);
+  
+  if (error) {
+    return { success: false, error: 'User-friendly message' };
+  }
+  
+  // 4. Redirect on success (throws)
+  redirect('/destination');
+}
+```
+
+### Form Component Pattern for Auth
+
+```typescript
+// src/presentation/components/authentication/AuthForm.tsx
+'use client';
+
+import { authAction } from '@/app/actions/authAction';
+import { authSchema, type AuthFormData } from '@/src/domain/validation/auth.schema';
+import { useTransition } from 'react';
+import { useForm } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { toast } from 'sonner';
+
+export function AuthForm() {
+  const [isPending, startTransition] = useTransition();
+  
+  const form = useForm<AuthFormData>({
+    resolver: zodResolver(authSchema),
+  });
+  
+  const onSubmit = async (data: AuthFormData) => {
+    startTransition(async () => {
+      const formData = new FormData();
+      Object.entries(data).forEach(([key, value]) => {
+        formData.append(key, value);
+      });
+      
+      const result = await authAction(formData);
+      
+      if (!result.success) {
+        toast.error('Operation failed', { description: result.error });
+      }
+    });
+  };
+  
+  return (
+    <form onSubmit={form.handleSubmit(onSubmit)}>
+      {/* Form fields */}
+    </form>
+  );
+}
+```
+
+### Email Confirmation Pattern
+
+All email links (password reset, email confirmation) must use server-side token exchange:
+
+```typescript
+// app/auth/confirm/route.ts
+import { type EmailOtpType } from '@supabase/supabase-js';
+import { createClient } from '@/src/infrastructure/supabase/server';
+import { redirect } from 'next/navigation';
+
+export async function GET(request: NextRequest) {
+  const { searchParams } = new URL(request.url);
+  const token_hash = searchParams.get('token_hash');
+  const type = searchParams.get('type') as EmailOtpType | null;
+  const next = searchParams.get('next') ?? '/';
+  
+  if (token_hash && type) {
+    const supabase = await createClient();
+    const { error } = await supabase.auth.verifyOtp({ type, token_hash });
+    
+    if (!error) {
+      redirect(next);
+    }
+  }
+  
+  redirect('/error');
+}
+```
+
+### Authentication Rules
+
+**✅ DO:**
+- Use Server Actions for all auth form submissions
+- Validate with Zod schemas in both client and server
+- Use `createClient()` from server module in Server Actions
+- Use `supabase.auth.getUser()` for session verification
+- Return typed results from Server Actions
+- Provide user-friendly error messages
+- Use `useTransition` for loading states
+- Redirect after successful auth operations
+
+**❌ DON'T:**
+- Call auth utilities directly from client components
+- Use browser Supabase client in Server Actions
+- Use `supabase.auth.getSession()` on server (not verified)
+- Exchange PKCE tokens client-side
+- Expose detailed error messages (security risk)
+- Skip server-side validation
+- Trust client input without validation
+
+### Session Management
+
+The proxy middleware handles session management automatically:
+
+```typescript
+// proxy.ts
+export async function proxy(request: NextRequest) {
+  const supabase = createServerClient(/* config */);
+  
+  // Automatically refreshes expired sessions
+  const { data: { user } } = await supabase.auth.getUser();
+  
+  // Protect routes
+  if (!isPublicRoute && !user) {
+    return NextResponse.redirect('/login');
+  }
+  
+  return response;
+}
+```
+
+**Server Components** can access user directly:
+
+```typescript
+// app/(protected)/page.tsx
+import { createClient } from '@/src/infrastructure/supabase/server';
+
+export default async function ProtectedPage() {
+  const supabase = await createClient();
+  const { data: { user } } = await supabase.auth.getUser();
+  
+  if (!user) {
+    redirect('/login');
+  }
+  
+  return <div>Welcome {user.email}</div>;
+}
+```
+
+---
+
 ## 📋 Architecture Checklist
 
 Before committing code:
@@ -648,6 +859,9 @@ Before committing code:
 - [ ] Return domain entities, not database types
 - [ ] No direct Supabase client usage
 - [ ] No React/Next.js specific code
+- [ ] Server Actions use server Supabase client
+- [ ] Server Actions validate with Zod schemas
+- [ ] Server Actions return typed results
 
 ### Infrastructure Layer
 
@@ -663,6 +877,8 @@ Before committing code:
 - [ ] Server Actions handle repository instantiation
 - [ ] No business logic in components
 - [ ] Import from application/domain only (not infrastructure repositories)
+- [ ] Auth forms use Server Actions (not client utilities)
+- [ ] Forms use useTransition for pending states
 
 ---
 
@@ -676,3 +892,5 @@ Before committing code:
 - **Presentation** - UI components, hooks, Server Components, Server Actions
 
 **Key Rule:** Arrows point inward. Outer layers depend on inner layers, never the reverse.
+
+**Auth-Specific Rule:** All auth operations use Server Actions. No client-side auth utilities for form submissions.

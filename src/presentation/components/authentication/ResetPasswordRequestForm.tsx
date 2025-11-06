@@ -1,5 +1,6 @@
 'use client';
 
+import { resetPasswordRequestAction } from '@/app/actions/resetPasswordRequestAction';
 import { ROUTES } from '@/src/config/constants';
 import {
   ResetPasswordRequestFormData,
@@ -7,6 +8,7 @@ import {
 } from '@/src/domain/validation/auth.schema';
 import { zodResolver } from '@hookform/resolvers/zod';
 import Link from 'next/link';
+import { useTransition } from 'react';
 import { Controller, useForm } from 'react-hook-form';
 import { toast } from 'sonner';
 import { Button } from '../ui/button';
@@ -19,8 +21,6 @@ import {
   FieldLabel,
 } from '../ui/field';
 import { Input } from '../ui/input';
-import { resetPasswordRequestAction } from '@/app/actions/resetPasswordRequestAction';
-import { useTransition } from 'react';
 
 export function ResetPasswordRequestForm() {
   const [isPending, startTransition] = useTransition();
@@ -33,12 +33,8 @@ export function ResetPasswordRequestForm() {
 
   const onSubmit = async (data: ResetPasswordRequestFormData) => {
     startTransition(async () => {
-      // Convert form data to FormData for server action
-      const formData = new FormData();
-      formData.append('email', data.email);
-
-      // Call server action
-      const result = await resetPasswordRequestAction(formData);
+      // Call server action with typed data
+      const result = await resetPasswordRequestAction(data);
 
       // Handle result
       if (!result.success) {
