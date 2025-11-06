@@ -24,7 +24,7 @@ import {
   FormLabel,
   FormMessage,
 } from '../ui/form';
-import { Input } from '../ui/input';
+import { PasswordInput } from '../ui/password-input';
 
 export function ResetPasswordConfirmForm() {
   const [isPending, startTransition] = useTransition();
@@ -146,8 +146,7 @@ export function ResetPasswordConfirmForm() {
                 <FormItem>
                   <FormLabel>New Password</FormLabel>
                   <FormControl>
-                    <Input
-                      type="password"
+                    <PasswordInput
                       placeholder="********"
                       autoComplete="new-password"
                       {...field}
@@ -168,8 +167,7 @@ export function ResetPasswordConfirmForm() {
                 <FormItem>
                   <FormLabel>Confirm New Password</FormLabel>
                   <FormControl>
-                    <Input
-                      type="password"
+                    <PasswordInput
                       placeholder="********"
                       autoComplete="new-password"
                       {...field}

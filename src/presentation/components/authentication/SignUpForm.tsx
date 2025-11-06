@@ -23,6 +23,7 @@ import {
   FormMessage,
 } from '../ui/form';
 import { Input } from '../ui/input';
+import { PasswordInput } from '../ui/password-input';
 
 export function SignUpForm() {
   const [isPending, startTransition] = useTransition();
@@ -144,8 +145,7 @@ export function SignUpForm() {
                 <FormItem>
                   <FormLabel>Password</FormLabel>
                   <FormControl>
-                    <Input
-                      type="password"
+                    <PasswordInput
                       placeholder="********"
                       autoComplete="new-password"
                       {...field}
@@ -166,8 +166,7 @@ export function SignUpForm() {
                 <FormItem>
                   <FormLabel>Confirm Password</FormLabel>
                   <FormControl>
-                    <Input
-                      type="password"
+                    <PasswordInput
                       placeholder="********"
                       autoComplete="new-password"
                       {...field}

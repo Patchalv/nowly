@@ -23,6 +23,7 @@ import {
   FormMessage,
 } from '../ui/form';
 import { Input } from '../ui/input';
+import { PasswordInput } from '../ui/password-input';
 
 export function LogInForm() {
   const [isPending, startTransition] = useTransition();
@@ -95,8 +96,7 @@ export function LogInForm() {
                 <FormItem>
                   <FormLabel>Password</FormLabel>
                   <FormControl>
-                    <Input
-                      type="password"
+                    <PasswordInput
                       placeholder="********"
                       autoComplete="current-password"
                       {...field}
