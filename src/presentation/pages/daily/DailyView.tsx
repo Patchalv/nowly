@@ -4,6 +4,37 @@ import { WeekCarousel } from '@/src/presentation/components/week-carousel/WeekCa
 import { formatDateForURL, parseDateFromURL } from '@/src/shared/utils';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { Suspense, useTransition } from 'react';
+import { TaskList } from '../../components/tasks/TaskList';
+
+// Example task type and example tasks list just for the purpose of developing the component.
+// TODO: Remove this once the task list is implemented.
+export type ExampleTask = {
+  id: string;
+  title: string;
+  description: string;
+  completed: boolean;
+};
+
+const exampleTasks: ExampleTask[] = [
+  {
+    id: '1',
+    title: 'Task 1',
+    description: 'Description 1',
+    completed: false,
+  },
+  {
+    id: '2',
+    title: 'Task 2',
+    description: 'Description 2',
+    completed: false,
+  },
+  {
+    id: '3',
+    title: 'Task 3',
+    description: 'Description 3',
+    completed: false,
+  },
+];
 
 function DailyViewContent() {
   const router = useRouter();
@@ -33,20 +64,9 @@ function DailyViewContent() {
         />
       </div>
 
-      {/* Placeholder for task list */}
-      <div className="flex-1">
-        <div className="rounded-lg border border-dashed border-muted-foreground/25 p-8 text-center">
-          <p className="text-muted-foreground">
-            Tasks for{' '}
-            {selectedDate.toLocaleDateString('en-US', {
-              weekday: 'long',
-              year: 'numeric',
-              month: 'long',
-              day: 'numeric',
-            })}{' '}
-            will appear here
-          </p>
-        </div>
+      {/* Task list */}
+      <div className="p-4">
+        <TaskList tasks={exampleTasks} />
       </div>
     </div>
   );
