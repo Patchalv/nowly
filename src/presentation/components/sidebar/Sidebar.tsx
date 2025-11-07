@@ -5,7 +5,7 @@ import {
   CalendarCheckIcon,
   CalendarSyncIcon,
   ClipboardListIcon,
-  ListTodoIcon,
+  SettingsIcon,
 } from 'lucide-react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
@@ -49,7 +49,7 @@ export const Sidebar = () => {
       </div>
       <div className="flex flex-col items-center gap-4">
         <Link href={ROUTES.SETTINGS}>
-          <ListTodoIcon
+          <SettingsIcon
             strokeWidth={sideBarItemStrokeWidth}
             className={getIconClasses(ROUTES.SETTINGS)}
           />
