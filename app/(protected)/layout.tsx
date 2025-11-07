@@ -1,5 +1,5 @@
-import { MobileBottomBar } from '@/src/presentation/components/menus/mobile-bottom-bar/MobileBottomBar';
-import { Sidebar } from '@/src/presentation/components/menus/sidebar/Sidebar';
+import { MobileBottomBar } from '@/src/presentation/components/navigation/mobile-bottom-bar/MobileBottomBar';
+import { Sidebar } from '@/src/presentation/components/navigation/sidebar/Sidebar';
 
 export default function ProtectedLayout({
   children,
