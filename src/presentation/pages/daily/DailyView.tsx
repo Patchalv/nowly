@@ -4,6 +4,7 @@ import { WeekCarousel } from '@/src/presentation/components/week-carousel/WeekCa
 import { formatDateForURL, parseDateFromURL } from '@/src/shared/utils';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { Suspense, useTransition } from 'react';
+import { FallbackView } from '../../components/loader/FallbackView';
 import { TaskList } from '../../components/tasks/TaskList';
 
 // Example task type and example tasks list just for the purpose of developing the component.
@@ -64,32 +65,26 @@ function DailyViewContent() {
   };
 
   return (
-    <div className="flex flex-col w-full h-full">
+    <main className="flex flex-col w-full h-full">
       {/* Week Carousel */}
-      <div className="w-full max-w-4xl mx-auto mb-8">
+      <section className="w-full max-w-4xl mx-auto mb-8">
         <WeekCarousel
           selectedDate={selectedDate}
           onDateChange={handleDateChange}
         />
-      </div>
+      </section>
 
       {/* Task list */}
-      <div className="p-4">
+      <section className="p-4">
         <TaskList tasks={lotsOfTasks} />
-      </div>
-    </div>
+      </section>
+    </main>
   );
 }
 
 export function DailyView() {
   return (
-    <Suspense
-      fallback={
-        <div className="flex h-full flex-col items-center justify-center p-6">
-          <p className="text-muted-foreground">Loading...</p>
-        </div>
-      }
-    >
+    <Suspense fallback={<FallbackView />}>
       <DailyViewContent />
     </Suspense>
   );
