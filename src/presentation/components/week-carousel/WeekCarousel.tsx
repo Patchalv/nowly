@@ -131,9 +131,9 @@ export function WeekCarousel({
                   key={index}
                   onClick={() => handleDateClick(day.date)}
                   className={`
-                    flex min-w-[2rem] flex-col items-center justify-center
+                    flex min-w-8 flex-col items-center justify-center
                     rounded-lg px-1 py-1 transition-colors
-                    sm:min-w-[2.5rem] sm:px-2 sm:py-1.5
+                    sm:min-w-10 sm:px-2 sm:py-1.5
                     ${
                       isSelected
                         ? 'bg-teal-600 text-white'

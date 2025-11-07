@@ -1,4 +1,4 @@
-import { DailyView } from '@/src/presentation/components/daily/DailyView';
+import { DailyView } from '@/src/presentation/pages/daily/DailyView';
 
 export default function DailyPage() {
   return <DailyView />;

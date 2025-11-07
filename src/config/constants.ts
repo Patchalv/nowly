@@ -176,10 +176,9 @@ export const ROUTES = {
 
   // Protected routes
   DAILY: '/daily',
-  TASKS: '/tasks',
-  CATEGORIES: '/categories',
+  ALL_TASKS: '/all-tasks',
+  RECURRING: '/recurring',
   SETTINGS: '/settings',
-  PROFILE: '/profile',
 
   // API routes
   API: {
