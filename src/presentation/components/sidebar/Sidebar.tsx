@@ -26,7 +26,7 @@ export const Sidebar = () => {
   };
 
   return (
-    <div className="h-screen w-full max-w-16 bg-accent-foreground flex flex-col justify-between py-4 gap-4">
+    <div className="h-full w-full max-w-16 bg-accent-foreground flex flex-col justify-between py-4 gap-4">
       <div className="flex flex-col items-center gap-4">
         <Link href={ROUTES.DAILY}>
           <CalendarCheckIcon
