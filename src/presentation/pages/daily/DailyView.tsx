@@ -36,6 +36,15 @@ const exampleTasks: ExampleTask[] = [
   },
 ];
 
+const lotsOfTasks = [
+  ...exampleTasks,
+  ...exampleTasks,
+  ...exampleTasks,
+  ...exampleTasks,
+  ...exampleTasks,
+  ...exampleTasks,
+];
+
 function DailyViewContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -66,7 +75,7 @@ function DailyViewContent() {
 
       {/* Task list */}
       <div className="p-4">
-        <TaskList tasks={exampleTasks} />
+        <TaskList tasks={lotsOfTasks} />
       </div>
     </div>
   );

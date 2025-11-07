@@ -13,7 +13,7 @@ export const TaskList = ({ tasks }: TaskListProps) => {
   }
 
   return (
-    <ItemGroup className="flex flex-col gap-3">
+    <ItemGroup className="flex flex-col gap-3 overflow-y-auto max-h-[calc(100vh-10rem)]">
       {tasks.map((task) => (
         <TaskListItem key={task.id} task={task} />
       ))}
