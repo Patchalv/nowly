@@ -1,5 +1,6 @@
 import {
   CalendarCheckIcon,
+  CalendarSyncIcon,
   ClipboardListIcon,
   ListTodoIcon,
 } from 'lucide-react';
@@ -17,6 +18,10 @@ export const Sidebar = () => {
           className={sideBarItemClasses}
         />
         <ClipboardListIcon
+          strokeWidth={sideBarItemStrokeWidth}
+          className={sideBarItemClasses}
+        />
+        <CalendarSyncIcon
           strokeWidth={sideBarItemStrokeWidth}
           className={sideBarItemClasses}
         />
