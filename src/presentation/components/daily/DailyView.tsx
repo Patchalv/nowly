@@ -24,7 +24,7 @@ function DailyViewContent() {
   };
 
   return (
-    <div className="flex min-h-screen flex-col w-full">
+    <div className="flex flex-col w-full h-full">
       {/* Week Carousel */}
       <div className="w-full max-w-4xl mx-auto mb-8">
         <WeekCarousel
@@ -56,7 +56,7 @@ export function DailyView() {
   return (
     <Suspense
       fallback={
-        <div className="flex min-h-screen flex-col items-center justify-center p-6">
+        <div className="flex h-full flex-col items-center justify-center p-6">
           <p className="text-muted-foreground">Loading...</p>
         </div>
       }
