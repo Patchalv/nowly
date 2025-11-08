@@ -1,5 +1,4 @@
 import * as Sentry from '@sentry/nextjs';
-import { logger } from '@sentry/nextjs';
 import { toast } from 'sonner';
 import type { AppError } from './app-errors';
 import { parseSupabaseError } from './parser';
@@ -8,8 +7,22 @@ import { parseSupabaseError } from './parser';
  * Log error to Sentry (will be implemented with Sentry setup)
  */
 function logToSentry(error: AppError) {
-  logger.error('[Error]', { error: error });
-  Sentry.captureException(error);
+  if (process.env.NODE_ENV === 'development') {
+    console.error('[Error]', { error: error });
+  }
+  Sentry.captureException(error.originalError || new Error(error.message), {
+    level: 'error',
+    tags: {
+      error_code: error.code,
+    },
+    contexts: {
+      error_details: {
+        code: error.code,
+        message: error.message,
+        ...error.context,
+      },
+    },
+  });
 }
 
 /**

@@ -6,6 +6,7 @@ import {
   signupSchema,
   type SignupFormData,
 } from '@/src/domain/validation/auth.schema';
+import { trackSignup } from '@/src/infrastructure/services/sentry/auth';
 import { createClient } from '@/src/infrastructure/supabase/server';
 import { logger } from '@sentry/nextjs';
 import { redirect } from 'next/navigation';
@@ -83,6 +84,13 @@ export async function signupAction(
         emailRedirectTo: `${getDeploymentUrl()}/auth/confirm?next=/daily`,
       },
     });
+
+    if (authData.user) {
+      trackSignup({
+        id: authData.user.id,
+        email: authData.user.email,
+      });
+    }
 
     if (error) {
       logger.error('Signup error', { error: error });

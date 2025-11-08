@@ -1,6 +1,7 @@
 'use server';
 
 import { ROUTES } from '@/src/config/constants';
+import { trackLogout } from '@/src/infrastructure/services/sentry/auth';
 import { createClient } from '@/src/infrastructure/supabase/server';
 import { logger } from '@sentry/nextjs';
 import { redirect } from 'next/navigation';
@@ -18,11 +19,9 @@ type LogoutActionResult = { success: true } | { success: false; error: string };
  */
 export async function logoutAction(): Promise<LogoutActionResult> {
   try {
-    logger.info('Creating Supabase server client');
+    trackLogout();
     const supabase = await createClient();
-    logger.info('Signing out user');
     const { error } = await supabase.auth.signOut();
-    logger.info('Logout result', { error: error });
 
     if (error) {
       logger.error('Logout error', { error: error });

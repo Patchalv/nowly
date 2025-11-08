@@ -5,6 +5,7 @@ import {
   loginSchema,
   type LoginFormData,
 } from '@/src/domain/validation/auth.schema';
+import { trackLogin } from '@/src/infrastructure/services/sentry/auth';
 import { createClient } from '@/src/infrastructure/supabase/server';
 import { logger } from '@sentry/nextjs';
 import { redirect } from 'next/navigation';
@@ -29,10 +30,12 @@ export async function loginAction(
   try {
     // Validate form data
     const result = loginSchema.safeParse(data);
-    logger.info('Login form data', { email: data.email });
 
     // Return validation errors
     if (!result.success) {
+      logger.error('Login validation errors', {
+        errorFields: Object.keys(result.error.flatten().fieldErrors),
+      });
       return {
         success: false,
         error: 'Please check your input and try again',
@@ -41,7 +44,6 @@ export async function loginAction(
     }
 
     // Create Supabase server client
-    logger.info('Creating Supabase server client');
     const supabase = await createClient();
 
     // Attempt to sign in
@@ -50,7 +52,12 @@ export async function loginAction(
       password: result.data.password,
     });
 
-    logger.info('Login result', { authData: authData });
+    if (authData.user) {
+      trackLogin({
+        id: authData.user.id,
+        email: authData.user.email,
+      });
+    }
 
     if (error) {
       logger.error('Login error', {
