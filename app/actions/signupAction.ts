@@ -46,7 +46,6 @@ export async function signupAction(
     }
 
     // Create Supabase server client
-    logger.info('Creating Supabase server client');
     const supabase = await createClient();
 
     // Check if email already exists
@@ -150,5 +149,6 @@ export async function signupAction(
   }
 
   // Redirect on successful signup to a confirmation page
+  logger.info('Redirecting to signup success page');
   redirect(ROUTES.SIGNUP_SUCCESS);
 }

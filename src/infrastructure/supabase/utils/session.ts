@@ -22,11 +22,10 @@ import type { AuthUser, SupabaseResponse } from '../types';
 export async function getServerSession() {
   logger.info('Getting server session');
   const supabase = await createClient();
-  logger.info('Creating Supabase server client');
   const {
     data: { session },
   } = await supabase.auth.getSession();
-  logger.info('Session', { session: session });
+  logger.debug('Session', { session: session });
   return session;
 }
 
@@ -48,8 +47,10 @@ export async function getServerUser(): Promise<SupabaseResponse<AuthUser>> {
       data: { user },
       error,
     } = await supabase.auth.getUser();
-    logger.info('User', { user: user });
-    logger.info('Error', { error: error });
+    logger.info('User retrieval completed', {
+      hasUser: !!user,
+      hasError: !!error,
+    });
     if (error) {
       logger.error('Error getting server user', { error: error });
       return {
@@ -90,12 +91,12 @@ export async function getServerUser(): Promise<SupabaseResponse<AuthUser>> {
  * }
  */
 export async function requireAuth(): Promise<AuthUser> {
-  logger.info('Requiring auth');
+  logger.info('Checking if user is authenticated');
   const { data: user, error } = await getServerUser();
 
   if (!user || error) {
     if (error) {
-      logger.error('Auth check failed', { error: error });
+      logger.error('Authentication check failed', { error: error });
     }
     redirect(ROUTES.LOGIN);
   }
@@ -136,8 +137,8 @@ export async function requireGuest(): Promise<void> {
  * }
  */
 export async function getServerUserId(): Promise<string | null> {
-  logger.info('Getting server user ID');
+  logger.info('Retrieving server user ID');
   const { data: user } = await getServerUser();
-  logger.info('User ID', { userId: user?.id });
+  logger.info('User ID retrieved', { hasUserId: !!user?.id });
   return user?.id ?? null;
 }

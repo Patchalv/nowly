@@ -24,15 +24,17 @@ import { type NextRequest, NextResponse } from 'next/server';
  */
 export async function GET(request: NextRequest) {
   logger.info('Auth confirm route handler');
-  logger.info('Request URL', { url: request.url });
   const { searchParams } = new URL(request.url);
-  logger.info('Search params', { searchParams: searchParams });
+  logger.info('Auth confirm request parameters', {
+    hasTokenHash: Boolean(searchParams.get('token_hash')),
+    type: searchParams.get('type'),
+    next: searchParams.get('next'),
+  });
+
   const token_hash = searchParams.get('token_hash');
   const type = searchParams.get('type') as EmailOtpType | null;
   const next = searchParams.get('next') ?? '/';
-  logger.info('Token hash', { token_hash: token_hash });
-  logger.info('Type', { type: type });
-  logger.info('Next', { next: next });
+
   // Prepare redirect URL
   const redirectTo = request.nextUrl.clone();
   redirectTo.pathname = next;
@@ -49,18 +51,18 @@ export async function GET(request: NextRequest) {
       token_hash,
     });
 
-    logger.info('Auth verification result', { error: error });
     if (!error) {
+      logger.info('Auth verification successful');
       // Successfully verified - redirect to destination
       return NextResponse.redirect(redirectTo);
     }
 
-    // Log error for debugging (will appear in server logs)
     logger.error('Auth verification error', { error: error });
   }
 
   // Token verification failed or missing parameters
   // Redirect to error page with helpful message
+  logger.error('Auth verification failed');
   redirectTo.pathname = '/error';
   redirectTo.searchParams.set(
     'message',

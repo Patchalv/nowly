@@ -18,6 +18,6 @@ function getEnvironmentInfo() {
 export function logEnvironmentInfo() {
   if (!isProduction) {
     const info = getEnvironmentInfo();
-    logger.info('Environment Info', { info: info });
+    logger.debug('Environment Info', { info: info });
   }
 }

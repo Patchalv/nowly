@@ -44,7 +44,6 @@ export async function resetPasswordRequestAction(
     }
 
     // Create Supabase server client
-    logger.info('Creating Supabase server client');
     const supabase = await createClient();
 
     // Attempt to send password reset email
@@ -63,7 +62,6 @@ export async function resetPasswordRequestAction(
 
     // ALWAYS return success to prevent email enumeration attacks
     // This prevents attackers from determining which emails are registered
-    logger.info('Password reset email sent successfully');
     return { success: true };
   } catch (error) {
     logger.error('Password reset request action failed', { error: error });
