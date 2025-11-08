@@ -1,4 +1,5 @@
 import { env } from '@/src/config/env';
+import { logger } from '@sentry/nextjs';
 import { createServerClient } from '@supabase/ssr';
 import { cookies } from 'next/headers';
 import { Database } from './types';
@@ -9,7 +10,7 @@ import { Database } from './types';
  */
 export async function createClient() {
   const cookieStore = await cookies();
-
+  logger.info('Creating Supabase server client');
   return createServerClient<Database>(
     env.NEXT_PUBLIC_SUPABASE_URL,
     env.NEXT_PUBLIC_SUPABASE_ANON_KEY,

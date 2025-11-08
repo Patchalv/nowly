@@ -7,6 +7,7 @@ import {
   type SignupFormData,
 } from '@/src/domain/validation/auth.schema';
 import { createClient } from '@/src/infrastructure/supabase/server';
+import { logger } from '@sentry/nextjs';
 import { redirect } from 'next/navigation';
 
 /**
@@ -30,9 +31,13 @@ export async function signupAction(
   data: SignupFormData
 ): Promise<SignupActionResult> {
   try {
+    logger.info('Signup attempt initiated');
     const result = signupSchema.safeParse(data);
     // Return validation errors
     if (!result.success) {
+      logger.error('Signup validation errors', {
+        errorFields: Object.keys(result.error.flatten().fieldErrors),
+      });
       return {
         success: false,
         error: 'Please check your input and try again',
@@ -41,6 +46,7 @@ export async function signupAction(
     }
 
     // Create Supabase server client
+    logger.info('Creating Supabase server client');
     const supabase = await createClient();
 
     // Check if email already exists
@@ -51,11 +57,12 @@ export async function signupAction(
       .maybeSingle();
 
     if (!isProduction && queryError) {
-      console.error('Error checking existing email:', queryError);
+      logger.error('Error checking existing email', { error: queryError });
       // Continue with signup attempt - don't block on query errors
     }
 
     if (existingUsers) {
+      logger.error('Email already exists');
       return {
         success: false,
         error:
@@ -64,6 +71,7 @@ export async function signupAction(
     }
 
     // Attempt to sign up
+    logger.info('Attempting to sign up');
     const { data: authData, error } = await supabase.auth.signUp({
       email: result.data.email,
       password: result.data.password,
@@ -78,10 +86,11 @@ export async function signupAction(
     });
 
     if (error) {
-      console.error('Signup error:', error);
+      logger.error('Signup error', { error: error });
 
       // Handle specific signup errors
       if (error.message.includes('already registered')) {
+        logger.error('Email already exists', { email: result.data.email });
         return {
           success: false,
           error: 'An account with this email already exists. Please log in.',
@@ -89,6 +98,10 @@ export async function signupAction(
       }
 
       if (error.message.includes('Password should be')) {
+        logger.error('Password does not meet requirements', {
+          email: result.data.email,
+          error: error,
+        });
         return {
           success: false,
           error: 'Password does not meet requirements. Please try again.',
@@ -96,6 +109,10 @@ export async function signupAction(
       }
 
       if (error.status === 422) {
+        logger.error('Invalid email format', {
+          email: result.data.email,
+          error: error,
+        });
         return {
           success: false,
           error: 'Invalid email format. Please check and try again.',
@@ -103,6 +120,10 @@ export async function signupAction(
       }
 
       // Generic error message for other cases
+      logger.error('Failed to create account', {
+        email: result.data.email,
+        error: error,
+      });
       return {
         success: false,
         error: 'Failed to create account. Please try again later.',
@@ -111,6 +132,7 @@ export async function signupAction(
 
     // Verify user was created
     if (!authData.user) {
+      logger.error('User not created', { email: result.data.email });
       return {
         success: false,
         error: 'Account creation failed. Please try again.',
@@ -120,7 +142,7 @@ export async function signupAction(
     // Success - redirect to signup success page
     // Note: redirect() throws, so code after this won't execute
   } catch (error) {
-    console.error('Signup action failed:', error);
+    logger.error('Signup action failed', { error: error });
     return {
       success: false,
       error: 'An unexpected error occurred. Please try again.',

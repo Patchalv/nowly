@@ -9,6 +9,7 @@ import {
 } from '@/src/domain/validation/auth.schema';
 import { supabase } from '@/src/infrastructure/supabase/client';
 import { zodResolver } from '@hookform/resolvers/zod';
+import { logger } from '@sentry/nextjs';
 import Link from 'next/link';
 import { useEffect, useState, useTransition } from 'react';
 import { useForm } from 'react-hook-form';
@@ -46,13 +47,16 @@ export function ResetPasswordConfirmForm() {
         // Check if we have a valid session
         // The auth route handler (/auth/confirm) already exchanged the token
         const { data } = await supabase.auth.getSession();
+        logger.info('Session data', { data: data });
         setHasValidToken(!!data.session);
       } catch (error) {
         if (!isProduction) {
-          console.error('Session validation error:', error);
+          logger.error('Session validation error', { error: error });
         }
+        logger.error('Session validation error', { error: error });
         setHasValidToken(false);
       } finally {
+        logger.info('Session validation completed');
         setIsValidating(false);
       }
     };
@@ -64,13 +68,14 @@ export function ResetPasswordConfirmForm() {
     startTransition(async () => {
       // Call server action with typed data
       const result = await resetPasswordConfirmAction(data);
-
+      logger.info('Reset password confirm result', { result: result });
       // Handle errors (success case redirects automatically)
       if (!result.success) {
         toast.error('Password reset failed', {
           description: result.error,
         });
 
+        logger.error('Reset password confirm error', { error: result.error });
         // Set field-specific errors if provided
         if (result.fieldErrors) {
           Object.entries(result.fieldErrors).forEach(([field, errors]) => {

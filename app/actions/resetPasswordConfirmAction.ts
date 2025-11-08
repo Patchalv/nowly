@@ -6,6 +6,7 @@ import {
   type ResetPasswordConfirmFormData,
 } from '@/src/domain/validation/auth.schema';
 import { createClient } from '@/src/infrastructure/supabase/server';
+import { logger } from '@sentry/nextjs';
 import { redirect } from 'next/navigation';
 
 /**
@@ -26,11 +27,15 @@ export async function resetPasswordConfirmAction(
   data: ResetPasswordConfirmFormData
 ): Promise<ResetPasswordConfirmActionResult> {
   try {
+    logger.info('Reset password confirm form data', { data: data });
     // Validate form data
     const result = resetPasswordConfirmSchema.safeParse(data);
-
+    logger.info('Reset password confirm result', { result: result });
     // Return validation errors
     if (!result.success) {
+      logger.error('Reset password confirm validation errors', {
+        errors: result.error.flatten().fieldErrors,
+      });
       return {
         success: false,
         error: 'Please check your input and try again',
@@ -39,6 +44,7 @@ export async function resetPasswordConfirmAction(
     }
 
     // Create Supabase server client
+    logger.info('Creating Supabase server client');
     const supabase = await createClient();
 
     // Attempt to update password
@@ -46,11 +52,16 @@ export async function resetPasswordConfirmAction(
       password: result.data.password,
     });
 
+    logger.info('Password update result', { data: data });
+
     if (error) {
-      console.error('Password update error:', error);
+      logger.error('Password update error', { error: error });
 
       // Handle specific password reset errors
       if (error.message.includes('session_not_found')) {
+        logger.error('Password reset link has expired or is invalid', {
+          error: error,
+        });
         return {
           success: false,
           error:
@@ -59,6 +70,12 @@ export async function resetPasswordConfirmAction(
       }
 
       if (error.message.includes('same_password')) {
+        logger.error(
+          'New password must be different from your current password',
+          {
+            error: error,
+          }
+        );
         return {
           success: false,
           error: 'New password must be different from your current password.',
@@ -66,6 +83,7 @@ export async function resetPasswordConfirmAction(
       }
 
       // Generic error message for other cases
+      logger.error('Failed to update password', { error: error });
       return {
         success: false,
         error:
@@ -76,7 +94,7 @@ export async function resetPasswordConfirmAction(
     // Success - redirect to login with success indication
     // Note: redirect() throws, so code after this won't execute
   } catch (error) {
-    console.error('Password reset confirm action failed:', error);
+    logger.error('Password reset confirm action failed', { error: error });
     return {
       success: false,
       error: 'An unexpected error occurred. Please try again.',

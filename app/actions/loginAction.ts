@@ -6,6 +6,7 @@ import {
   type LoginFormData,
 } from '@/src/domain/validation/auth.schema';
 import { createClient } from '@/src/infrastructure/supabase/server';
+import { logger } from '@sentry/nextjs';
 import { redirect } from 'next/navigation';
 
 /**
@@ -28,6 +29,7 @@ export async function loginAction(
   try {
     // Validate form data
     const result = loginSchema.safeParse(data);
+    logger.info('Login form data', { email: data.email });
 
     // Return validation errors
     if (!result.success) {
@@ -39,6 +41,7 @@ export async function loginAction(
     }
 
     // Create Supabase server client
+    logger.info('Creating Supabase server client');
     const supabase = await createClient();
 
     // Attempt to sign in
@@ -47,8 +50,13 @@ export async function loginAction(
       password: result.data.password,
     });
 
+    logger.info('Login result', { authData: authData });
+
     if (error) {
-      console.error('Login error:', error);
+      logger.error('Login error', {
+        email: result.data.email,
+        error: error,
+      });
 
       // Handle specific authentication errors
       if (
@@ -78,6 +86,10 @@ export async function loginAction(
 
     // Verify user was authenticated
     if (!authData.user) {
+      logger.error('Authentication failed', {
+        email: result.data.email,
+        authData: authData,
+      });
       return {
         success: false,
         error: 'Authentication failed. Please try again.',
@@ -87,7 +99,7 @@ export async function loginAction(
     // Success - redirect to daily view
     // Note: redirect() throws, so code after this won't execute
   } catch (error) {
-    console.error('Login action failed:', error);
+    logger.error('Login action failed', { error: error });
     return {
       success: false,
       error: 'An unexpected error occurred. Please try again.',

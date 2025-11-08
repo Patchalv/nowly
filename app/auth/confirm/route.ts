@@ -1,6 +1,7 @@
+import { createClient } from '@/src/infrastructure/supabase/server';
+import { logger } from '@sentry/nextjs';
 import { type EmailOtpType } from '@supabase/supabase-js';
 import { type NextRequest, NextResponse } from 'next/server';
-import { createClient } from '@/src/infrastructure/supabase/server';
 
 /**
  * Auth Confirmation Route Handler
@@ -22,11 +23,16 @@ import { createClient } from '@/src/infrastructure/supabase/server';
  * @see https://supabase.com/docs/guides/auth/server-side/nextjs
  */
 export async function GET(request: NextRequest) {
+  logger.info('Auth confirm route handler');
+  logger.info('Request URL', { url: request.url });
   const { searchParams } = new URL(request.url);
+  logger.info('Search params', { searchParams: searchParams });
   const token_hash = searchParams.get('token_hash');
   const type = searchParams.get('type') as EmailOtpType | null;
   const next = searchParams.get('next') ?? '/';
-
+  logger.info('Token hash', { token_hash: token_hash });
+  logger.info('Type', { type: type });
+  logger.info('Next', { next: next });
   // Prepare redirect URL
   const redirectTo = request.nextUrl.clone();
   redirectTo.pathname = next;
@@ -37,19 +43,20 @@ export async function GET(request: NextRequest) {
   // Verify token if present
   if (token_hash && type) {
     const supabase = await createClient();
-
+    logger.info('Creating Supabase server client');
     const { error } = await supabase.auth.verifyOtp({
       type,
       token_hash,
     });
 
+    logger.info('Auth verification result', { error: error });
     if (!error) {
       // Successfully verified - redirect to destination
       return NextResponse.redirect(redirectTo);
     }
 
     // Log error for debugging (will appear in server logs)
-    console.error('Auth verification error:', error);
+    logger.error('Auth verification error', { error: error });
   }
 
   // Token verification failed or missing parameters
