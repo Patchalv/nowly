@@ -6,6 +6,7 @@ import {
   type ResetPasswordRequestFormData,
 } from '@/src/domain/validation/auth.schema';
 import { createClient } from '@/src/infrastructure/supabase/server';
+import { logger } from '@sentry/nextjs';
 
 /**
  * Server action result type for password reset request
@@ -27,11 +28,14 @@ export async function resetPasswordRequestAction(
   data: ResetPasswordRequestFormData
 ): Promise<ResetPasswordRequestActionResult> {
   try {
+    logger.info('Reset password request received');
     // Validate form data
     const result = resetPasswordRequestSchema.safeParse(data);
-
     // Return validation errors
     if (!result.success) {
+      logger.error('Reset password request validation errors', {
+        errorFields: Object.keys(result.error.flatten().fieldErrors),
+      });
       return {
         success: false,
         error: 'Please check your input and try again',
@@ -53,14 +57,14 @@ export async function resetPasswordRequestAction(
 
     // Log error internally but don't expose to user (security best practice)
     if (error) {
-      console.error('Password reset email error:', error);
+      logger.error('Password reset email error', { error: error });
     }
 
     // ALWAYS return success to prevent email enumeration attacks
     // This prevents attackers from determining which emails are registered
     return { success: true };
   } catch (error) {
-    console.error('Password reset request action failed:', error);
+    logger.error('Password reset request action failed', { error: error });
 
     // Still return success to prevent email enumeration
     return { success: true };

@@ -1,7 +1,9 @@
 'use server';
 
 import { ROUTES } from '@/src/config/constants';
+import { trackLogout } from '@/src/infrastructure/services/sentry/auth';
 import { createClient } from '@/src/infrastructure/supabase/server';
+import { logger } from '@sentry/nextjs';
 import { redirect } from 'next/navigation';
 
 /**
@@ -17,11 +19,12 @@ type LogoutActionResult = { success: true } | { success: false; error: string };
  */
 export async function logoutAction(): Promise<LogoutActionResult> {
   try {
+    trackLogout();
     const supabase = await createClient();
     const { error } = await supabase.auth.signOut();
 
     if (error) {
-      console.error('Logout error:', error);
+      logger.error('Logout error', { error: error });
       return {
         success: false,
         error: 'Failed to log out. Please try again.',
@@ -31,7 +34,7 @@ export async function logoutAction(): Promise<LogoutActionResult> {
     // Success - redirect to login page
     // Note: redirect() throws, so code after this won't execute
   } catch (error) {
-    console.error('Logout action failed:', error);
+    logger.error('Logout action failed', { error: error });
     return {
       success: false,
       error: 'An unexpected error occurred during logout.',

@@ -1,4 +1,5 @@
-import { env } from '@/src/config/env';
+import { env, isProduction } from '@/src/config/env';
+import { logger } from '@sentry/nextjs';
 import { createBrowserClient } from '@supabase/ssr';
 import { Database } from './types';
 
@@ -7,6 +8,9 @@ import { Database } from './types';
  * This client is used in Client Components
  */
 export function createClient() {
+  if (!isProduction) {
+    logger.debug('Creating Supabase client');
+  }
   return createBrowserClient<Database>(
     env.NEXT_PUBLIC_SUPABASE_URL,
     env.NEXT_PUBLIC_SUPABASE_ANON_KEY

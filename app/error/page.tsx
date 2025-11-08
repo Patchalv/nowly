@@ -1,6 +1,7 @@
 'use client';
 
 import { ROUTES } from '@/src/config/constants';
+import { FallbackView } from '@/src/presentation/components/loader/FallbackView';
 import { Button } from '@/src/presentation/components/ui/button';
 import {
   Card,
@@ -48,23 +49,9 @@ function ErrorContent() {
   );
 }
 
-function ErrorFallback() {
-  return (
-    <div className="flex min-h-screen items-center justify-center p-4">
-      <Card className="w-full max-w-md">
-        <CardContent className="py-8">
-          <div className="text-center">
-            <p className="text-muted-foreground">Loading...</p>
-          </div>
-        </CardContent>
-      </Card>
-    </div>
-  );
-}
-
 export default function ErrorPage() {
   return (
-    <Suspense fallback={<ErrorFallback />}>
+    <Suspense fallback={<FallbackView />}>
       <ErrorContent />
     </Suspense>
   );

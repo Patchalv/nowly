@@ -1,5 +1,6 @@
 import { ROUTES } from '@/src/config/constants';
 import { createClient } from '@/src/infrastructure/supabase/server';
+import { logger } from '@sentry/nextjs';
 import { redirect } from 'next/navigation';
 import type { AuthUser, SupabaseResponse } from '../types';
 
@@ -19,10 +20,12 @@ import type { AuthUser, SupabaseResponse } from '../types';
  * }
  */
 export async function getServerSession() {
+  logger.info('Getting server session');
   const supabase = await createClient();
   const {
     data: { session },
   } = await supabase.auth.getSession();
+  logger.debug('Session', { session: session });
   return session;
 }
 
@@ -38,13 +41,18 @@ export async function getServerSession() {
  */
 export async function getServerUser(): Promise<SupabaseResponse<AuthUser>> {
   try {
+    logger.info('Getting server user');
     const supabase = await createClient();
     const {
       data: { user },
       error,
     } = await supabase.auth.getUser();
-
+    logger.info('User retrieval completed', {
+      hasUser: !!user,
+      hasError: !!error,
+    });
     if (error) {
+      logger.error('Error getting server user', { error: error });
       return {
         data: null,
         error: new Error(error.message),
@@ -62,6 +70,7 @@ export async function getServerUser(): Promise<SupabaseResponse<AuthUser>> {
       error: null,
     };
   } catch (error) {
+    logger.error('Error getting server user', { error: error });
     return {
       data: null,
       error:
@@ -82,11 +91,12 @@ export async function getServerUser(): Promise<SupabaseResponse<AuthUser>> {
  * }
  */
 export async function requireAuth(): Promise<AuthUser> {
+  logger.info('Checking if user is authenticated');
   const { data: user, error } = await getServerUser();
 
   if (!user || error) {
     if (error) {
-      console.error('Auth check failed:', error);
+      logger.error('Authentication check failed', { error: error });
     }
     redirect(ROUTES.LOGIN);
   }
@@ -106,9 +116,11 @@ export async function requireAuth(): Promise<AuthUser> {
  * }
  */
 export async function requireGuest(): Promise<void> {
+  logger.info('Requiring guest');
   const { data: user } = await getServerUser();
 
   if (user) {
+    logger.info('User is authenticated, redirecting to daily view');
     redirect(ROUTES.DAILY);
   }
 }
@@ -125,6 +137,8 @@ export async function requireGuest(): Promise<void> {
  * }
  */
 export async function getServerUserId(): Promise<string | null> {
+  logger.info('Retrieving server user ID');
   const { data: user } = await getServerUser();
+  logger.info('User ID retrieved', { hasUserId: !!user?.id });
   return user?.id ?? null;
 }

@@ -22,3 +22,5 @@ alwaysApply: true
 ## Other rules and guidelines
 
 - [Best Forms Practices](mdc:forms.mdc)
+- [Sentry](mdc:sentry.mdc)
+- [Authentication Guidelines](mdc:authentication.mdc)

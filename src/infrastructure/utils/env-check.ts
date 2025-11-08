@@ -1,4 +1,5 @@
 import { env, isProduction } from '@/src/config/env';
+import { logger } from '@sentry/nextjs';
 
 /**
  * Environment Check Utility
@@ -17,6 +18,6 @@ function getEnvironmentInfo() {
 export function logEnvironmentInfo() {
   if (!isProduction) {
     const info = getEnvironmentInfo();
-    console.log('🌍 Environment Info:', info);
+    logger.debug('Environment Info', { info: info });
   }
 }
