@@ -1,6 +1,6 @@
 'use client';
 
-import { loginAction } from '@/app/actions/loginAction';
+import { loginAction } from '@/app/actions/auth/loginAction';
 import { ROUTES } from '@/src/config/constants';
 import {
   LoginFormData,
