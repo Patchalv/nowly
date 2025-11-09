@@ -5,7 +5,7 @@ import {
   resetPasswordConfirmSchema,
   resetPasswordRequestSchema,
   signupSchema,
-} from './auth.schema';
+} from '../auth/auth.schema';
 
 describe('auth schema', () => {
   describe('password schema', () => {

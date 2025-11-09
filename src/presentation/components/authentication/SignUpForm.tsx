@@ -5,7 +5,7 @@ import { ROUTES } from '@/src/config/constants';
 import {
   SignupFormData,
   signupSchema,
-} from '@/src/domain/validation/auth.schema';
+} from '@/src/domain/validation/auth/auth.schema';
 import { zodResolver } from '@hookform/resolvers/zod';
 import Link from 'next/link';
 import { useTransition } from 'react';

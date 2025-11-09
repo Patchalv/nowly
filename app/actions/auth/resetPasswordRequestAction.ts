@@ -4,7 +4,7 @@ import { getDeploymentUrl } from '@/src/config/env';
 import {
   resetPasswordRequestSchema,
   type ResetPasswordRequestFormData,
-} from '@/src/domain/validation/auth.schema';
+} from '@/src/domain/validation/auth/auth.schema';
 import { createClient } from '@/src/infrastructure/supabase/server';
 import { logger } from '@sentry/nextjs';
 

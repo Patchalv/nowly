@@ -4,7 +4,7 @@ import { ROUTES } from '@/src/config/constants';
 import {
   resetPasswordConfirmSchema,
   type ResetPasswordConfirmFormData,
-} from '@/src/domain/validation/auth.schema';
+} from '@/src/domain/validation/auth/auth.schema';
 import { createClient } from '@/src/infrastructure/supabase/server';
 import { logger } from '@sentry/nextjs';
 import { redirect } from 'next/navigation';

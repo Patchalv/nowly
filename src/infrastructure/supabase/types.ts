@@ -23,8 +23,8 @@ export interface TaskRow {
   user_id: string;
   title: string;
   description: string | null;
-  scheduled_date: string | null; // DATE format: YYYY-MM-DD
-  due_date: string | null; // DATE format: YYYY-MM-DD
+  scheduled_date: string | null; // ISO string from DB
+  due_date: string | null; // ISO string from DB
   completed: boolean;
   completed_at: string | null; // TIMESTAMPTZ: ISO string
   category_id: string | null;
@@ -85,10 +85,10 @@ export interface Database {
       };
     };
     Views: {
-      [key: string]: any;
+      [key: string]: unknown;
     };
     Functions: {
-      [key: string]: any;
+      [key: string]: unknown;
     };
     Enums: {
       priority_level: 'high' | 'medium' | 'low';

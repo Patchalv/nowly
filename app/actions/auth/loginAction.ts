@@ -4,7 +4,7 @@ import { ROUTES } from '@/src/config/constants';
 import {
   loginSchema,
   type LoginFormData,
-} from '@/src/domain/validation/auth.schema';
+} from '@/src/domain/validation/auth/auth.schema';
 import { trackLogin } from '@/src/infrastructure/services/sentry/auth';
 import { createClient } from '@/src/infrastructure/supabase/server';
 import { logger } from '@sentry/nextjs';

@@ -6,7 +6,7 @@ import { isProduction } from '@/src/config/env';
 import {
   ResetPasswordConfirmFormData,
   resetPasswordConfirmSchema,
-} from '@/src/domain/validation/auth.schema';
+} from '@/src/domain/validation/auth/auth.schema';
 import { supabase } from '@/src/infrastructure/supabase/client';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { logger } from '@sentry/nextjs';
