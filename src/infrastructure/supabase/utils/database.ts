@@ -1,5 +1,5 @@
 import { supabase } from '@/src/infrastructure/supabase/client';
-import type { QueryOptions, SupabaseResponse } from '../types';
+import type { Database, QueryOptions, SupabaseResponse } from '../types';
 
 /**
  * Database utility functions
@@ -12,7 +12,7 @@ export async function selectFrom<T>(
   table: string,
   columns: string = '*',
   options?: QueryOptions & {
-    filters?: Record<string, any>;
+    filters?: Record<string, unknown>;
   }
 ): Promise<SupabaseResponse<T[]>> {
   try {
@@ -20,7 +20,7 @@ export async function selectFrom<T>(
 
     if (options?.filters) {
       Object.entries(options.filters).forEach(([key, value]) => {
-        query = query.eq(key, value);
+        query = query.eq(key, value as string | number | boolean);
       });
     }
 
@@ -55,17 +55,28 @@ export async function selectFrom<T>(
 /**
  * Generic insert query
  */
-export async function insertInto<T>(
-  table: string,
-  values: Partial<T> | Partial<T>[]
-): Promise<SupabaseResponse<T[]>> {
+export async function insertInto<
+  TTableName extends keyof Database['public']['Tables'],
+>(
+  table: TTableName,
+  values:
+    | Database['public']['Tables'][TTableName]['Insert']
+    | Database['public']['Tables'][TTableName]['Insert'][]
+): Promise<
+  SupabaseResponse<Database['public']['Tables'][TTableName]['Row'][]>
+> {
   try {
-    const { data, error } = await supabase.from(table).insert(values).select();
+    // Type assertion needed because Supabase's generic table inference
+    // doesn't work well with dynamic table names
+    const { data, error } = await supabase
+      .from(table)
+      .insert(values as unknown as never)
+      .select();
 
     if (error) throw error;
 
     return {
-      data: data as T[],
+      data: data as unknown as Database['public']['Tables'][TTableName]['Row'][],
       error: null,
     };
   } catch (error) {
@@ -79,23 +90,27 @@ export async function insertInto<T>(
 /**
  * Generic update query
  */
-export async function updateTable<T>(
-  table: string,
+export async function updateTable<
+  TTableName extends keyof Database['public']['Tables'],
+>(
+  table: TTableName,
   id: string,
-  values: Partial<T>
-): Promise<SupabaseResponse<T>> {
+  values: Database['public']['Tables'][TTableName]['Update']
+): Promise<SupabaseResponse<Database['public']['Tables'][TTableName]['Row']>> {
   try {
+    // Type assertion needed because Supabase's generic table inference
+    // doesn't work well with dynamic table names
     const { data, error } = await supabase
       .from(table)
-      .update(values)
-      .eq('id', id)
+      .update(values as unknown as never)
+      .eq('id' as never, id as never)
       .select()
       .single();
 
     if (error) throw error;
 
     return {
-      data: data as T,
+      data: data as unknown as Database['public']['Tables'][TTableName]['Row'],
       error: null,
     };
   } catch (error) {
