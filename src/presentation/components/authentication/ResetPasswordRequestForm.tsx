@@ -1,6 +1,6 @@
 'use client';
 
-import { resetPasswordRequestAction } from '@/app/actions/resetPasswordRequestAction';
+import { resetPasswordRequestAction } from '@/app/actions/auth/resetPasswordRequestAction';
 import { ROUTES } from '@/src/config/constants';
 import {
   ResetPasswordRequestFormData,

@@ -52,13 +52,6 @@ export async function loginAction(
       password: result.data.password,
     });
 
-    if (authData.user) {
-      trackLogin({
-        id: authData.user.id,
-        email: authData.user.email,
-      });
-    }
-
     if (error) {
       logger.error('Login error', {
         email: result.data.email,
@@ -101,6 +94,13 @@ export async function loginAction(
         success: false,
         error: 'Authentication failed. Please try again.',
       };
+    }
+
+    if (authData.user) {
+      trackLogin({
+        id: authData.user.id,
+        email: authData.user.email,
+      });
     }
 
     // Success - redirect to daily view

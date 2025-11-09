@@ -17,7 +17,7 @@ alwaysApply: true
 
 ## 📐 Layer Structure
 
-```
+```text
 app/                    # Next.js routing & Server Components
 src/
 ├── presentation/       # UI components, hooks, providers (React/Next.js)
@@ -39,24 +39,24 @@ src/
 // No imports from other layers
 
 // ✅ Application - domain only
-import type { Entity } from "@/src/domain/models/Entity";
-import { entitySchema } from "@/src/domain/validation/entity.schema";
+import type { Entity } from '@/src/domain/models/Entity';
+import { entitySchema } from '@/src/domain/validation/entity.schema';
 
 // ✅ Infrastructure - domain, application
-import type { Entity } from "@/src/domain/models/Entity";
-import type { EntityRepository } from "@/src/infrastructure/repositories/IEntityRepository";
+import type { Entity } from '@/src/domain/models/Entity';
+import type { EntityRepository } from '@/src/infrastructure/repositories/IEntityRepository';
 
 // ✅ Presentation - application, domain (NOT infrastructure)
-import { createEntity } from "@/src/application/entities/createEntity.usecase";
-import type { Entity } from "@/src/domain/models/Entity";
+import { createEntity } from '@/src/application/entities/createEntity.usecase';
+import type { Entity } from '@/src/domain/models/Entity';
 
 // ❌ Presentation CANNOT import infrastructure
-import { SupabaseEntityRepository } from "@/src/infrastructure/repositories/SupabaseEntityRepository"; // WRONG!
+import { SupabaseEntityRepository } from '@/src/infrastructure/repositories/SupabaseEntityRepository'; // WRONG!
 ```
 
 ### Dependency Flow
 
-```
+```text
 presentation (React/Next.js)
       ↓
 application (use cases)
@@ -76,7 +76,7 @@ infrastructure (Supabase, repos)
 
 ### Structure
 
-```
+```text
 domain/
 ├── models/              # Entity definitions
 │   ├── Task.ts
@@ -84,7 +84,8 @@ domain/
 ├── types/              # Enums, value objects
 │   └── index.ts
 └── validation/         # Zod schemas
-    └── task.schema.ts
+│   ├── task.schema.ts
+    └── task.schema.test.ts
 ```
 
 ### Domain Entity Pattern
@@ -105,19 +106,19 @@ export interface Task {
 
 ```typescript
 // src/domain/types/index.ts
-export type Priority = "high" | "medium" | "low";
-export type Status = "active" | "inactive";
+export type Priority = 'high' | 'medium' | 'low';
+export type Status = 'active' | 'inactive';
 ```
 
 ### Domain Validation Pattern
 
 ```typescript
 // src/domain/validation/task.schema.ts
-import { z } from "zod";
+import { z } from 'zod';
 
 export const createTaskSchema = z.object({
   title: z.string().min(1).max(255),
-  priority: z.enum(["high", "medium", "low"]).optional(),
+  priority: z.enum(['high', 'medium', 'low']).optional(),
 });
 
 export type CreateTaskInput = z.infer<typeof createTaskSchema>;
@@ -141,7 +142,7 @@ export type CreateTaskInput = z.infer<typeof createTaskSchema>;
 
 ### Structure
 
-```
+```text
 application/
 ├── tasks/
 │   ├── createTask.usecase.ts
@@ -155,13 +156,13 @@ application/
 
 ```typescript
 // src/application/tasks/createTask.usecase.ts
-import type { Task } from "@/src/domain/models/Task";
-import type { CreateTaskInput } from "@/src/domain/validation/task.schema";
-import type { TaskRepository } from "@/src/infrastructure/repositories/ITaskRepository";
+import type { Task } from '@/src/domain/models/Task';
+import type { CreateTaskInput } from '@/src/domain/validation/task.schema';
+import type { TaskRepository } from '@/src/infrastructure/repositories/ITaskRepository';
 
 export interface CreateTaskRequest {
   title: string;
-  priority?: "high" | "medium" | "low";
+  priority?: 'high' | 'medium' | 'low';
 }
 
 export interface CreateTaskResponse {
@@ -186,7 +187,7 @@ export async function createTask(
   } catch (error) {
     return {
       success: false,
-      error: "Failed to create task",
+      error: 'Failed to create task',
       task: null as any,
     };
   }
@@ -213,7 +214,7 @@ export async function createTask(
 
 ### Structure
 
-```
+```text
 infrastructure/
 ├── supabase/
 │   ├── client.ts           # Supabase client setup
@@ -227,10 +228,10 @@ infrastructure/
 
 ```typescript
 // src/infrastructure/repositories/ITaskRepository.ts
-import type { Task } from "@/src/domain/models/Task";
+import type { Task } from '@/src/domain/models/Task';
 
 export interface TaskRepository {
-  create(task: Omit<Task, "id" | "createdAt" | "updatedAt">): Promise<Task>;
+  create(task: Omit<Task, 'id' | 'createdAt' | 'updatedAt'>): Promise<Task>;
   findById(id: string): Promise<Task | null>;
   findByUserId(userId: string): Promise<Task[]>;
   update(id: string, updates: Partial<Task>): Promise<Task>;
@@ -242,10 +243,10 @@ export interface TaskRepository {
 
 ```typescript
 // src/infrastructure/repositories/SupabaseTaskRepository.ts
-import type { SupabaseClient } from "@supabase/supabase-js";
-import type { TaskRepository } from "./ITaskRepository";
-import type { Task } from "@/src/domain/models/Task";
-import type { TaskRow } from "../supabase/types";
+import type { SupabaseClient } from '@supabase/supabase-js';
+import type { TaskRepository } from './ITaskRepository';
+import type { Task } from '@/src/domain/models/Task';
+import type { TaskRow } from '../supabase/types';
 
 export class SupabaseTaskRepository implements TaskRepository {
   constructor(private client: SupabaseClient) {}
@@ -270,10 +271,10 @@ export class SupabaseTaskRepository implements TaskRepository {
   }
 
   async create(
-    task: Omit<Task, "id" | "createdAt" | "updatedAt">
+    task: Omit<Task, 'id' | 'createdAt' | 'updatedAt'>
   ): Promise<Task> {
     const { data, error } = await this.client
-      .from("tasks")
+      .from('tasks')
       .insert(this.toDatabase(task))
       .select()
       .single();
@@ -284,9 +285,9 @@ export class SupabaseTaskRepository implements TaskRepository {
 
   async findByUserId(userId: string): Promise<Task[]> {
     const { data, error } = await this.client
-      .from("tasks")
-      .select("*")
-      .eq("user_id", userId);
+      .from('tasks')
+      .select('*')
+      .eq('user_id', userId);
 
     if (error) throw new Error(`Failed to fetch tasks: ${error.message}`);
     return data.map((row) => this.toDomain(row));
@@ -313,7 +314,7 @@ export class SupabaseTaskRepository implements TaskRepository {
 
 ### Structure
 
-```
+```text
 presentation/
 ├── components/         # React components
 │   ├── TaskCard.tsx
@@ -375,11 +376,11 @@ export function TaskCard({ task, onToggle }: TaskCardProps) {
 
 ```typescript
 // src/presentation/hooks/useTasks.ts
-"use client";
+'use client';
 
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { createTask } from "@/src/application/tasks/createTask.usecase";
-import type { CreateTaskRequest } from "@/src/application/tasks/createTask.usecase";
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { createTask } from '@/src/application/tasks/createTask.usecase';
+import type { CreateTaskRequest } from '@/src/application/tasks/createTask.usecase';
 
 export function useCreateTask() {
   const queryClient = useQueryClient();
@@ -388,10 +389,10 @@ export function useCreateTask() {
     mutationFn: async (request: CreateTaskRequest) => {
       // Repository injected here (presentation layer responsibility)
       const repository = getTaskRepository(); // Helper function
-      return createTask(request, "user-id", repository);
+      return createTask(request, 'user-id', repository);
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["tasks"] });
+      queryClient.invalidateQueries({ queryKey: ['tasks'] });
     },
   });
 }
@@ -401,17 +402,17 @@ export function useCreateTask() {
 
 ```typescript
 // app/actions/createTaskAction.ts
-"use server";
+'use server';
 
-import { revalidatePath } from "next/cache";
-import { createTask } from "@/src/application/tasks/createTask.usecase";
-import { createTaskSchema } from "@/src/domain/validation/task.schema";
-import { createServerClient } from "@/src/infrastructure/supabase/client";
-import { SupabaseTaskRepository } from "@/src/infrastructure/repositories/SupabaseTaskRepository";
+import { revalidatePath } from 'next/cache';
+import { createTask } from '@/src/application/tasks/createTask.usecase';
+import { createTaskSchema } from '@/src/domain/validation/task.schema';
+import { createServerClient } from '@/src/infrastructure/supabase/client';
+import { SupabaseTaskRepository } from '@/src/infrastructure/repositories/SupabaseTaskRepository';
 
 export async function createTaskAction(formData: FormData) {
   const result = createTaskSchema.safeParse({
-    title: formData.get("title"),
+    title: formData.get('title'),
   });
 
   if (!result.success) {
@@ -421,10 +422,10 @@ export async function createTaskAction(formData: FormData) {
   const supabase = createServerClient();
   const repository = new SupabaseTaskRepository(supabase);
 
-  const response = await createTask(result.data, "user-id", repository);
+  const response = await createTask(result.data, 'user-id', repository);
 
   if (response.success) {
-    revalidatePath("/tasks");
+    revalidatePath('/tasks');
   }
 
   return response;
@@ -446,7 +447,7 @@ export async function createTaskAction(formData: FormData) {
 
 ### Creating a Task (Client Component)
 
-```
+```text
 User Form Input
       ↓
 TaskForm Component (presentation)
@@ -464,7 +465,7 @@ Supabase Database
 
 ### Creating a Task (Server Action)
 
-```
+```text
 Form Submission
       ↓
 createTaskAction (Server Action in app/actions)
@@ -482,7 +483,7 @@ revalidatePath (Next.js)
 
 ### Fetching Tasks (Server Component)
 
-```
+```text
 TasksPage (Server Component in app)
       ↓
 SupabaseTaskRepository (infrastructure)
@@ -502,11 +503,11 @@ TaskList Component (presentation)
 
 ```typescript
 // Pure unit tests - no mocks needed
-import { createTaskSchema } from "@/src/domain/validation/task.schema";
+import { createTaskSchema } from '@/src/domain/validation/task.schema';
 
-describe("createTaskSchema", () => {
-  it("should validate valid task data", () => {
-    const result = createTaskSchema.safeParse({ title: "Test" });
+describe('createTaskSchema', () => {
+  it('should validate valid task data', () => {
+    const result = createTaskSchema.safeParse({ title: 'Test' });
     expect(result.success).toBe(true);
   });
 });
@@ -516,17 +517,17 @@ describe("createTaskSchema", () => {
 
 ```typescript
 // Test use cases with mock repositories
-import { createTask } from "@/src/application/tasks/createTask.usecase";
-import type { TaskRepository } from "@/src/infrastructure/repositories/ITaskRepository";
+import { createTask } from '@/src/application/tasks/createTask.usecase';
+import type { TaskRepository } from '@/src/infrastructure/repositories/ITaskRepository';
 
-describe("createTask", () => {
-  it("should create a task", async () => {
+describe('createTask', () => {
+  it('should create a task', async () => {
     const mockRepo: TaskRepository = {
-      create: vi.fn().mockResolvedValue({ id: "1", title: "Test" }),
+      create: vi.fn().mockResolvedValue({ id: '1', title: 'Test' }),
       // ... other methods
     };
 
-    const result = await createTask({ title: "Test" }, "user-id", mockRepo);
+    const result = await createTask({ title: 'Test' }, 'user-id', mockRepo);
 
     expect(result.success).toBe(true);
     expect(mockRepo.create).toHaveBeenCalled();
@@ -538,12 +539,12 @@ describe("createTask", () => {
 
 ```typescript
 // Integration tests with real database (or test database)
-import { SupabaseTaskRepository } from "@/src/infrastructure/repositories/SupabaseTaskRepository";
+import { SupabaseTaskRepository } from '@/src/infrastructure/repositories/SupabaseTaskRepository';
 
-describe("SupabaseTaskRepository", () => {
-  it("should create and retrieve a task", async () => {
+describe('SupabaseTaskRepository', () => {
+  it('should create and retrieve a task', async () => {
     const repo = new SupabaseTaskRepository(testClient);
-    const task = await repo.create({ title: "Test", userId: "user-1" });
+    const task = await repo.create({ title: 'Test', userId: 'user-1' });
     const found = await repo.findById(task.id);
 
     expect(found).toEqual(task);
@@ -559,8 +560,8 @@ describe("SupabaseTaskRepository", () => {
 
 ```typescript
 // ❌ BAD - Client Component directly importing repository
-"use client";
-import { SupabaseTaskRepository } from "@/src/infrastructure/repositories/SupabaseTaskRepository";
+'use client';
+import { SupabaseTaskRepository } from '@/src/infrastructure/repositories/SupabaseTaskRepository';
 
 export function TaskList() {
   const repo = new SupabaseTaskRepository(); // WRONG!
@@ -571,8 +572,8 @@ export function TaskList() {
 
 ```typescript
 // ✅ GOOD - Use hook that abstracts repository access
-"use client";
-import { useTasks } from "@/src/presentation/hooks/useTasks";
+'use client';
+import { useTasks } from '@/src/presentation/hooks/useTasks';
 
 export function TaskList() {
   const { data: tasks } = useTasks();
@@ -587,7 +588,7 @@ export function TaskForm() {
   const onSubmit = (data: TaskInput) => {
     if (data.dueDate < data.scheduledDate) {
       // Business rule
-      setError("Invalid dates");
+      setError('Invalid dates');
     }
   };
 }
@@ -603,7 +604,7 @@ export const createTaskSchema = z
     dueDate: z.date(),
   })
   .refine((data) => data.dueDate >= data.scheduledDate, {
-    message: "Due date must be after scheduled date",
+    message: 'Due date must be after scheduled date',
   });
 ```
 
@@ -611,7 +612,7 @@ export const createTaskSchema = z
 
 ```typescript
 // ❌ BAD - Domain type with React dependency
-import type { ReactNode } from "react";
+import type { ReactNode } from 'react';
 
 export interface Task {
   id: string;
@@ -637,7 +638,7 @@ export interface Task {
 
 Authentication follows strict layer separation with Server Actions as the primary interface:
 
-```
+```text
 ┌─────────────────────────────────────────────────────┐
 │  Presentation Layer (Client Components)             │
 │  • Auth Forms (Login, Signup, Reset)                │
@@ -684,7 +685,7 @@ export async function authAction(
   const result = authSchema.safeParse({
     email: formData.get('email'),
   });
-  
+
   if (!result.success) {
     return {
       success: false,
@@ -692,17 +693,17 @@ export async function authAction(
       fieldErrors: result.error.flatten().fieldErrors,
     };
   }
-  
+
   // 2. Use server Supabase client
   const supabase = await createClient();
-  
+
   // 3. Perform auth operation
   const { error } = await supabase.auth.someOperation(result.data);
-  
+
   if (error) {
     return { success: false, error: 'User-friendly message' };
   }
-  
+
   // 4. Redirect on success (throws)
   redirect('/destination');
 }
@@ -723,26 +724,26 @@ import { toast } from 'sonner';
 
 export function AuthForm() {
   const [isPending, startTransition] = useTransition();
-  
+
   const form = useForm<AuthFormData>({
     resolver: zodResolver(authSchema),
   });
-  
+
   const onSubmit = async (data: AuthFormData) => {
     startTransition(async () => {
       const formData = new FormData();
       Object.entries(data).forEach(([key, value]) => {
         formData.append(key, value);
       });
-      
+
       const result = await authAction(formData);
-      
+
       if (!result.success) {
         toast.error('Operation failed', { description: result.error });
       }
     });
   };
-  
+
   return (
     <form onSubmit={form.handleSubmit(onSubmit)}>
       {/* Form fields */}
@@ -766,16 +767,16 @@ export async function GET(request: NextRequest) {
   const token_hash = searchParams.get('token_hash');
   const type = searchParams.get('type') as EmailOtpType | null;
   const next = searchParams.get('next') ?? '/';
-  
+
   if (token_hash && type) {
     const supabase = await createClient();
     const { error } = await supabase.auth.verifyOtp({ type, token_hash });
-    
+
     if (!error) {
       redirect(next);
     }
   }
-  
+
   redirect('/error');
 }
 ```
@@ -783,6 +784,7 @@ export async function GET(request: NextRequest) {
 ### Authentication Rules
 
 **✅ DO:**
+
 - Use Server Actions for all auth form submissions
 - Validate with Zod schemas in both client and server
 - Use `createClient()` from server module in Server Actions
@@ -793,6 +795,7 @@ export async function GET(request: NextRequest) {
 - Redirect after successful auth operations
 
 **❌ DON'T:**
+
 - Call auth utilities directly from client components
 - Use browser Supabase client in Server Actions
 - Use `supabase.auth.getSession()` on server (not verified)
@@ -809,15 +812,17 @@ The proxy middleware handles session management automatically:
 // proxy.ts
 export async function proxy(request: NextRequest) {
   const supabase = createServerClient(/* config */);
-  
+
   // Automatically refreshes expired sessions
-  const { data: { user } } = await supabase.auth.getUser();
-  
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+
   // Protect routes
   if (!isPublicRoute && !user) {
     return NextResponse.redirect('/login');
   }
-  
+
   return response;
 }
 ```
@@ -831,11 +836,11 @@ import { createClient } from '@/src/infrastructure/supabase/server';
 export default async function ProtectedPage() {
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
-  
+
   if (!user) {
     redirect('/login');
   }
-  
+
   return <div>Welcome {user.email}</div>;
 }
 ```

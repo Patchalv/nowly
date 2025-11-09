@@ -150,7 +150,7 @@ Don't add constants for:
 
 ## File Organization
 
-```
+```text
 src/config/
 ├── README.md          # This file
 ├── env.ts             # Environment variables (runtime)

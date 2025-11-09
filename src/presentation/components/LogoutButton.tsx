@@ -1,6 +1,6 @@
 'use client';
 
-import { logoutAction } from '@/app/actions/logoutAction';
+import { logoutAction } from '@/app/actions/auth/logoutAction';
 import { useTransition } from 'react';
 import { toast } from 'sonner';
 import { Button } from './ui/button';

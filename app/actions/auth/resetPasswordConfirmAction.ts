@@ -27,10 +27,9 @@ export async function resetPasswordConfirmAction(
   data: ResetPasswordConfirmFormData
 ): Promise<ResetPasswordConfirmActionResult> {
   try {
-    logger.info('Reset password confirm form data', { data: data });
+    logger.info('Reset password confirm form data');
     // Validate form data
     const result = resetPasswordConfirmSchema.safeParse(data);
-    logger.info('Reset password confirm result', { result: result });
     // Return validation errors
     if (!result.success) {
       logger.error('Reset password confirm validation errors', {
@@ -44,15 +43,12 @@ export async function resetPasswordConfirmAction(
     }
 
     // Create Supabase server client
-    logger.info('Creating Supabase server client');
     const supabase = await createClient();
 
     // Attempt to update password
     const { error } = await supabase.auth.updateUser({
       password: result.data.password,
     });
-
-    logger.info('Password update result', { data: data });
 
     if (error) {
       logger.error('Password update error', { error: error });

@@ -2,6 +2,15 @@
  * Date utility functions for ISO week calculations and date manipulation
  */
 
+import {
+  isBefore,
+  isAfter,
+  differenceInDays,
+  startOfDay,
+  endOfDay,
+  isValid,
+} from 'date-fns';
+
 /**
  * Get the ISO week number for a given date
  * ISO week starts on Monday, week 1 is the first week with a Thursday
@@ -135,4 +144,81 @@ export function addDays(date: Date, days: number): Date {
  */
 export function addWeeks(date: Date, weeks: number): Date {
   return addDays(date, weeks * 7);
+}
+
+/**
+ * Check if date1 is before date2 (ignoring time)
+ */
+export function isBeforeDay(date1: Date, date2: Date): boolean {
+  return isBefore(startOfDay(date1), startOfDay(date2));
+}
+
+/**
+ * Check if date1 is after date2 (ignoring time)
+ */
+export function isAfterDay(date1: Date, date2: Date): boolean {
+  return isAfter(startOfDay(date1), startOfDay(date2));
+}
+
+/**
+ * Check if date1 is on or before date2 (ignoring time)
+ */
+export function isOnOrBeforeDay(date1: Date, date2: Date): boolean {
+  return isBeforeDay(date1, date2) || isSameDay(date1, date2);
+}
+
+/**
+ * Check if date1 is on or after date2 (ignoring time)
+ */
+export function isOnOrAfterDay(date1: Date, date2: Date): boolean {
+  return isAfterDay(date1, date2) || isSameDay(date1, date2);
+}
+
+/**
+ * Get the number of days between two dates (absolute value)
+ */
+export function daysBetween(date1: Date, date2: Date): number {
+  return Math.abs(differenceInDays(startOfDay(date1), startOfDay(date2)));
+}
+
+/**
+ * Get the start of a day (00:00:00.000)
+ */
+export function startOfDate(date: Date): Date {
+  return startOfDay(date);
+}
+
+/**
+ * Get the end of a day (23:59:59.999)
+ */
+export function endOfDate(date: Date): Date {
+  return endOfDay(date);
+}
+
+/**
+ * Validate that a value is a valid Date object
+ */
+export function isValidDate(value: unknown): value is Date {
+  return value instanceof Date && isValid(value);
+}
+
+/**
+ * Get today's date (start of day)
+ */
+export function today(): Date {
+  return startOfDay(new Date());
+}
+
+/**
+ * Get tomorrow's date
+ */
+export function tomorrow(): Date {
+  return addDays(today(), 1);
+}
+
+/**
+ * Get yesterday's date
+ */
+export function yesterday(): Date {
+  return addDays(today(), -1);
 }

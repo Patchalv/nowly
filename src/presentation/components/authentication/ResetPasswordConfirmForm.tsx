@@ -1,6 +1,6 @@
 'use client';
 
-import { resetPasswordConfirmAction } from '@/app/actions/resetPasswordConfirmAction';
+import { resetPasswordConfirmAction } from '@/app/actions/auth/resetPasswordConfirmAction';
 import { ROUTES } from '@/src/config/constants';
 import { isProduction } from '@/src/config/env';
 import {

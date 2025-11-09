@@ -1,6 +1,6 @@
 'use client';
 
-import { signupAction } from '@/app/actions/signupAction';
+import { signupAction } from '@/app/actions/auth/signupAction';
 import { ROUTES } from '@/src/config/constants';
 import {
   SignupFormData,
