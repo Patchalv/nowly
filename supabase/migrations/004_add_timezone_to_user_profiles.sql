@@ -1,6 +1,6 @@
 -- Migration: 004_add_timezone_to_user_profiles.sql
 -- Description: Add timezone column to user_profiles table for user timezone preference
--- Date: 2025-01-XX
+-- Date: 2025-11-09
 
 -- Add timezone column to user_profiles
 -- Stores IANA timezone identifier (e.g., "America/New_York", "Europe/London")

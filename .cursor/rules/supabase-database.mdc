@@ -408,7 +408,10 @@ Use domain validation schemas from `src/domain/validation/date.schema.ts`:
 
 ```typescript
 import { z } from 'zod';
-import { optionalDateSchema, createDateRangeRefinement } from '@/src/domain/validation/date.schema';
+import {
+  optionalDateSchema,
+  createDateRangeRefinement,
+} from '@/src/domain/validation/date.schema';
 
 export const createTaskSchema = z
   .object({
@@ -417,7 +420,10 @@ export const createTaskSchema = z
     dueDate: optionalDateSchema,
   })
   .refine(
-    (data) => !data.dueDate || !data.scheduledDate || data.dueDate >= data.scheduledDate,
+    (data) =>
+      !data.dueDate ||
+      !data.scheduledDate ||
+      data.dueDate >= data.scheduledDate,
     {
       message: 'Due date must be on or after scheduled date',
       path: ['dueDate'],
@@ -456,12 +462,13 @@ User timezone preferences are stored in `user_profiles.timezone`:
 ALTER TABLE user_profiles
 ADD COLUMN timezone TEXT;
 
-COMMENT ON COLUMN user_profiles.timezone IS 
-  'IANA timezone identifier for user preference (e.g., "America/New_York"). 
+COMMENT ON COLUMN user_profiles.timezone IS
+  'IANA timezone identifier for user preference (e.g., "America/New_York").
    NULL means use browser timezone.';
 ```
 
 **Timezone identifiers:**
+
 - Use IANA timezone identifiers (e.g., `"America/New_York"`, `"Europe/London"`)
 - Validate using `isValidTimezone()` from `src/shared/utils/timezone.ts`
 - NULL means user hasn't set preference (use browser timezone)

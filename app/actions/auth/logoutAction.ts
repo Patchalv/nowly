@@ -19,7 +19,6 @@ type LogoutActionResult = { success: true } | { success: false; error: string };
  */
 export async function logoutAction(): Promise<LogoutActionResult> {
   try {
-    trackLogout();
     const supabase = await createClient();
     const { error } = await supabase.auth.signOut();
 
@@ -40,6 +39,8 @@ export async function logoutAction(): Promise<LogoutActionResult> {
       error: 'An unexpected error occurred during logout.',
     };
   }
+
+  trackLogout();
 
   // Redirect on successful logout
   redirect(ROUTES.LOGIN);
