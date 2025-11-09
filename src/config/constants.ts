@@ -99,6 +99,40 @@ export const DATE_FORMATS = {
   DISPLAY_WITH_TIME: "MMM dd, yyyy 'at' h:mm a",
 } as const;
 
+/**
+ * Default timezone to use when user preference is not set
+ */
+export const DEFAULT_TIMEZONE = 'UTC' as const;
+
+/**
+ * Common timezones for user selection (optional)
+ * Can be used in timezone selector UI components
+ */
+export const COMMON_TIMEZONES = [
+  'America/New_York',
+  'America/Chicago',
+  'America/Denver',
+  'America/Los_Angeles',
+  'America/Phoenix',
+  'America/Anchorage',
+  'America/Honolulu',
+  'Europe/London',
+  'Europe/Paris',
+  'Europe/Berlin',
+  'Europe/Rome',
+  'Europe/Madrid',
+  'Europe/Amsterdam',
+  'Europe/Stockholm',
+  'Asia/Tokyo',
+  'Asia/Shanghai',
+  'Asia/Hong_Kong',
+  'Asia/Singapore',
+  'Asia/Dubai',
+  'Australia/Sydney',
+  'Australia/Melbourne',
+  'Pacific/Auckland',
+] as const;
+
 // ------------------------------------------------------------------------------
 // UI Configuration
 // ------------------------------------------------------------------------------

@@ -307,6 +307,167 @@ if (error?.code === 'PGRST116') return null;
 
 ---
 
+## 📅 Date/Time Handling
+
+### Date Type Strategy
+
+Nowly uses two PostgreSQL date types with different purposes:
+
+1. **DATE** - For date-only fields (`scheduled_date`, `due_date`)
+   - Timezone-agnostic (represents a calendar date)
+   - Stored as `YYYY-MM-DD` strings in database
+   - Converted to/from Date objects using local date components
+
+2. **TIMESTAMPTZ** - For timestamp fields (`created_at`, `updated_at`, `completed_at`)
+   - Timezone-aware (represents a specific moment in time)
+   - Stored as ISO strings in database
+   - Preserves full timezone information
+
+### Date Transformation Utilities
+
+All date transformations are handled by centralized utilities in `src/infrastructure/supabase/utils/dates.ts`:
+
+```typescript
+import {
+  dateFromDatabase,
+  dateToDatabase,
+  timestampFromDatabase,
+  timestampToDatabase,
+} from '@/src/infrastructure/supabase/utils/dates';
+
+// In repository toDomain() method
+private toDomain(row: TaskRow): Task {
+  return {
+    id: row.id,
+    scheduledDate: dateFromDatabase(row.scheduled_date), // DATE → Date
+    dueDate: dateFromDatabase(row.due_date), // DATE → Date
+    completedAt: timestampFromDatabase(row.completed_at), // TIMESTAMPTZ → Date
+    createdAt: timestampFromDatabase(row.created_at), // TIMESTAMPTZ → Date
+    updatedAt: timestampFromDatabase(row.updated_at), // TIMESTAMPTZ → Date
+    // ... other fields
+  };
+}
+
+// In repository toDatabase() method
+private toDatabase(task: Partial<Task>): Partial<TaskRow> {
+  return {
+    scheduled_date: dateToDatabase(task.scheduledDate), // Date → DATE
+    due_date: dateToDatabase(task.dueDate), // Date → DATE
+    completed_at: timestampToDatabase(task.completedAt), // Date → TIMESTAMPTZ
+    // Note: created_at and updated_at are handled by database triggers
+  };
+}
+```
+
+### Key Principles
+
+1. **DATE fields are timezone-agnostic**
+   - Never shift days due to timezone conversions
+   - Use local date components when converting
+   - Example: `2024-01-15` always represents January 15th, regardless of timezone
+
+2. **TIMESTAMPTZ fields preserve timezone**
+   - Store as ISO strings (e.g., `2024-01-15T14:30:45.000Z`)
+   - Preserve exact moment in time
+   - Convert using `new Date()` or `parseISO()` from date-fns
+
+3. **User timezone preference**
+   - Stored in `user_profiles.timezone` as IANA identifier (e.g., `"America/New_York"`)
+   - Used for display formatting only, not for storage
+   - Falls back to browser timezone if not set
+
+### Date Formatting
+
+Use timezone-aware formatting utilities from `src/shared/utils/date-formatting.ts`:
+
+```typescript
+import {
+  formatDisplayDate,
+  formatDateWithDay,
+  formatTimestamp,
+  formatISODate,
+} from '@/src/shared/utils/date-formatting';
+import { useTimezone } from '@/src/presentation/hooks/useTimezone';
+
+// In components
+function TaskCard({ task }: { task: Task }) {
+  const { formatDisplay, formatTimestamp, timezone } = useTimezone();
+
+  return (
+    <div>
+      <p>Scheduled: {formatDisplay(task.scheduledDate)}</p>
+      <p>Completed: {formatTimestamp(task.completedAt)}</p>
+    </div>
+  );
+}
+```
+
+### Date Validation
+
+Use domain validation schemas from `src/domain/validation/date.schema.ts`:
+
+```typescript
+import { z } from 'zod';
+import { optionalDateSchema, createDateRangeRefinement } from '@/src/domain/validation/date.schema';
+
+export const createTaskSchema = z
+  .object({
+    title: z.string().min(1).max(255),
+    scheduledDate: optionalDateSchema,
+    dueDate: optionalDateSchema,
+  })
+  .refine(
+    (data) => !data.dueDate || !data.scheduledDate || data.dueDate >= data.scheduledDate,
+    {
+      message: 'Due date must be on or after scheduled date',
+      path: ['dueDate'],
+    }
+  );
+```
+
+### Common Patterns
+
+```typescript
+// ✅ Good - Use transformation utilities
+const task = await repository.findById(id);
+const scheduledDate = task.scheduledDate; // Date object
+
+// ✅ Good - Format with timezone awareness
+const formatted = formatDisplayDate(scheduledDate, userTimezone);
+
+// ✅ Good - Compare dates ignoring time
+if (isSameDay(date1, date2)) {
+  // Same day
+}
+
+// ❌ Bad - Direct string manipulation
+const date = new Date(row.scheduled_date); // May cause timezone issues
+
+// ❌ Bad - Formatting without timezone
+const formatted = date.toLocaleDateString(); // Uses system locale, not user preference
+```
+
+### Timezone Storage
+
+User timezone preferences are stored in `user_profiles.timezone`:
+
+```sql
+-- Migration: 004_add_timezone_to_user_profiles.sql
+ALTER TABLE user_profiles
+ADD COLUMN timezone TEXT;
+
+COMMENT ON COLUMN user_profiles.timezone IS 
+  'IANA timezone identifier for user preference (e.g., "America/New_York"). 
+   NULL means use browser timezone.';
+```
+
+**Timezone identifiers:**
+- Use IANA timezone identifiers (e.g., `"America/New_York"`, `"Europe/London"`)
+- Validate using `isValidTimezone()` from `src/shared/utils/timezone.ts`
+- NULL means user hasn't set preference (use browser timezone)
+
+---
+
 ## 🔒 Row Level Security (RLS)
 
 ### RLS Policy Patterns
