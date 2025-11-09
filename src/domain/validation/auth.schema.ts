@@ -12,7 +12,7 @@ import { z } from 'zod';
  * - At least one digit
  * - At least one symbol
  */
-const passwordSchema = z
+export const passwordSchema = z
   .string()
   .min(8, 'Password must be at least 8 characters')
   .superRefine((password, ctx) => {
