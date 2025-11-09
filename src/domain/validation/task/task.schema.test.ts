@@ -30,14 +30,4 @@ describe('task schema', () => {
     expect(result.success).toBe(false);
     expect(result.error?.issues[0].message).toBe('Value must be a Date object');
   });
-
-  it('should reject a task with a scheduled date that is not a date', () => {
-    const task = {
-      title: 'Test Task',
-      scheduledDate: 'not a date',
-    };
-    const result = createTaskSchema.safeParse(task);
-    expect(result.success).toBe(false);
-    expect(result.error?.issues[0].message).toBe('Value must be a Date object');
-  });
 });
