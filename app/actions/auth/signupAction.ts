@@ -5,7 +5,7 @@ import { getDeploymentUrl, isProduction } from '@/src/config/env';
 import {
   signupSchema,
   type SignupFormData,
-} from '@/src/domain/validation/auth.schema';
+} from '@/src/domain/validation/auth/auth.schema';
 import { trackSignup } from '@/src/infrastructure/services/sentry/auth';
 import { createClient } from '@/src/infrastructure/supabase/server';
 import { logger } from '@sentry/nextjs';
