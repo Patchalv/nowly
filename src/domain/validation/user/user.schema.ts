@@ -1,3 +1,4 @@
+import { isValidTimezone } from '@/src/shared/utils/timezone';
 import { z } from 'zod';
 
 export const updateUserProfileSchema = z.object({
@@ -11,7 +12,13 @@ export const updateUserProfileSchema = z.object({
     .min(1, 'Last name is required')
     .max(50, 'Last name must be less than 50 characters')
     .optional(),
-  timezone: z.string().nullable().optional(),
+  timezone: z
+    .string()
+    .refine((timezone) => isValidTimezone(timezone), {
+      message: 'Invalid timezone',
+    })
+    .nullable()
+    .optional(),
 });
 
 export type UpdateUserProfileInput = z.infer<typeof updateUserProfileSchema>;
