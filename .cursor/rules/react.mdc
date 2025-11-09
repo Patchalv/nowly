@@ -75,7 +75,7 @@ export const TaskCard = ({ task }: TaskCardProps) => {
 - Co-locate components with their related hooks/utils if not shared
 - No `index.ts` re-exports - import directly from source files
 
-```
+```typescript
 TaskCard/
   TaskCard.tsx          # Main component
   useTaskActions.ts     # Component-specific hook
@@ -136,7 +136,7 @@ interface ListProps<T> {
 
 // ✅ Using PropsWithChildren (when needed)
 type ButtonProps = React.PropsWithChildren<{
-  variant?: "primary" | "secondary";
+  variant?: 'primary' | 'secondary';
   onClick?: () => void;
 }>;
 ```
@@ -178,7 +178,7 @@ const handleSubmit = (formData: FormData) => {
 
 ```typescript
 // ✅ Good - Custom hook extracted
-"use client";
+'use client';
 
 function useTaskSelection(tasks: Task[]) {
   const [selectedId, setSelectedId] = useState<string | null>(null);

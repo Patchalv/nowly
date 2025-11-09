@@ -17,7 +17,7 @@ alwaysApply: true
 
 ## 📐 Layer Structure
 
-```
+```text
 app/                    # Next.js routing & Server Components
 src/
 ├── presentation/       # UI components, hooks, providers (React/Next.js)
@@ -56,7 +56,7 @@ import { SupabaseEntityRepository } from '@/src/infrastructure/repositories/Supa
 
 ### Dependency Flow
 
-```
+```text
 presentation (React/Next.js)
       ↓
 application (use cases)
@@ -76,7 +76,7 @@ infrastructure (Supabase, repos)
 
 ### Structure
 
-```
+```text
 domain/
 ├── models/              # Entity definitions
 │   ├── Task.ts
@@ -142,7 +142,7 @@ export type CreateTaskInput = z.infer<typeof createTaskSchema>;
 
 ### Structure
 
-```
+```text
 application/
 ├── tasks/
 │   ├── createTask.usecase.ts
@@ -214,7 +214,7 @@ export async function createTask(
 
 ### Structure
 
-```
+```text
 infrastructure/
 ├── supabase/
 │   ├── client.ts           # Supabase client setup
@@ -314,7 +314,7 @@ export class SupabaseTaskRepository implements TaskRepository {
 
 ### Structure
 
-```
+```text
 presentation/
 ├── components/         # React components
 │   ├── TaskCard.tsx
@@ -447,7 +447,7 @@ export async function createTaskAction(formData: FormData) {
 
 ### Creating a Task (Client Component)
 
-```
+```text
 User Form Input
       ↓
 TaskForm Component (presentation)
@@ -465,7 +465,7 @@ Supabase Database
 
 ### Creating a Task (Server Action)
 
-```
+```text
 Form Submission
       ↓
 createTaskAction (Server Action in app/actions)
@@ -483,7 +483,7 @@ revalidatePath (Next.js)
 
 ### Fetching Tasks (Server Component)
 
-```
+```text
 TasksPage (Server Component in app)
       ↓
 SupabaseTaskRepository (infrastructure)
@@ -638,7 +638,7 @@ export interface Task {
 
 Authentication follows strict layer separation with Server Actions as the primary interface:
 
-```
+```text
 ┌─────────────────────────────────────────────────────┐
 │  Presentation Layer (Client Components)             │
 │  • Auth Forms (Login, Signup, Reset)                │

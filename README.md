@@ -91,7 +91,7 @@ Before you begin, ensure you have the following installed:
 
 ## 📁 Project Structure
 
-```
+```text
 nowly/
 ├── app/                          # Next.js App Router
 │   ├── (public)/                 # Public routes (landing, auth)
@@ -143,7 +143,7 @@ nowly/
 
 ### Architecture Layers
 
-```
+```text
 ┌─────────────────────────────────────────────────────┐
 │  Presentation Layer (React Components, Hooks)      │
 │  • Client Components                               │
@@ -421,7 +421,7 @@ Nowly uses **Supabase Auth** with server-side token exchange following Next.js 1
 
 ### Authentication Architecture
 
-```
+```text
 ┌─────────────────────────────────────────┐
 │  User Action (Login/Signup/Reset)      │
 └──────────────────┬──────────────────────┘
@@ -663,7 +663,7 @@ npm run build
 
 4. **Commit message format:**
 
-   ```
+   ```text
    feat: add task filtering by category
    fix: resolve date formatting issue
    perf: optimize task list rendering

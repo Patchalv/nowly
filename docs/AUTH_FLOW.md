@@ -60,7 +60,7 @@ Nowly implements secure, server-side authentication using Supabase Auth with Nex
 
 ### Login Flow
 
-```
+```text
 ┌──────────────────────────────────────────────────────────────┐
 │ 1. USER ENTERS CREDENTIALS                                   │
 │    Location: /login                                          │
@@ -134,7 +134,7 @@ Nowly implements secure, server-side authentication using Supabase Auth with Nex
 
 ### Signup + Email Confirmation Flow
 
-```
+```text
 ┌──────────────────────────────────────────────────────────────┐
 │ 1. USER FILLS SIGNUP FORM                                    │
 │    Location: /signup                                         │
@@ -229,7 +229,7 @@ Nowly implements secure, server-side authentication using Supabase Auth with Nex
 
 ### Password Reset Flow
 
-```
+```text
 ┌──────────────────────────────────────────────────────────────┐
 │ 1. USER REQUESTS PASSWORD RESET                              │
 │    Location: /reset-password                                 │
@@ -342,7 +342,7 @@ Nowly implements secure, server-side authentication using Supabase Auth with Nex
 
 ### How Sessions Work
 
-```
+```text
 ┌──────────────────────────────────────────────────────────────┐
 │ AUTHENTICATION EVENT (Login/Signup/Reset)                    │
 └────────────────────┬─────────────────────────────────────────┘
@@ -571,13 +571,13 @@ try {
 
 **1. Confirm Signup:**
 
-```
+```text
 {{ .SiteURL }}/auth/confirm?token_hash={{ .TokenHash }}&type=email&next=/daily
 ```
 
 **2. Reset Password:**
 
-```
+```text
 {{ .SiteURL }}/auth/confirm?token_hash={{ .TokenHash }}&type=recovery&next=/reset-password/confirm
 ```
 

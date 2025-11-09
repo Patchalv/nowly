@@ -46,7 +46,7 @@ Navigate to: **Authentication → Email Templates → Reset Password**
 
 Change the confirmation URL to:
 
-```
+```typescript
 {{ .SiteURL }}/auth/confirm?token_hash={{ .TokenHash }}&type=recovery&next=/reset-password/confirm
 ```
 
@@ -62,7 +62,7 @@ Navigate to: **Authentication → Email Templates → Confirm Signup**
 
 Change the confirmation URL to:
 
-```
+```typescript
 {{ .SiteURL }}/auth/confirm?token_hash={{ .TokenHash }}&type=email&next=/daily
 ```
 

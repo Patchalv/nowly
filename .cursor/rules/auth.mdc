@@ -14,15 +14,15 @@
 
 ### When to Use What
 
-| Operation | Use This | Don't Use |
-|-----------|----------|-----------|
-| Login form submission | `loginAction` Server Action | Client-side `signIn()` |
-| Signup form submission | `signupAction` Server Action | Client-side `signUp()` |
-| Password reset request | `resetPasswordRequestAction` | Client-side `resetPassword()` |
-| Password update | `resetPasswordConfirmAction` | Client-side `updatePassword()` |
-| Email confirmation | `/auth/confirm` route handler | Client-side `exchangeCodeForSession()` |
-| Session check | `supabase.auth.getUser()` (server) | `supabase.auth.getSession()` (client) |
-| Get current user | Server Component with `createClient()` | Client Component direct call |
+| Operation              | Use This                               | Don't Use                              |
+| ---------------------- | -------------------------------------- | -------------------------------------- |
+| Login form submission  | `loginAction` Server Action            | Client-side `signIn()`                 |
+| Signup form submission | `signupAction` Server Action           | Client-side `signUp()`                 |
+| Password reset request | `resetPasswordRequestAction`           | Client-side `resetPassword()`          |
+| Password update        | `resetPasswordConfirmAction`           | Client-side `updatePassword()`         |
+| Email confirmation     | `/auth/confirm` route handler          | Client-side `exchangeCodeForSession()` |
+| Session check          | `supabase.auth.getUser()` (server)     | `supabase.auth.getSession()` (client)  |
+| Get current user       | Server Component with `createClient()` | Client Component direct call           |
 
 ---
 
@@ -63,10 +63,10 @@ export async function myAuthAction(
   try {
     // 1. Extract form data
     const email = formData.get('email');
-    
+
     // 2. Validate with Zod
     const result = myAuthSchema.safeParse({ email });
-    
+
     if (!result.success) {
       return {
         success: false,
@@ -74,30 +74,30 @@ export async function myAuthAction(
         fieldErrors: result.error.flatten().fieldErrors,
       };
     }
-    
+
     // 3. Create Supabase server client
     const supabase = await createClient();
-    
+
     // 4. Perform auth operation
     const { error } = await supabase.auth.someOperation(result.data.email);
-    
+
     if (error) {
       console.error('Auth error:', error);
-      
+
       // Handle specific errors
       if (error.message.includes('specific_case')) {
         return { success: false, error: 'User-friendly message' };
       }
-      
+
       return { success: false, error: 'Generic error message' };
     }
-    
+
     // 5. Success - redirect (throws, so code after won't execute)
   } catch (error) {
     console.error('Action failed:', error);
     return { success: false, error: 'Unexpected error occurred' };
   }
-  
+
   // 6. Redirect on success
   redirect(ROUTES.DESTINATION);
 }
@@ -118,29 +118,29 @@ import { toast } from 'sonner';
 
 export function MyAuthForm() {
   const [isPending, startTransition] = useTransition();
-  
+
   const form = useForm<MyAuthFormData>({
     resolver: zodResolver(myAuthSchema),
     defaultValues: {
       email: '',
     },
   });
-  
+
   const onSubmit = async (data: MyAuthFormData) => {
     startTransition(async () => {
       // Convert to FormData for Server Action
       const formData = new FormData();
       formData.append('email', data.email);
-      
+
       // Call Server Action
       const result = await myAuthAction(formData);
-      
+
       // Handle errors (success redirects automatically)
       if (!result.success) {
         toast.error('Operation failed', {
           description: result.error,
         });
-        
+
         // Set field-specific errors
         if (result.fieldErrors) {
           Object.entries(result.fieldErrors).forEach(([field, errors]) => {
@@ -155,7 +155,7 @@ export function MyAuthForm() {
       }
     });
   };
-  
+
   return (
     <form onSubmit={form.handleSubmit(onSubmit)}>
       {/* Form fields */}
@@ -174,6 +174,7 @@ export function MyAuthForm() {
 ### For Password Reset
 
 **Server Action redirect URL:**
+
 ```typescript
 const { error } = await supabase.auth.resetPasswordForEmail(email, {
   redirectTo: `${getDeploymentUrl()}/auth/confirm?next=/reset-password/confirm`,
@@ -181,13 +182,15 @@ const { error } = await supabase.auth.resetPasswordForEmail(email, {
 ```
 
 **Supabase Email Template:**
-```
+
+```text
 {{ .SiteURL }}/auth/confirm?token_hash={{ .TokenHash }}&type=recovery&next=/reset-password/confirm
 ```
 
 ### For Email Confirmation
 
 **Server Action options:**
+
 ```typescript
 const { error } = await supabase.auth.signUp({
   email,
@@ -199,7 +202,8 @@ const { error } = await supabase.auth.signUp({
 ```
 
 **Supabase Email Template:**
-```
+
+```typescript
 {{ .SiteURL }}/auth/confirm?token_hash={{ .TokenHash }}&type=email&next=/daily
 ```
 
@@ -217,19 +221,19 @@ export async function GET(request: NextRequest) {
   const token_hash = searchParams.get('token_hash');
   const type = searchParams.get('type') as EmailOtpType | null;
   const next = searchParams.get('next') ?? '/';
-  
+
   if (token_hash && type) {
     const supabase = await createClient();
     const { error } = await supabase.auth.verifyOtp({
       type,
       token_hash,
     });
-    
+
     if (!error) {
       redirect(next);
     }
   }
-  
+
   redirect('/error');
 }
 ```
@@ -266,11 +270,11 @@ export async function loginAction(formData: FormData) {
     email: formData.get('email'),
     password: formData.get('password'),
   });
-  
+
   if (!result.success) {
     return { success: false, error: 'Invalid input' };
   }
-  
+
   // Continue with validated data
 }
 ```
@@ -298,12 +302,12 @@ export async function loginAction() {
 // ✅ GOOD - Password reset always returns success
 export async function resetPasswordRequestAction(formData: FormData) {
   const { error } = await supabase.auth.resetPasswordForEmail(email);
-  
+
   // Log error internally but don't expose to user
   if (error) {
     console.error('Password reset error:', error);
   }
-  
+
   // ALWAYS return success
   return { success: true };
 }
@@ -313,10 +317,15 @@ export async function resetPasswordRequestAction(formData: FormData) {
 
 ```typescript
 // ❌ BAD - Using getSession() in server code
-const { data: { session } } = await supabase.auth.getSession();
+const {
+  data: { session },
+} = await supabase.auth.getSession();
 
 // ✅ GOOD - Using getUser() to verify against server
-const { data: { user }, error } = await supabase.auth.getUser();
+const {
+  data: { user },
+  error,
+} = await supabase.auth.getUser();
 ```
 
 ---
@@ -422,6 +431,7 @@ toast.success('Password reset email sent', {
 ### Manual Testing Checklist
 
 **Login:**
+
 - [ ] Valid credentials → success
 - [ ] Invalid email → error
 - [ ] Invalid password → error
@@ -429,6 +439,7 @@ toast.success('Password reset email sent', {
 - [ ] Success redirects to /daily
 
 **Signup:**
+
 - [ ] Valid data → success
 - [ ] Duplicate email → specific error
 - [ ] Password mismatch → validation error
@@ -437,6 +448,7 @@ toast.success('Password reset email sent', {
 - [ ] Email received
 
 **Password Reset:**
+
 - [ ] Valid email → success message (always)
 - [ ] Invalid email → success message (always)
 - [ ] Email received (if account exists)
@@ -445,6 +457,7 @@ toast.success('Password reset email sent', {
 - [ ] Can login with new password
 
 **Email Confirmation:**
+
 - [ ] Signup email received
 - [ ] Link works
 - [ ] Redirects to /daily
@@ -478,7 +491,7 @@ import { useSearchParams } from 'next/navigation';
 export function ConfirmForm() {
   const searchParams = useSearchParams();
   const code = searchParams.get('code');
-  
+
   useEffect(() => {
     supabase.auth.exchangeCodeForSession(code); // WRONG!
   }, [code]);
@@ -509,10 +522,14 @@ if (error) {
 
 ```typescript
 // ❌ BAD
-const { data: { session } } = await supabase.auth.getSession(); // Not verified!
+const {
+  data: { session },
+} = await supabase.auth.getSession(); // Not verified!
 
 // ✅ GOOD
-const { data: { user } } = await supabase.auth.getUser(); // Verified against server
+const {
+  data: { user },
+} = await supabase.auth.getUser(); // Verified against server
 ```
 
 ---

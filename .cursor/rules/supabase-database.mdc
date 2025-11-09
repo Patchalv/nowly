@@ -18,7 +18,7 @@ alwaysApply: true
 
 ## 📁 Project Structure
 
-```
+```typescript
 supabase/
 ├── migrations/
 │   ├── 001_initial_schema.sql
@@ -546,7 +546,7 @@ describe('SupabaseEntityRepository', () => {
 
 ### Migration File Structure
 
-```
+```typescript
 supabase/migrations/
 ├── 001_initial_schema.sql
 ├── 002_add_categories.sql

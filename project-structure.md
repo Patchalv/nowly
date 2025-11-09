@@ -1,6 +1,6 @@
 ## 📦 Project Structure
 
-```
+```text
 nowly/
 ├── app/                                # Next.js App Router root
 │   ├── (public)/                       # Publicly accessible routes
