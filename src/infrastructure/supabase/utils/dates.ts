@@ -51,15 +51,12 @@ export function dateToDatabase(date: Date | null): string | null {
  * Transform a database TIMESTAMPTZ field to a domain Date object
  * Database TIMESTAMPTZ fields come as ISO strings with timezone information
  *
- * @param timestampString - TIMESTAMPTZ string from database (ISO format) or null
- * @returns Date object or null if input is null/invalid
+ * @param timestampString - TIMESTAMPTZ string from database (ISO format)
+ * @returns Date object
  */
-export function timestampFromDatabase(
-  timestampString: string | null
-): Date | null {
-  if (!timestampString) return null;
-
+export function timestampFromDatabase(timestampString: string): Date {
   const parsed = parseDatabaseDate(timestampString);
+  if (!parsed) throw new Error('Invalid timestamp string');
   return parsed;
 }
 
