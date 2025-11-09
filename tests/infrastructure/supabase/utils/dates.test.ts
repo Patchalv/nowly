@@ -84,12 +84,10 @@ describe('database date transformations', () => {
       expect(result!.getTime()).toBeGreaterThan(0);
     });
 
-    it('should return null for null input', () => {
-      expect(timestampFromDatabase(null)).toBeNull();
-    });
-
-    it('should return null for invalid format', () => {
-      expect(timestampFromDatabase('invalid')).toBeNull();
+    it('should throw for invalid format', () => {
+      expect(() => timestampFromDatabase('invalid')).toThrowError(
+        new Error('Invalid timestamp string')
+      );
     });
   });
 
@@ -123,7 +121,7 @@ describe('database date transformations', () => {
     it('should preserve timestamp in TIMESTAMPTZ round-trip', () => {
       const originalDate = new Date('2024-01-15T14:30:45.000Z');
       const dbString = timestampToDatabase(originalDate);
-      const convertedDate = timestampFromDatabase(dbString);
+      const convertedDate = timestampFromDatabase(dbString!);
       expect(convertedDate).not.toBeNull();
       // Should be same moment in time (within milliseconds)
       expect(

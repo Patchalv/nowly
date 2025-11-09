@@ -54,12 +54,9 @@ export function dateToDatabase(date: Date | null): string | null {
  * @param timestampString - TIMESTAMPTZ string from database (ISO format) or null
  * @returns Date object or null if input is null/invalid
  */
-export function timestampFromDatabase(
-  timestampString: string | null
-): Date | null {
-  if (!timestampString) return null;
-
+export function timestampFromDatabase(timestampString: string): Date {
   const parsed = parseDatabaseDate(timestampString);
+  if (!parsed) throw new Error('Invalid timestamp string');
   return parsed;
 }
 
