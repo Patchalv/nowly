@@ -18,6 +18,15 @@ export interface ITaskRepository {
   findByUserIdAndDate(userId: string, date: Date): Promise<Task[]>;
 
   /**
+   * Find all tasks for a user for a specific date range
+   */
+  findByUserIdAndDateRange(
+    userId: string,
+    startDate: Date,
+    endDate: Date
+  ): Promise<Task[]>;
+
+  /**
    * Update a task
    */
   update(id: string, updates: Partial<Task>): Promise<Task>;

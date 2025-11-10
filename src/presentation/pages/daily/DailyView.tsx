@@ -8,36 +8,6 @@ import { FallbackView } from '../../components/loader/FallbackView';
 import { CreateTaskDrawer } from '../../components/tasks/create-task-drawer/CreateTaskDrawer';
 import { TaskList } from '../../components/tasks/task-list/TaskList';
 
-// Example task type and example tasks list just for the purpose of developing the component.
-// TODO: Remove this once the task list is implemented.
-export type ExampleTask = {
-  id: string;
-  title: string;
-  description: string;
-  completed: boolean;
-};
-
-const exampleTasks: ExampleTask[] = [
-  {
-    id: '1',
-    title: 'Task 1',
-    description: 'Description 1',
-    completed: false,
-  },
-  {
-    id: '2',
-    title: 'Task 2',
-    description: 'Description 2',
-    completed: false,
-  },
-  {
-    id: '3',
-    title: 'Task 3',
-    description: 'Description 3',
-    completed: false,
-  },
-];
-
 function DailyViewContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -68,7 +38,7 @@ function DailyViewContent() {
 
       {/* Task list */}
       <section className="p-4">
-        <TaskList tasks={exampleTasks} />
+        <TaskList date={selectedDate} />
       </section>
 
       <section className="p-4">

@@ -2,12 +2,15 @@
 
 import { createTaskAction } from '@/app/actions/tasks/createTaskAction';
 import { deleteTaskAction } from '@/app/actions/tasks/deleteTaskAction';
+import { getTasksByWeekAction } from '@/app/actions/tasks/getTasksAction';
 import { updateTaskAction } from '@/app/actions/tasks/updateTaskAction';
 import { queryKeys } from '@/src/config/query-keys';
 import type { Task } from '@/src/domain/model/Task';
 import { handleError } from '@/src/shared/errors/handler';
 import type { UseMutationResult } from '@tanstack/react-query';
-import { useMutation, useQueryClient } from '@tanstack/react-query';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { addWeeks, isSameDay, startOfWeek } from 'date-fns';
+import { useEffect, useMemo } from 'react';
 import { toast } from 'sonner';
 import type {
   CreateTaskActionResponse,
@@ -392,4 +395,79 @@ export function useDeleteTask(): UseMutationResult<
       toast.success('Task deleted successfully');
     },
   });
+}
+
+/**
+ * Fetch tasks for the week containing the given date
+ * Also prefetches adjacent weeks in the background
+ */
+export function useTasksByWeek(date: Date) {
+  const queryClient = useQueryClient();
+
+  // Main query: Fetch current week
+  const query = useQuery({
+    queryKey: queryKeys.tasks.byWeek(date),
+    queryFn: async () => {
+      const response = await getTasksByWeekAction(date);
+      if (!response.success) {
+        handleError.throw(response.error || 'Failed to fetch tasks');
+      }
+      return response.tasks || [];
+    },
+    staleTime: 5 * 60 * 1000, // 5 minutes
+  });
+
+  // Prefetch adjacent weeks
+  useEffect(() => {
+    const weekStart = startOfWeek(date, { weekStartsOn: 1 });
+    const previousWeek = addWeeks(weekStart, -1);
+    const nextWeek = addWeeks(weekStart, 1);
+
+    // Prefetch previous week
+    queryClient.prefetchQuery({
+      queryKey: queryKeys.tasks.byWeek(previousWeek),
+      queryFn: async () => {
+        const response = await getTasksByWeekAction(previousWeek);
+        if (!response.success) throw new Error(response.error);
+        return response.tasks || [];
+      },
+      staleTime: 5 * 60 * 1000,
+    });
+
+    // Prefetch next week
+    queryClient.prefetchQuery({
+      queryKey: queryKeys.tasks.byWeek(nextWeek),
+      queryFn: async () => {
+        const response = await getTasksByWeekAction(nextWeek);
+        if (!response.success) throw new Error(response.error);
+        return response.tasks || [];
+      },
+      staleTime: 5 * 60 * 1000,
+    });
+  }, [date, queryClient]);
+
+  return query;
+}
+
+/**
+ * Filter tasks from weekly data for a specific date
+ * This is used for client-side filtering - no additional fetch needed
+ */
+export function useTasksByDate(date: Date) {
+  const { data: weeklyTasks, ...query } = useTasksByWeek(date);
+
+  // Filter tasks for the specific date
+  const tasksForDate = useMemo(() => {
+    if (!weeklyTasks) return [];
+
+    return weeklyTasks.filter((task) => {
+      if (!task.scheduledDate) return false;
+      return isSameDay(task.scheduledDate, date);
+    });
+  }, [weeklyTasks, date]);
+
+  return {
+    data: tasksForDate,
+    ...query,
+  };
 }
