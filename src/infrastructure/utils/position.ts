@@ -14,28 +14,33 @@ export function generateNextPosition(existingPositions: string[]): string {
     return LexoRank.min().toString();
   }
 
-  // Find the maximum position (last item when sorted)
-  const sortedPositions = [...existingPositions].sort((a, b) => {
+  // Filter out invalid positions and parse valid ones
+  const validRanks = existingPositions.reduce<
+    Array<ReturnType<typeof LexoRank.parse>>
+  >((acc, position) => {
     try {
-      const rankA = LexoRank.parse(a);
-      const rankB = LexoRank.parse(b);
-      return rankA.compareTo(rankB);
+      acc.push(LexoRank.parse(position));
     } catch {
-      // If parsing fails, fall back to string comparison
-      return a.localeCompare(b);
+      // Ignore invalid entries
     }
-  });
+    return acc;
+  }, []);
 
-  const lastPosition = sortedPositions[sortedPositions.length - 1];
-
-  try {
-    const lastRank = LexoRank.parse(lastPosition);
-    return lastRank.genNext().toString();
-  } catch {
-    // If parsing fails, generate a new position from min
-    // This handles edge cases where position might be corrupted
-    return LexoRank.min().genNext().toString();
+  // If no valid positions exist, return minimum
+  if (validRanks.length === 0) {
+    return LexoRank.min().toString();
   }
+
+  // Sort valid ranks and find maximum
+  validRanks.sort((a, b) => a.compareTo(b));
+
+  // Generate next position after the maximum valid rank
+  const maxRank = validRanks[validRanks.length - 1];
+  if (!maxRank) {
+    // This should never happen since we checked length > 0, but TypeScript needs it
+    return LexoRank.min().toString();
+  }
+  return maxRank.genNext().toString();
 }
 
 /**

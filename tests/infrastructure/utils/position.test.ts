@@ -80,6 +80,29 @@ describe('position generation utilities', () => {
       expect(resultRank.compareTo(validRank)).toBeGreaterThan(0);
     });
 
+    it('should ignore invalid position that sorts last (e.g., zzzz)', () => {
+      // Create valid positions
+      const pos1 = LexoRank.min().toString();
+      const pos2 = LexoRank.min().genNext().toString();
+      const pos3 = LexoRank.min().genNext().genNext().toString();
+
+      // Add invalid position that would sort last lexicographically
+      const positions = [pos1, pos2, pos3, 'zzzz'];
+
+      const result = generateNextPosition(positions);
+
+      // Should generate position after the highest VALID position (pos3), not after 'zzzz'
+      const maxValidRank = LexoRank.parse(pos3);
+      const resultRank = LexoRank.parse(result);
+
+      // Result should be greater than pos3 (the max valid position)
+      expect(resultRank.compareTo(maxValidRank)).toBeGreaterThan(0);
+
+      // Result should NOT be less than or equal to pos3 (which would happen if we used min().genNext())
+      // This ensures we don't break ordering guarantees
+      expect(resultRank.compareTo(maxValidRank)).not.toBeLessThanOrEqual(0);
+    });
+
     it('should generate unique positions for sequential calls', () => {
       const positions: string[] = [];
       const first = generateNextPosition(positions);

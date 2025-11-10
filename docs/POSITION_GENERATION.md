@@ -15,7 +15,7 @@ Lexorank is a list ordering system similar to JIRA's approach. It generates stri
 
 ### Example Lexorank Values
 
-```
+```text
 a0
 a1
 a2
