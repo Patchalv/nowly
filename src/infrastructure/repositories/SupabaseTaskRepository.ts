@@ -1,5 +1,6 @@
 // src/infrastructure/repositories/SupabaseTaskRepository.ts
 import type { Task } from '@/src/domain/model/Task';
+import { logger } from '@sentry/nextjs';
 import type { SupabaseClient } from '@supabase/supabase-js';
 import type { Database, TaskRow } from '../supabase/types';
 import {
@@ -115,8 +116,14 @@ export class SupabaseTaskRepository implements ITaskRepository {
       .select()
       .single();
 
-    if (error) throw new Error(`Failed to create task: ${error.message}`);
-    if (!data) throw new Error('No data returned after insert');
+    if (error) {
+      logger.error('Failed to create task', { error });
+      throw new Error(`Failed to create task: ${error.message}`);
+    }
+    if (!data) {
+      logger.error('No data returned after insert', { error });
+      throw new Error('No data returned after insert');
+    }
 
     return this.toDomain(data);
   }
@@ -129,7 +136,10 @@ export class SupabaseTaskRepository implements ITaskRepository {
       .single();
 
     if (error?.code === 'PGRST116') return null; // Not found
-    if (error) throw new Error(`Failed to find task: ${error.message}`);
+    if (error) {
+      logger.error('Failed to find task', { error });
+      throw new Error(`Failed to find task: ${error.message}`);
+    }
 
     return data ? this.toDomain(data) : null;
   }
@@ -138,6 +148,7 @@ export class SupabaseTaskRepository implements ITaskRepository {
     // Use dateToDatabase to convert Date to YYYY-MM-DD string for DATE field comparison
     const dateStr = dateToDatabase(date);
     if (!dateStr) {
+      logger.error('Invalid date provided for query', { date });
       throw new Error('Invalid date provided for query');
     }
 
@@ -148,7 +159,10 @@ export class SupabaseTaskRepository implements ITaskRepository {
       .eq('scheduled_date', dateStr)
       .order('position', { ascending: true });
 
-    if (error) throw new Error(`Failed to find tasks: ${error.message}`);
+    if (error) {
+      logger.error('Failed to find tasks', { error });
+      throw new Error(`Failed to find tasks: ${error.message}`);
+    }
 
     return data ? data.map((row) => this.toDomain(row)) : [];
   }
@@ -163,8 +177,14 @@ export class SupabaseTaskRepository implements ITaskRepository {
       .select()
       .single();
 
-    if (error) throw new Error(`Failed to update task: ${error.message}`);
-    if (!data) throw new Error('No data returned after update');
+    if (error) {
+      logger.error('Failed to update task', { error });
+      throw new Error(`Failed to update task: ${error.message}`);
+    }
+    if (!data) {
+      logger.error('No data returned after update', { error });
+      throw new Error('No data returned after update');
+    }
 
     return this.toDomain(data);
   }
@@ -172,6 +192,9 @@ export class SupabaseTaskRepository implements ITaskRepository {
   async delete(id: string): Promise<void> {
     const { error } = await this.client.from('tasks').delete().eq('id', id);
 
-    if (error) throw new Error(`Failed to delete task: ${error.message}`);
+    if (error) {
+      logger.error('Failed to delete task', { error });
+      throw new Error(`Failed to delete task: ${error.message}`);
+    }
   }
 }
