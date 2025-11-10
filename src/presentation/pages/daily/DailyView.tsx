@@ -5,7 +5,8 @@ import { formatDateForURL, parseDateFromURL } from '@/src/shared/utils';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { Suspense, useTransition } from 'react';
 import { FallbackView } from '../../components/loader/FallbackView';
-import { TaskList } from '../../components/tasks/TaskList';
+import { CreateTaskDrawer } from '../../components/tasks/create-task-drawer/CreateTaskDrawer';
+import { TaskList } from '../../components/tasks/task-list/TaskList';
 
 // Example task type and example tasks list just for the purpose of developing the component.
 // TODO: Remove this once the task list is implemented.
@@ -35,15 +36,6 @@ const exampleTasks: ExampleTask[] = [
     description: 'Description 3',
     completed: false,
   },
-];
-
-const lotsOfTasks = [
-  ...exampleTasks,
-  ...exampleTasks,
-  ...exampleTasks,
-  ...exampleTasks,
-  ...exampleTasks,
-  ...exampleTasks,
 ];
 
 function DailyViewContent() {
@@ -76,7 +68,11 @@ function DailyViewContent() {
 
       {/* Task list */}
       <section className="p-4">
-        <TaskList tasks={lotsOfTasks} />
+        <TaskList tasks={exampleTasks} />
+      </section>
+
+      <section className="p-4">
+        <CreateTaskDrawer />
       </section>
     </main>
   );

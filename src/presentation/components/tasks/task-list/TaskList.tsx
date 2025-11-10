@@ -1,5 +1,5 @@
-import { ExampleTask } from '../../pages/daily/DailyView';
-import { ItemGroup } from '../ui/item';
+import { ExampleTask } from '../../../pages/daily/DailyView';
+import { ItemGroup } from '../../ui/item';
 import { TaskListEmpty } from './TaskListEmpty';
 import { TaskListItem } from './TaskListItem';
 

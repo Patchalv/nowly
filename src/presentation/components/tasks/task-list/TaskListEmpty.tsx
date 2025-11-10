@@ -1,5 +1,5 @@
 import { CalendarCheckIcon } from 'lucide-react';
-import { Button } from '../ui/button';
+import { Button } from '../../ui/button';
 import {
   Empty,
   EmptyContent,
@@ -7,7 +7,7 @@ import {
   EmptyHeader,
   EmptyMedia,
   EmptyTitle,
-} from '../ui/empty';
+} from '../../ui/empty';
 
 export const TaskListEmpty = () => {
   return (

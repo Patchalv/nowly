@@ -1,6 +1,6 @@
-import { ExampleTask } from '../../pages/daily/DailyView';
-import { Checkbox } from '../ui/checkbox';
-import { Item, ItemActions, ItemContent, ItemTitle } from '../ui/item';
+import { ExampleTask } from '../../../pages/daily/DailyView';
+import { Checkbox } from '../../ui/checkbox';
+import { Item, ItemActions, ItemContent, ItemTitle } from '../../ui/item';
 
 interface TaskListItemProps {
   task: ExampleTask;
