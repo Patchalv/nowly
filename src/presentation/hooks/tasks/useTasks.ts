@@ -41,7 +41,13 @@ function hasErrorStructure(response: unknown): response is {
  * Transforms server action response to throw on failure
  * This ensures React Query's error state management works correctly
  */
-function handleActionResponse<T>(response: unknown): T {
+function handleActionResponse<
+  T extends {
+    success: boolean;
+    errors?: Record<string, string[]>;
+    error?: string;
+  },
+>(response: unknown): T {
   if (!hasErrorStructure(response)) {
     throw new ServerActionError('Invalid response format');
   }
