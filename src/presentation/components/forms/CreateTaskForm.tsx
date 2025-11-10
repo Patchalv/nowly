@@ -5,7 +5,6 @@ import {
 import { useCreateTask } from '@/src/presentation/hooks/tasks/useTasks';
 import { cn } from '@/src/shared/utils/cn';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { SendHorizontalIcon } from 'lucide-react';
 import { useForm } from 'react-hook-form';
 import { Button } from '../ui/button';
 import {
@@ -20,14 +19,12 @@ import { DatePickerInput } from './DatePickerInput';
 
 interface CreateTaskFormProps {
   defaultScheduledDate?: Date | null | undefined;
-  isInline?: boolean;
   className?: string;
   onSuccess?: () => void;
 }
 
 export const CreateTaskForm = ({
   defaultScheduledDate,
-  isInline = false,
   className,
   onSuccess,
 }: CreateTaskFormProps) => {
@@ -83,51 +80,22 @@ export const CreateTaskForm = ({
             </FormItem>
           )}
         />
-        {isInline ? (
-          <div className="flex items-center justify-between gap-3">
-            <FormField
-              control={form.control}
-              name="scheduledDate"
-              render={({ field }) => (
-                <FormItem>
-                  <FormControl>
-                    <DatePickerInput
-                      label="Scheduled"
-                      date={field.value}
-                      setDate={field.onChange}
-                    />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-            <Button
-              type="submit"
-              size="icon"
-              form="create-task-form"
-              disabled={isPending}
-            >
-              <SendHorizontalIcon className="size-4" />
-            </Button>
-          </div>
-        ) : (
-          <FormField
-            control={form.control}
-            name="scheduledDate"
-            render={({ field }) => (
-              <FormItem>
-                <FormControl>
-                  <DatePickerInput
-                    label="Scheduled"
-                    date={field.value}
-                    setDate={field.onChange}
-                  />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-        )}
+        <FormField
+          control={form.control}
+          name="scheduledDate"
+          render={({ field }) => (
+            <FormItem>
+              <FormControl>
+                <DatePickerInput
+                  label="Scheduled"
+                  date={field.value}
+                  setDate={field.onChange}
+                />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
         <Button
           variant="secondary"
           type="submit"

@@ -11,6 +11,7 @@ import { Popover, PopoverContent, PopoverTrigger } from '../ui/popover';
 interface DatePickerInputProps {
   label?: string;
   defaultScheduledDate?: Date | null | undefined;
+  id?: string;
   date: Date | null | undefined;
   setDate: (date: Date | null | undefined) => void;
 }
@@ -19,21 +20,24 @@ export function DatePickerInput({
   label = 'Scheduled',
   defaultScheduledDate,
   date,
+  id,
   setDate,
 }: DatePickerInputProps) {
   const [open, setOpen] = React.useState(false);
+  const generatedId = React.useId();
+  const fieldId = id ?? generatedId;
   const selectedCalendarDate = date ?? defaultScheduledDate ?? undefined;
 
   return (
     <div className="flex items-center gap-3 w-full justify-between">
-      <Label htmlFor="date" className="px-1">
+      <Label htmlFor={fieldId} className="px-1">
         {label}
       </Label>
       <Popover open={open} onOpenChange={setOpen}>
         <PopoverTrigger asChild>
           <Button
             variant="outline"
-            id="date"
+            id={fieldId}
             className="w-48 justify-between font-normal"
           >
             {date ? date.toLocaleDateString() : 'Select date'}
