@@ -9,12 +9,13 @@ export interface DeleteTaskResponse {
 
 export async function deleteTask(
   taskId: string,
+  userId: string,
   repository: ITaskRepository
 ): Promise<DeleteTaskResponse> {
   try {
     // Business logic: Validate task exists
     const existingTask = await repository.findById(taskId);
-    if (!existingTask) {
+    if (!existingTask || existingTask.userId !== userId) {
       logger.error('Task not found', { taskId });
       return {
         success: false,

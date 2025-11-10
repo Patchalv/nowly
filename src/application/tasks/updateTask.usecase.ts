@@ -12,13 +12,14 @@ export interface UpdateTaskResponse {
 
 export async function updateTask(
   taskId: string,
+  userId: string,
   updates: UpdateTaskInput,
   repository: ITaskRepository
 ): Promise<UpdateTaskResponse> {
   try {
     // Business logic: Validate task exists
     const existingTask = await repository.findById(taskId);
-    if (!existingTask) {
+    if (!existingTask || existingTask.userId !== userId) {
       logger.error('Task not found', { taskId });
       return {
         success: false,

@@ -182,7 +182,7 @@ export class SupabaseTaskRepository implements ITaskRepository {
       throw new Error(`Failed to update task: ${error.message}`);
     }
     if (!data) {
-      logger.error('No data returned after update', { error });
+      logger.error('No data returned after update');
       throw new Error('No data returned after update');
     }
 

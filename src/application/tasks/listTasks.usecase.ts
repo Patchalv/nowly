@@ -15,7 +15,7 @@ export async function listTasksByDate(
   repository: ITaskRepository
 ): Promise<ListTasksResponse> {
   try {
-    logger.info('Listing tasks', { userId, date });
+    logger.info('Listing tasks', { date });
     const tasks = await repository.findByUserIdAndDate(userId, date);
 
     return { success: true, tasks };
