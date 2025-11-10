@@ -52,9 +52,7 @@ export async function createTaskAction(formData: FormData) {
     };
   }
 
-  if (response.success) {
-    revalidatePath('/daily');
-  }
+  revalidatePath('/daily');
 
   return response;
 }
