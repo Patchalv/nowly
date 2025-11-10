@@ -2,7 +2,6 @@
 
 import * as React from 'react';
 
-import { CreateTaskInput } from '@/src/domain/validation/task/task.schema';
 import { useMediaQuery } from '@/src/presentation/hooks/useMediaQuery';
 import { CreateTaskForm } from '../../forms/CreateTaskForm';
 import { Button } from '../../ui/button';
@@ -28,10 +27,6 @@ export function CreateTaskDrawer() {
   const [open, setOpen] = React.useState(false);
   const { isDesktop } = useMediaQuery();
 
-  const onSubmit = async (data: CreateTaskInput) => {
-    console.log(data);
-  };
-
   if (isDesktop) {
     return (
       <Dialog open={open} onOpenChange={setOpen}>
@@ -42,7 +37,7 @@ export function CreateTaskDrawer() {
           <DialogHeader>
             <DialogTitle>New Task</DialogTitle>
           </DialogHeader>
-          <CreateTaskForm onSubmit={onSubmit} />
+          <CreateTaskForm onSuccess={() => setOpen(false)} />
         </DialogContent>
       </Dialog>
     );
@@ -57,7 +52,7 @@ export function CreateTaskDrawer() {
         <DrawerHeader className="text-left">
           <DrawerTitle>New Task</DrawerTitle>
         </DrawerHeader>
-        <CreateTaskForm className="px-4" onSubmit={onSubmit} />
+        <CreateTaskForm className="px-4" onSuccess={() => setOpen(false)} />
         <DrawerFooter className="mt-0">
           <DrawerClose asChild>
             <Button variant="outline">Cancel</Button>

@@ -2,6 +2,7 @@ import {
   CreateTaskInput,
   createTaskSchema,
 } from '@/src/domain/validation/task/task.schema';
+import { useCreateTask } from '@/src/presentation/hooks/tasks/useTasks';
 import { cn } from '@/src/shared/utils/cn';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { SendHorizontalIcon } from 'lucide-react';
@@ -21,15 +22,17 @@ interface CreateTaskFormProps {
   defaultScheduledDate?: Date | null | undefined;
   isInline?: boolean;
   className?: string;
-  onSubmit: (data: CreateTaskInput) => Promise<void>;
+  onSuccess?: () => void;
 }
 
 export const CreateTaskForm = ({
   defaultScheduledDate,
   isInline = false,
   className,
-  onSubmit,
+  onSuccess,
 }: CreateTaskFormProps) => {
+  const { mutate: createTask, isPending } = useCreateTask();
+
   const form = useForm<CreateTaskInput>({
     resolver: zodResolver(createTaskSchema),
     defaultValues: {
@@ -37,6 +40,23 @@ export const CreateTaskForm = ({
       scheduledDate: defaultScheduledDate ?? undefined,
     },
   });
+
+  const onSubmit = (data: CreateTaskInput) => {
+    // Convert CreateTaskInput to FormData
+    const formData = new FormData();
+    formData.append('title', data.title);
+    if (data.scheduledDate) {
+      formData.append('scheduledDate', data.scheduledDate.toISOString());
+    }
+    createTask(formData, {
+      onSuccess: (response) => {
+        if (response.success) {
+          form.reset();
+          onSuccess?.();
+        }
+      },
+    });
+  };
 
   return (
     <Form {...form}>
@@ -81,7 +101,12 @@ export const CreateTaskForm = ({
                 </FormItem>
               )}
             />
-            <Button type="submit" size="icon" form="create-task-form">
+            <Button
+              type="submit"
+              size="icon"
+              form="create-task-form"
+              disabled={isPending}
+            >
               <SendHorizontalIcon className="size-4" />
             </Button>
           </div>
@@ -109,8 +134,9 @@ export const CreateTaskForm = ({
           size="default"
           className="w-full"
           form="create-task-form"
+          disabled={isPending}
         >
-          Create Task
+          {isPending ? 'Creating...' : 'Create Task'}
         </Button>
       </form>
     </Form>
