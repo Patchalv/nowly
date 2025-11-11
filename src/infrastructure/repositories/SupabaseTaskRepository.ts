@@ -1,5 +1,6 @@
 // src/infrastructure/repositories/SupabaseTaskRepository.ts
 import type { Task } from '@/src/domain/model/Task';
+import { handleError } from '@/src/shared/errors/handler';
 import { logger } from '@sentry/nextjs';
 import type { SupabaseClient } from '@supabase/supabase-js';
 import type { Database, TaskRow } from '../supabase/types';
@@ -105,6 +106,9 @@ export class SupabaseTaskRepository implements ITaskRepository {
     return result;
   }
 
+  /**
+   * Create a new task
+   */
   async create(
     task: Omit<Task, 'id' | 'createdAt' | 'updatedAt'>
   ): Promise<Task> {
@@ -128,6 +132,9 @@ export class SupabaseTaskRepository implements ITaskRepository {
     return this.toDomain(data);
   }
 
+  /**
+   * Find a task by ID
+   */
   async findById(id: string): Promise<Task | null> {
     const { data, error } = await this.client
       .from('tasks')
@@ -144,6 +151,9 @@ export class SupabaseTaskRepository implements ITaskRepository {
     return data ? this.toDomain(data) : null;
   }
 
+  /**
+   * Find all tasks for a user on a specific date
+   */
   async findByUserIdAndDate(userId: string, date: Date): Promise<Task[]> {
     // Use dateToDatabase to convert Date to YYYY-MM-DD string for DATE field comparison
     const dateStr = dateToDatabase(date);
@@ -167,6 +177,35 @@ export class SupabaseTaskRepository implements ITaskRepository {
     return data ? data.map((row) => this.toDomain(row)) : [];
   }
 
+  /**
+   * Find all tasks for a user within a date range (for weekly fetching)
+   */
+  async findByUserIdAndDateRange(
+    userId: string,
+    startDate: Date,
+    endDate: Date
+  ): Promise<Task[]> {
+    const startDateStr = dateToDatabase(startDate);
+    const endDateStr = dateToDatabase(endDate);
+
+    const { data, error } = await this.client
+      .from('tasks')
+      .select('*')
+      .eq('user_id', userId)
+      .gte('scheduled_date', startDateStr)
+      .lte('scheduled_date', endDateStr)
+      .order('position', { ascending: true });
+
+    if (error) {
+      handleError.throw(error);
+    }
+
+    return data ? data.map((row) => this.toDomain(row)) : [];
+  }
+
+  /**
+   * Update a task
+   */
   async update(id: string, updates: Partial<Task>): Promise<Task> {
     const row = this.toDatabase(updates);
 
@@ -189,6 +228,9 @@ export class SupabaseTaskRepository implements ITaskRepository {
     return this.toDomain(data);
   }
 
+  /**
+   * Delete a task
+   */
   async delete(id: string): Promise<void> {
     const { error } = await this.client.from('tasks').delete().eq('id', id);
 

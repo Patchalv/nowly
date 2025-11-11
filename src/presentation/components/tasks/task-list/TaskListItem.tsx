@@ -1,9 +1,9 @@
-import { ExampleTask } from '../../../pages/daily/DailyView';
+import type { Task } from '@/src/domain/model/Task';
 import { Checkbox } from '../../ui/checkbox';
 import { Item, ItemActions, ItemContent, ItemTitle } from '../../ui/item';
 
 interface TaskListItemProps {
-  task: ExampleTask;
+  task: Task;
 }
 
 export const TaskListItem = ({ task }: TaskListItemProps) => {
@@ -11,7 +11,7 @@ export const TaskListItem = ({ task }: TaskListItemProps) => {
     <Item variant="outline" className="w-full">
       <ItemContent className="flex flex-row gap-4 items-center">
         <ItemActions>
-          <Checkbox />
+          <Checkbox checked={task.completed} onCheckedChange={() => {}} />
         </ItemActions>
         <ItemTitle>{task.title}</ItemTitle>
       </ItemContent>

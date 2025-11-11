@@ -3,6 +3,8 @@
  * Helps maintain consistency and type safety
  */
 
+import { startOfWeek } from 'date-fns';
+
 export const queryKeys = {
   // Auth keys
   auth: {
@@ -26,9 +28,10 @@ export const queryKeys = {
   tasks: {
     all: ['tasks'] as const,
     byDate: (date: string) => ['tasks', 'date', date] as const,
-    byId: (taskId: string) => ['tasks', taskId] as const,
-    completed: ['tasks', 'completed'] as const,
-    incomplete: ['tasks', 'incomplete'] as const,
+    byWeek: (date: Date) => {
+      const weekStart = startOfWeek(date, { weekStartsOn: 1 });
+      return ['tasks', 'week', weekStart.toISOString()] as const;
+    },
   },
 
   // Recurring tasks keys (will be used in Phase 6)
