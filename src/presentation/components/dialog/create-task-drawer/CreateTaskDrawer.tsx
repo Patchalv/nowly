@@ -3,6 +3,7 @@
 import * as React from 'react';
 
 import { useMediaQuery } from '@/src/presentation/hooks/useMediaQuery';
+import { CreateTaskButton } from '../../buttons/create-task-button/CreateTaskButton';
 import { CreateTaskForm } from '../../forms/CreateTaskForm';
 import { Button } from '../../ui/button';
 import {
@@ -21,7 +22,6 @@ import {
   DrawerTitle,
   DrawerTrigger,
 } from '../../ui/drawer';
-import { CreateTaskButton } from '../create-task-button/CreateTaskButton';
 
 export function CreateTaskDrawer() {
   const [open, setOpen] = React.useState(false);
@@ -35,7 +35,7 @@ export function CreateTaskDrawer() {
         </DialogTrigger>
         <DialogContent className="sm:max-w-[425px]">
           <DialogHeader>
-            <DialogTitle>New Task</DialogTitle>
+            <DialogTitle>Create Task</DialogTitle>
           </DialogHeader>
           <CreateTaskForm onSuccess={() => setOpen(false)} />
         </DialogContent>

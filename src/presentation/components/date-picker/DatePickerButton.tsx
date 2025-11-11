@@ -1,28 +1,26 @@
 'use client';
 
-import { ChevronDownIcon } from 'lucide-react';
+import { CalendarPlusIcon } from 'lucide-react';
 import * as React from 'react';
 
-import { Button } from '../ui/button';
+import { cn } from '@/src/shared/utils';
+import { TooltipButton } from '../buttons/TooltipButton';
 import { Calendar } from '../ui/calendar';
-import { Label } from '../ui/label';
 import { Popover, PopoverContent, PopoverTrigger } from '../ui/popover';
 
-interface DatePickerInputProps {
-  label?: string;
+interface DatePickerButtonProps {
   defaultScheduledDate?: Date | null | undefined;
   id?: string;
   date: Date | null | undefined;
   setDate: (date: Date | null | undefined) => void;
 }
 
-export function DatePickerInput({
-  label = 'Scheduled',
+export function DatePickerButton({
   defaultScheduledDate,
   date,
   id,
   setDate,
-}: DatePickerInputProps) {
+}: DatePickerButtonProps) {
   const [open, setOpen] = React.useState(false);
   const generatedId = React.useId();
   const fieldId = id ?? generatedId;
@@ -30,19 +28,22 @@ export function DatePickerInput({
 
   return (
     <div className="flex items-center gap-3 w-full justify-between">
-      <Label htmlFor={fieldId} className="px-1">
-        {label}
-      </Label>
       <Popover open={open} onOpenChange={setOpen}>
         <PopoverTrigger asChild>
-          <Button
-            variant="outline"
-            id={fieldId}
-            className="w-48 justify-between font-normal"
-          >
-            {date ? date.toLocaleDateString() : 'Select date'}
-            <ChevronDownIcon />
-          </Button>
+          <TooltipButton
+            tooltip="Select date"
+            btnContent={
+              <CalendarPlusIcon
+                className={cn(
+                  'size-4',
+                  date ? 'text-teal-600' : 'text-muted-foreground'
+                )}
+              />
+            }
+            btnVariant="ghost"
+            btnSize="icon-sm"
+            props={{ id: fieldId }}
+          />
         </PopoverTrigger>
         <PopoverContent className="w-auto overflow-hidden p-0" align="start">
           <Calendar

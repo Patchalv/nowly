@@ -6,6 +6,7 @@ import { useCreateTask } from '@/src/presentation/hooks/tasks/useTasks';
 import { cn } from '@/src/shared/utils/cn';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useForm } from 'react-hook-form';
+import { DatePickerButton } from '../date-picker/DatePickerButton';
 import { Button } from '../ui/button';
 import {
   Form,
@@ -15,7 +16,6 @@ import {
   FormMessage,
 } from '../ui/form';
 import { Input } from '../ui/input';
-import { DatePickerInput } from './DatePickerInput';
 
 interface CreateTaskFormProps {
   defaultScheduledDate?: Date | null | undefined;
@@ -86,11 +86,7 @@ export const CreateTaskForm = ({
           render={({ field }) => (
             <FormItem>
               <FormControl>
-                <DatePickerInput
-                  label="Scheduled"
-                  date={field.value}
-                  setDate={field.onChange}
-                />
+                <DatePickerButton date={field.value} setDate={field.onChange} />
               </FormControl>
               <FormMessage />
             </FormItem>
