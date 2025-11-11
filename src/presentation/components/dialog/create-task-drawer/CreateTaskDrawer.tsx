@@ -50,7 +50,7 @@ export function CreateTaskDrawer() {
       </DrawerTrigger>
       <DrawerContent>
         <DrawerHeader className="text-left">
-          <DrawerTitle>New Task</DrawerTitle>
+          <DrawerTitle>Create Task</DrawerTitle>
         </DrawerHeader>
         <CreateTaskForm className="px-4" onSuccess={() => setOpen(false)} />
         <DrawerFooter className="mt-0">

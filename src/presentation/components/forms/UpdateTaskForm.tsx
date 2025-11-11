@@ -78,7 +78,7 @@ export const UpdateTaskForm = ({
                 btnContent={<CalendarMinusIcon className="size-4" />}
                 btnVariant="ghost"
                 btnSize="icon-sm"
-                onClick={field.onChange}
+                onClick={() => field.onChange(null)}
               />
             </FormControl>
             <FormMessage />

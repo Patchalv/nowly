@@ -46,7 +46,7 @@ export function TaskListItemDrawer({ task }: TaskListItemDrawerProps) {
           <DialogHeader>
             <DialogTitle>Task Details</DialogTitle>
           </DialogHeader>
-          <UpdateTaskForm task={task} />
+          <UpdateTaskForm task={task} onSuccess={() => setOpen(false)} />
         </DialogContent>
       </Dialog>
     );
@@ -63,7 +63,7 @@ export function TaskListItemDrawer({ task }: TaskListItemDrawerProps) {
         />
       </DrawerTrigger>
       <DrawerContent className="p-4">
-        <UpdateTaskForm task={task} />
+        <UpdateTaskForm task={task} onSuccess={() => setOpen(false)} />
         <DrawerFooter className="mt-0">
           <DrawerClose asChild>
             <Button variant="outline">Cancel</Button>
