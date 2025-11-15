@@ -2,11 +2,8 @@
 
 import * as React from 'react';
 
-import { Task } from '@/src/domain/model/Task';
 import { useMediaQuery } from '@/src/presentation/hooks/useMediaQuery';
-import { SettingsIcon } from 'lucide-react';
-import { TooltipButton } from '../../buttons/TooltipButton';
-import { UpdateTaskForm } from '../../forms/task/UpdateTaskForm';
+import { CreateCategoryForm } from '../../forms/category/CreateCategoryForm';
 import { Button } from '../../ui/button';
 import {
   Dialog,
@@ -20,18 +17,16 @@ import {
   DrawerClose,
   DrawerContent,
   DrawerFooter,
+  DrawerHeader,
+  DrawerTitle,
   DrawerTrigger,
 } from '../../ui/drawer';
 
-const UPDATE_TASK_TOOLTIP = 'Update task';
+const DIALOG_TITLE = 'Create Category';
+const ADD_CATEGORY_BUTTON_TEXT = 'Add Category';
 const CANCEL_BUTTON_TEXT = 'Cancel';
-const DIALOG_TITLE = 'Task Details';
 
-interface TaskListItemDrawerProps {
-  task: Task;
-}
-
-export function TaskListItemDrawer({ task }: TaskListItemDrawerProps) {
+export function CreateCategoryDrawer() {
   const [open, setOpen] = React.useState(false);
   const { isDesktop } = useMediaQuery();
 
@@ -39,18 +34,13 @@ export function TaskListItemDrawer({ task }: TaskListItemDrawerProps) {
     return (
       <Dialog open={open} onOpenChange={setOpen}>
         <DialogTrigger asChild>
-          <TooltipButton
-            tooltip={UPDATE_TASK_TOOLTIP}
-            btnContent={<SettingsIcon className="size-4" />}
-            btnVariant="ghost"
-            btnSize="icon"
-          />
+          <Button>{ADD_CATEGORY_BUTTON_TEXT}</Button>
         </DialogTrigger>
         <DialogContent className="sm:max-w-[425px]">
           <DialogHeader>
             <DialogTitle>{DIALOG_TITLE}</DialogTitle>
           </DialogHeader>
-          <UpdateTaskForm task={task} onSuccess={() => setOpen(false)} />
+          <CreateCategoryForm onSuccess={() => setOpen(false)} />
         </DialogContent>
       </Dialog>
     );
@@ -59,15 +49,13 @@ export function TaskListItemDrawer({ task }: TaskListItemDrawerProps) {
   return (
     <Drawer open={open} onOpenChange={setOpen}>
       <DrawerTrigger asChild>
-        <TooltipButton
-          tooltip={UPDATE_TASK_TOOLTIP}
-          btnContent={<SettingsIcon className="size-4" />}
-          btnVariant="ghost"
-          btnSize="icon"
-        />
+        <Button>{ADD_CATEGORY_BUTTON_TEXT}</Button>
       </DrawerTrigger>
-      <DrawerContent className="p-4">
-        <UpdateTaskForm task={task} onSuccess={() => setOpen(false)} />
+      <DrawerContent>
+        <DrawerHeader className="text-left">
+          <DrawerTitle>{DIALOG_TITLE}</DrawerTitle>
+        </DrawerHeader>
+        <CreateCategoryForm className="px-4" onSuccess={() => setOpen(false)} />
         <DrawerFooter className="mt-0">
           <DrawerClose asChild>
             <Button variant="outline">{CANCEL_BUTTON_TEXT}</Button>

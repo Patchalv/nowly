@@ -1,4 +1,4 @@
-import type { ITaskRepository } from '@/src/infrastructure/repositories/ITaskRepository';
+import type { ITaskRepository } from '@/src/infrastructure/repositories/task/ITaskRepository';
 import { handleError } from '@/src/shared/errors';
 import { logger } from '@sentry/nextjs';
 import { endOfWeek, startOfWeek } from 'date-fns';
@@ -41,11 +41,11 @@ export async function listTasksByWeek(
     );
     return { success: true, tasks };
   } catch (error) {
-    handleError.silent(error);
+    const appError = handleError.silent(error);
     return {
       success: false,
       tasks: [],
-      error: error instanceof Error ? error.message : 'Failed to fetch tasks',
+      error: appError.message,
     };
   }
 }

@@ -155,8 +155,8 @@ export function getTimezoneOffset(
  * Get the effective timezone to use (user preference or browser default)
  * @returns IANA timezone identifier
  */
-export function getEffectiveTimezone(): string {
-  const userTz = getUserTimezone();
+export function getEffectiveTimezone(userTimezone?: string): string {
+  const userTz = userTimezone || getUserTimezone();
   if (userTz && isValidTimezone(userTz)) {
     return userTz;
   }

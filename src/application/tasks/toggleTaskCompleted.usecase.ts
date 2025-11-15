@@ -1,4 +1,4 @@
-import type { ITaskRepository } from '@/src/infrastructure/repositories/ITaskRepository';
+import type { ITaskRepository } from '@/src/infrastructure/repositories/task/ITaskRepository';
 import { logger } from '@sentry/nextjs';
 import { MutateTaskResponse } from './types';
 

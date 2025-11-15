@@ -14,7 +14,6 @@ import {
 import {
   getBrowserTimezone,
   getEffectiveTimezone,
-  getUserTimezone,
   isValidTimezone,
 } from '@/src/shared/utils/timezone';
 import { useMemo } from 'react';
@@ -25,8 +24,6 @@ import { useMemo } from 'react';
 export interface UseTimezoneReturn {
   /** Current effective timezone (user preference or browser default) */
   timezone: string;
-  /** User's timezone preference (null if not set) */
-  userTimezone: string | null;
   /** Browser's timezone */
   browserTimezone: string;
   /** Whether user has set a timezone preference */
@@ -52,13 +49,12 @@ export interface UseTimezoneReturn {
  * const formatted = formatDisplay(new Date());
  * ```
  */
-export function useTimezone(): UseTimezoneReturn {
+export function useTimezone(userTimezone?: string): UseTimezoneReturn {
   // Get timezone values
-  const userTimezone = getUserTimezone();
   const browserTimezone = getBrowserTimezone();
-  const effectiveTimezone = getEffectiveTimezone();
+  const effectiveTimezone = getEffectiveTimezone(userTimezone);
   const hasUserTimezone =
-    userTimezone !== null && isValidTimezone(userTimezone);
+    userTimezone !== undefined && isValidTimezone(userTimezone);
 
   // Memoize formatting functions to avoid recreating on every render
   const formattingFunctions = useMemo(
@@ -73,7 +69,6 @@ export function useTimezone(): UseTimezoneReturn {
 
   return {
     timezone: effectiveTimezone,
-    userTimezone,
     browserTimezone,
     hasUserTimezone,
     ...formattingFunctions,

@@ -1,15 +1,14 @@
-// src/infrastructure/repositories/SupabaseTaskRepository.ts
 import type { Task } from '@/src/domain/model/Task';
 import { handleError } from '@/src/shared/errors/handler';
 import { logger } from '@sentry/nextjs';
 import type { SupabaseClient } from '@supabase/supabase-js';
-import type { Database, TaskRow } from '../supabase/types';
+import type { Database, TaskRow } from '../../supabase/types';
 import {
   dateFromDatabase,
   dateToDatabase,
   timestampFromDatabase,
   timestampToDatabase,
-} from '../supabase/utils/dates';
+} from '../../supabase/utils/dates';
 import type { ITaskRepository } from './ITaskRepository';
 
 export class SupabaseTaskRepository implements ITaskRepository {

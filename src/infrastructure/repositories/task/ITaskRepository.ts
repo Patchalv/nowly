@@ -1,6 +1,5 @@
 import { Task } from '@/src/domain/model/Task';
 
-// src/infrastructure/repositories/ITaskRepository.ts
 export interface ITaskRepository {
   /**
    * Create a new task

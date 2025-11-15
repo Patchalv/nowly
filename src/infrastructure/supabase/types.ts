@@ -45,7 +45,7 @@ export interface CategoryRow {
   user_id: string;
   name: string;
   color: string;
-  emoji: string | null;
+  icon: string | null;
   position: string;
   created_at: string; // TIMESTAMPTZ: ISO string
   updated_at: string; // TIMESTAMPTZ: ISO string

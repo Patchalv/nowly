@@ -15,7 +15,7 @@ export const queryKeys = {
   // User profile keys
   profile: {
     all: ['profile'] as const,
-    detail: (userId: string) => ['profile', userId] as const,
+    detail: ['profile', 'detail'] as const,
   },
 
   // Categories keys

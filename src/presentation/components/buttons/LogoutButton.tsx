@@ -3,7 +3,7 @@
 import { logoutAction } from '@/app/actions/auth/logoutAction';
 import { useTransition } from 'react';
 import { toast } from 'sonner';
-import { Button } from './ui/button';
+import { Button } from '../ui/button';
 
 /**
  * Client component that handles user logout with proper error handling

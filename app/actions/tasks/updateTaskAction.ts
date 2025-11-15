@@ -2,7 +2,7 @@
 
 import { updateTask } from '@/src/application/tasks/updateTask.usecase';
 import { updateTaskSchema } from '@/src/domain/validation/task/task.schema';
-import { SupabaseTaskRepository } from '@/src/infrastructure/repositories/SupabaseTaskRepository';
+import { SupabaseTaskRepository } from '@/src/infrastructure/repositories/task/SupabaseTaskRepository';
 import { createClient } from '@/src/infrastructure/supabase/server';
 import { logger } from '@sentry/nextjs';
 import { revalidatePath } from 'next/cache';

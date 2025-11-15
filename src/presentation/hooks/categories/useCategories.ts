@@ -1,0 +1,54 @@
+import { createCategoryAction } from '@/app/actions/categories/createCategoryAction';
+import { getCategoriesAction } from '@/app/actions/categories/getCategoriesAction';
+import { CACHE } from '@/src/config/constants';
+import { queryKeys } from '@/src/config/query-keys';
+import { handleError } from '@/src/shared/errors';
+import {
+  useMutation,
+  UseMutationResult,
+  useQuery,
+  useQueryClient,
+} from '@tanstack/react-query';
+import { handleActionResponse, ServerActionError } from '../tasks/utils';
+import {
+  CreateCategoryActionResponse,
+  CreateCategoryMutationInput,
+} from './types';
+
+/**
+ * Fetch the categories for the current user
+ */
+export function useCategories() {
+  return useQuery({
+    queryKey: queryKeys.categories.all,
+    queryFn: async () => {
+      const response = await getCategoriesAction();
+      if (!response.success) {
+        handleError.throw(response.error);
+      }
+      return response.categories;
+    },
+    staleTime: CACHE.CATEGORIES_STALE_TIME_MS,
+  });
+}
+
+export function useCreateCategory(): UseMutationResult<
+  CreateCategoryActionResponse,
+  ServerActionError,
+  CreateCategoryMutationInput
+> {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async (formData: FormData) => {
+      const response = await createCategoryAction(formData);
+      return handleActionResponse<CreateCategoryActionResponse>(response);
+    },
+    onError: (error) => {
+      handleError.toast(error, 'Failed to create category');
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: queryKeys.categories.all });
+    },
+  });
+}
