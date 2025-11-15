@@ -131,10 +131,11 @@ describe('position generation utilities', () => {
 
     it('should return min position when no existing tasks', async () => {
       const mockRepository: ITaskRepository = {
-        findByUserIdAndDate: vi.fn().mockResolvedValue([]),
-        findByUserIdAndDateRange: vi.fn().mockResolvedValue([]),
         create: vi.fn(),
         findById: vi.fn(),
+        findByUserIdAndDate: vi.fn().mockResolvedValue([]),
+        findByUserIdAndDateRange: vi.fn().mockResolvedValue([]),
+        findByCategoryId: vi.fn().mockResolvedValue([]),
         update: vi.fn(),
         delete: vi.fn(),
       };
@@ -193,10 +194,11 @@ describe('position generation utilities', () => {
       ];
 
       const mockRepository: ITaskRepository = {
-        findByUserIdAndDate: vi.fn().mockResolvedValue(existingTasks),
-        findByUserIdAndDateRange: vi.fn().mockResolvedValue([]),
         create: vi.fn(),
         findById: vi.fn(),
+        findByUserIdAndDate: vi.fn().mockResolvedValue(existingTasks),
+        findByUserIdAndDateRange: vi.fn().mockResolvedValue([]),
+        findByCategoryId: vi.fn().mockResolvedValue([]),
         update: vi.fn(),
         delete: vi.fn(),
       };
@@ -216,12 +218,13 @@ describe('position generation utilities', () => {
 
     it('should handle repository errors gracefully', async () => {
       const mockRepository: ITaskRepository = {
+        create: vi.fn(),
+        findById: vi.fn(),
         findByUserIdAndDate: vi
           .fn()
           .mockRejectedValue(new Error('Database error')),
         findByUserIdAndDateRange: vi.fn().mockResolvedValue([]),
-        create: vi.fn(),
-        findById: vi.fn(),
+        findByCategoryId: vi.fn().mockResolvedValue([]),
         update: vi.fn(),
         delete: vi.fn(),
       };
@@ -281,6 +284,8 @@ describe('position generation utilities', () => {
       ];
 
       const mockRepository: ITaskRepository = {
+        create: vi.fn(),
+        findById: vi.fn(),
         findByUserIdAndDate: vi
           .fn()
           .mockImplementation((userId: string, date: Date) => {
@@ -290,8 +295,7 @@ describe('position generation utilities', () => {
             return Promise.resolve(tasksForDate2);
           }),
         findByUserIdAndDateRange: vi.fn().mockResolvedValue([]),
-        create: vi.fn(),
-        findById: vi.fn(),
+        findByCategoryId: vi.fn().mockResolvedValue([]),
         update: vi.fn(),
         delete: vi.fn(),
       };
@@ -358,10 +362,11 @@ describe('position generation utilities', () => {
       ];
 
       const mockRepository: ITaskRepository = {
-        findByUserIdAndDate: vi.fn().mockResolvedValue(existingTasks),
-        findByUserIdAndDateRange: vi.fn().mockResolvedValue([]),
         create: vi.fn(),
         findById: vi.fn(),
+        findByUserIdAndDate: vi.fn().mockResolvedValue(existingTasks),
+        findByUserIdAndDateRange: vi.fn().mockResolvedValue([]),
+        findByCategoryId: vi.fn().mockResolvedValue([]),
         update: vi.fn(),
         delete: vi.fn(),
       };
