@@ -8,7 +8,7 @@ import { CreateTaskButton } from '../../buttons/create-task-button/CreateTaskBut
 import {
   CreateTaskForm,
   CreateTaskFormProps,
-} from '../../forms/CreateTaskForm';
+} from '../../forms/task/CreateTaskForm';
 import { Button, buttonVariants } from '../../ui/button';
 import {
   Dialog,

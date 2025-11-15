@@ -4,7 +4,7 @@ import {
   listTasksByDate,
   listTasksByWeek,
 } from '@/src/application/tasks/listTasks.usecase';
-import { SupabaseTaskRepository } from '@/src/infrastructure/repositories/SupabaseTaskRepository';
+import { SupabaseTaskRepository } from '@/src/infrastructure/repositories/task/SupabaseTaskRepository';
 import { createClient } from '@/src/infrastructure/supabase/server';
 import { handleError } from '@/src/shared/errors';
 import { logger } from '@sentry/nextjs';

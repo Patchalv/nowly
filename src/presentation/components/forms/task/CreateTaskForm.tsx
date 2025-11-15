@@ -6,16 +6,16 @@ import { useCreateTask } from '@/src/presentation/hooks/tasks/useTasks';
 import { cn } from '@/src/shared/utils/cn';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useForm } from 'react-hook-form';
-import { DatePickerButton } from '../date-picker/DatePickerButton';
-import { Button } from '../ui/button';
+import { DatePickerButton } from '../../date-picker/DatePickerButton';
+import { Button } from '../../ui/button';
 import {
   Form,
   FormControl,
   FormField,
   FormItem,
   FormMessage,
-} from '../ui/form';
-import { Input } from '../ui/input';
+} from '../../ui/form';
+import { Input } from '../../ui/input';
 
 export interface CreateTaskFormProps {
   defaultScheduledDate?: Date | null | undefined;

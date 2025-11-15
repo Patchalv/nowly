@@ -1,6 +1,6 @@
 // src/infrastructure/utils/position.ts
 import { LexoRank } from 'lexorank';
-import type { ITaskRepository } from '../repositories/ITaskRepository';
+import type { ITaskRepository } from '../repositories/task/ITaskRepository';
 
 /**
  * Generate the next lexorank position from an array of existing positions.

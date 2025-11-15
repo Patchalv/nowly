@@ -1,5 +1,5 @@
 import type { CreateTaskInput } from '@/src/domain/validation/task/task.schema';
-import type { ITaskRepository } from '@/src/infrastructure/repositories/ITaskRepository';
+import type { ITaskRepository } from '@/src/infrastructure/repositories/task/ITaskRepository';
 import { generatePositionForNewTask } from '@/src/infrastructure/utils/position';
 import { logger } from '@sentry/nextjs';
 import { LexoRank } from 'lexorank';

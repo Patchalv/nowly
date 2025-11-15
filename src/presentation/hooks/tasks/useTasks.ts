@@ -5,6 +5,7 @@ import { deleteTaskAction } from '@/app/actions/tasks/deleteTaskAction';
 import { getTasksByWeekAction } from '@/app/actions/tasks/getTasksAction';
 import { toggleTaskCompletedAction } from '@/app/actions/tasks/toggleTaskCompletedAction';
 import { updateTaskAction } from '@/app/actions/tasks/updateTaskAction';
+import { CACHE } from '@/src/config/constants';
 import { queryKeys } from '@/src/config/query-keys';
 import type { Task } from '@/src/domain/model/Task';
 import { handleError } from '@/src/shared/errors/handler';
@@ -564,7 +565,7 @@ export function useTasksByWeek(date: Date) {
       }
       return response.tasks || [];
     },
-    staleTime: 5 * 60 * 1000, // 5 minutes
+    staleTime: CACHE.TASKS_STALE_TIME_MS,
   });
 
   // Prefetch adjacent weeks
@@ -581,7 +582,7 @@ export function useTasksByWeek(date: Date) {
         if (!response.success) throw new Error(response.error);
         return response.tasks || [];
       },
-      staleTime: 5 * 60 * 1000,
+      staleTime: CACHE.TASKS_STALE_TIME_MS,
     });
 
     // Prefetch next week
@@ -592,7 +593,7 @@ export function useTasksByWeek(date: Date) {
         if (!response.success) throw new Error(response.error);
         return response.tasks || [];
       },
-      staleTime: 5 * 60 * 1000,
+      staleTime: CACHE.TASKS_STALE_TIME_MS,
     });
   }, [date, queryClient]);
 

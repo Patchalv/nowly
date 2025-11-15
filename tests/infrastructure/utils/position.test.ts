@@ -4,7 +4,7 @@
  */
 
 import type { Task } from '@/src/domain/model/Task';
-import type { ITaskRepository } from '@/src/infrastructure/repositories/ITaskRepository';
+import type { ITaskRepository } from '@/src/infrastructure/repositories/task/ITaskRepository';
 import {
   generateNextPosition,
   generatePositionForNewTask,

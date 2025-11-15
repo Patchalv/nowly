@@ -1,6 +1,6 @@
 import type { Task } from '@/src/domain/model/Task';
 import type { UpdateTaskInput } from '@/src/domain/validation/task/task.schema';
-import type { ITaskRepository } from '@/src/infrastructure/repositories/ITaskRepository';
+import type { ITaskRepository } from '@/src/infrastructure/repositories/task/ITaskRepository';
 import { logger } from '@sentry/nextjs';
 import { MutateTaskResponse } from './types';
 
