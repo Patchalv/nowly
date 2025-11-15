@@ -69,6 +69,25 @@ export class SupabaseCategoryRepository implements ICategoryRepository {
   }
 
   /**
+   * Find a category by ID
+   */
+  async findById(id: string): Promise<Category | null> {
+    const { data, error } = await this.client
+      .from('categories')
+      .select('*')
+      .eq('id', id)
+      .single();
+
+    if (error?.code === 'PGRST116') return null; // Not found
+    if (error) {
+      logger.error('Failed to find category', { error });
+      throw new Error(`Failed to find category: ${error.message}`);
+    }
+
+    return data ? this.toDomain(data) : null;
+  }
+
+  /**
    * Create a new category
    */
   async create(
@@ -92,5 +111,48 @@ export class SupabaseCategoryRepository implements ICategoryRepository {
     }
 
     return this.toDomain(data);
+  }
+
+  /**
+   * Update a category
+   */
+  async update(
+    categoryId: string,
+    updates: Partial<Category>
+  ): Promise<Category> {
+    const row = this.toDatabase(updates);
+
+    const { data, error } = await this.client
+      .from('categories')
+      .update(row as never)
+      .eq('id', categoryId)
+      .select()
+      .single();
+
+    if (error) {
+      logger.error('Failed to update category', { error });
+      throw new Error(`Failed to update category: ${error.message}`);
+    }
+    if (!data) {
+      logger.error('No data returned after update');
+      throw new Error('No data returned after update');
+    }
+
+    return this.toDomain(data);
+  }
+
+  /**
+   * Delete a category
+   */
+  async delete(categoryId: string): Promise<void> {
+    const { error } = await this.client
+      .from('categories')
+      .delete()
+      .eq('id', categoryId);
+
+    if (error) {
+      logger.error('Failed to delete category', { error });
+      throw new Error(`Failed to delete category: ${error.message}`);
+    }
   }
 }

@@ -2,14 +2,12 @@
 
 import * as React from 'react';
 
+import { Category } from '@/src/domain/model/Category';
 import { useMediaQuery } from '@/src/presentation/hooks/useMediaQuery';
-import { VariantProps } from 'class-variance-authority';
-import { CreateTaskButton } from '../../buttons/task/CreateTaskButton';
-import {
-  CreateTaskForm,
-  CreateTaskFormProps,
-} from '../../forms/task/CreateTaskForm';
-import { Button, buttonVariants } from '../../ui/button';
+import { SettingsIcon } from 'lucide-react';
+import { TooltipButton } from '../../buttons/TooltipButton';
+import { UpdateCategoryForm } from '../../forms/category/UpdateCategoryForm';
+import { Button } from '../../ui/button';
 import {
   Dialog,
   DialogContent,
@@ -22,23 +20,20 @@ import {
   DrawerClose,
   DrawerContent,
   DrawerFooter,
-  DrawerHeader,
-  DrawerTitle,
   DrawerTrigger,
 } from '../../ui/drawer';
 
-const DIALOG_TITLE = 'Create Task';
+const UPDATE_CATEGORY_TOOLTIP = 'Update category';
 const CANCEL_BUTTON_TEXT = 'Cancel';
+const DIALOG_TITLE = 'Category Details';
 
-export interface CreateTaskDrawerProps {
-  variant?: VariantProps<typeof buttonVariants>['variant'];
-  defaultScheduledDate?: CreateTaskFormProps['defaultScheduledDate'];
+interface CategoryListItemDrawerProps {
+  category: Category;
 }
 
-export function CreateTaskDrawer({
-  variant = 'ghost',
-  defaultScheduledDate,
-}: CreateTaskDrawerProps) {
+export function CategoryListItemDrawer({
+  category,
+}: CategoryListItemDrawerProps) {
   const [open, setOpen] = React.useState(false);
   const { isDesktop } = useMediaQuery();
 
@@ -46,14 +41,19 @@ export function CreateTaskDrawer({
     return (
       <Dialog open={open} onOpenChange={setOpen}>
         <DialogTrigger asChild>
-          <CreateTaskButton variant={variant} />
+          <TooltipButton
+            tooltip={UPDATE_CATEGORY_TOOLTIP}
+            btnContent={<SettingsIcon className="size-4" />}
+            btnVariant="ghost"
+            btnSize="icon"
+          />
         </DialogTrigger>
         <DialogContent className="sm:max-w-[425px]">
           <DialogHeader>
             <DialogTitle>{DIALOG_TITLE}</DialogTitle>
           </DialogHeader>
-          <CreateTaskForm
-            defaultScheduledDate={defaultScheduledDate}
+          <UpdateCategoryForm
+            category={category}
             onSuccess={() => setOpen(false)}
           />
         </DialogContent>
@@ -64,15 +64,16 @@ export function CreateTaskDrawer({
   return (
     <Drawer open={open} onOpenChange={setOpen}>
       <DrawerTrigger asChild>
-        <CreateTaskButton variant={variant} />
+        <TooltipButton
+          tooltip={UPDATE_CATEGORY_TOOLTIP}
+          btnContent={<SettingsIcon className="size-4" />}
+          btnVariant="ghost"
+          btnSize="icon"
+        />
       </DrawerTrigger>
-      <DrawerContent>
-        <DrawerHeader className="text-left">
-          <DrawerTitle>{DIALOG_TITLE}</DrawerTitle>
-        </DrawerHeader>
-        <CreateTaskForm
-          defaultScheduledDate={defaultScheduledDate}
-          className="px-4"
+      <DrawerContent className="p-4">
+        <UpdateCategoryForm
+          category={category}
           onSuccess={() => setOpen(false)}
         />
         <DrawerFooter className="mt-0">
