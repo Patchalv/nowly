@@ -57,7 +57,8 @@ export const UpdateDatePickerButton = ({
             }
             btnVariant="ghost"
             btnSize="icon-sm"
-            props={{ id: generatedId, disabled: isPending }}
+            id={generatedId}
+            disabled={isPending}
           />
         </PopoverTrigger>
         <PopoverContent className="w-auto overflow-hidden p-0" align="start">

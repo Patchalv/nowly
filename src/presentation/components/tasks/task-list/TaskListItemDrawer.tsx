@@ -23,6 +23,10 @@ import {
   DrawerTrigger,
 } from '../../ui/drawer';
 
+const UPDATE_TASK_TOOLTIP = 'Update task';
+const CANCEL_BUTTON_TEXT = 'Cancel';
+const DIALOG_TITLE = 'Task Details';
+
 interface TaskListItemDrawerProps {
   task: Task;
 }
@@ -36,7 +40,7 @@ export function TaskListItemDrawer({ task }: TaskListItemDrawerProps) {
       <Dialog open={open} onOpenChange={setOpen}>
         <DialogTrigger asChild>
           <TooltipButton
-            tooltip="Update"
+            tooltip={UPDATE_TASK_TOOLTIP}
             btnContent={<SettingsIcon className="size-4" />}
             btnVariant="ghost"
             btnSize="icon"
@@ -44,7 +48,7 @@ export function TaskListItemDrawer({ task }: TaskListItemDrawerProps) {
         </DialogTrigger>
         <DialogContent className="sm:max-w-[425px]">
           <DialogHeader>
-            <DialogTitle>Task Details</DialogTitle>
+            <DialogTitle>{DIALOG_TITLE}</DialogTitle>
           </DialogHeader>
           <UpdateTaskForm task={task} onSuccess={() => setOpen(false)} />
         </DialogContent>
@@ -56,7 +60,7 @@ export function TaskListItemDrawer({ task }: TaskListItemDrawerProps) {
     <Drawer open={open} onOpenChange={setOpen}>
       <DrawerTrigger asChild>
         <TooltipButton
-          tooltip="Update"
+          tooltip={UPDATE_TASK_TOOLTIP}
           btnContent={<SettingsIcon className="size-4" />}
           btnVariant="ghost"
           btnSize="icon"
@@ -66,7 +70,7 @@ export function TaskListItemDrawer({ task }: TaskListItemDrawerProps) {
         <UpdateTaskForm task={task} onSuccess={() => setOpen(false)} />
         <DrawerFooter className="mt-0">
           <DrawerClose asChild>
-            <Button variant="outline">Cancel</Button>
+            <Button variant="outline">{CANCEL_BUTTON_TEXT}</Button>
           </DrawerClose>
         </DrawerFooter>
       </DrawerContent>

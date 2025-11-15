@@ -38,9 +38,9 @@ export const UpdateTaskForm = ({
   const form = useForm<UpdateTaskInput>({
     resolver: zodResolver(updateTaskSchema),
     defaultValues: {
-      title: task.title ?? undefined,
-      scheduledDate: task.scheduledDate ?? undefined,
-      completed: task.completed ?? undefined,
+      title: task.title,
+      scheduledDate: task.scheduledDate,
+      completed: task.completed,
     },
   });
 
@@ -49,15 +49,20 @@ export const UpdateTaskForm = ({
       {
         taskId: task.id,
         updates: {
-          title: data.title ?? undefined,
-          completed: data.completed ?? undefined,
-          scheduledDate: data.scheduledDate ?? undefined,
+          title: data.title,
+          completed: data.completed,
+          scheduledDate: data.scheduledDate,
         },
       },
       {
         onSuccess: (response) => {
           if (response.success) {
-            form.reset();
+            // Reset with updated values to maintain correct dirty state
+            form.reset({
+              title: data.title,
+              scheduledDate: data.scheduledDate,
+              completed: data.completed,
+            });
             onSuccess?.();
           }
         },
@@ -145,7 +150,7 @@ export const UpdateTaskForm = ({
               </FormItem>
             )}
           />
-          {task.scheduledDate && <UnscheduleTaskButton />}
+          {form.watch('scheduledDate') && <UnscheduleTaskButton />}
           <DeleteTaskButton taskId={task.id} />
         </div>
         <Button

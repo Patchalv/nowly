@@ -42,7 +42,7 @@ export function DatePickerButton({
             }
             btnVariant="ghost"
             btnSize="icon-sm"
-            props={{ id: fieldId }}
+            id={fieldId}
           />
         </PopoverTrigger>
         <PopoverContent className="w-auto overflow-hidden p-0" align="start">
