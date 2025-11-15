@@ -123,8 +123,9 @@ export function useCreateTask(): UseMutationResult<
     },
     onSuccess: (_data, _formData, context) => {
       // Invalidate affected week queries to refetch fresh data
-      if (context?.previousQueries) {
-        context.previousQueries.forEach((_previousData, queryKeyStr) => {
+      const previousQueries = context?.previousQueries;
+      if (previousQueries && previousQueries.size > 0) {
+        previousQueries.forEach((_previousData, queryKeyStr) => {
           const queryKey = JSON.parse(queryKeyStr) as readonly [
             'tasks',
             'week',
@@ -301,8 +302,9 @@ export function useUpdateTask(): UseMutationResult<
     },
     onSuccess: (_data, _variables, context) => {
       // Invalidate affected week queries to refetch fresh data
-      if (context?.previousQueries) {
-        context.previousQueries.forEach((_previousData, queryKeyStr) => {
+      const previousQueries = context?.previousQueries;
+      if (previousQueries && previousQueries.size > 0) {
+        previousQueries.forEach((_previousData, queryKeyStr) => {
           const queryKey = JSON.parse(queryKeyStr) as readonly [
             'tasks',
             'week',
@@ -320,26 +322,21 @@ export function useUpdateTask(): UseMutationResult<
 }
 
 /**
- * Hook for updating a task (toggle completion, edit title, change date, etc.)
+ * Hook for toggling a task's completion status
  *
- * @returns Mutation object with methods to update a task
+ * @returns Mutation object with methods to update a task completion status
  * @example
  * ```tsx
- * const updateTask = useUpdateTask();
+ * const toggleTaskCompleted = useToggleTaskCompleted();
  *
  * const handleToggle = (taskId: string) => {
- *   updateTask.mutate({
- *     taskId,
- *     updates: { completed: true }
- *   });
+ *   toggleTaskCompleted.mutate(taskId);
  * };
  * ```
  *
  * @remarks
  * - Uses optimistic updates for instant UI feedback
- * - Handles scheduledDate changes by moving tasks between date queries
  * - Automatically invalidates task queries on success
- * - Field errors are accessible via `error.fieldErrors` in the error object
  * - Errors are logged to Sentry via centralized error handling
  */
 export function useToggleTaskCompleted(): UseMutationResult<
@@ -400,9 +397,16 @@ export function useToggleTaskCompleted(): UseMutationResult<
       if (currentWeekKey) {
         queryClient.setQueryData<Task[]>(currentWeekKey, (old) => {
           if (!old) return old;
-          return old.map((t) =>
-            t.id === taskId ? { ...t, completed: !t.completed } : t
-          );
+          return old.map((t) => {
+            if (t.id !== taskId) return t;
+            const isCompleted = !t.completed;
+            return {
+              ...t,
+              completed: isCompleted,
+              // Adjust this rule if the server uses a different strategy
+              completedAt: isCompleted ? new Date() : null,
+            };
+          });
         });
       }
 
@@ -427,8 +431,9 @@ export function useToggleTaskCompleted(): UseMutationResult<
     },
     onSuccess: (_data, _taskId, context) => {
       // Invalidate affected week queries to refetch fresh data
-      if (context?.previousQueries) {
-        context.previousQueries.forEach((_previousData, queryKeyStr) => {
+      const previousQueries = context?.previousQueries;
+      if (previousQueries && previousQueries.size > 0) {
+        previousQueries.forEach((_previousData, queryKeyStr) => {
           const queryKey = JSON.parse(queryKeyStr) as readonly [
             'tasks',
             'week',

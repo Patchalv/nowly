@@ -1,17 +1,12 @@
-// src/application/tasks/deleteTask.usecase.ts
 import type { ITaskRepository } from '@/src/infrastructure/repositories/ITaskRepository';
 import { logger } from '@sentry/nextjs';
-
-export interface DeleteTaskResponse {
-  success: boolean;
-  error?: string;
-}
+import { MutateTaskResponse } from './types';
 
 export async function deleteTask(
   taskId: string,
   userId: string,
   repository: ITaskRepository
-): Promise<DeleteTaskResponse> {
+): Promise<MutateTaskResponse> {
   try {
     // Business logic: Validate task exists
     const existingTask = await repository.findById(taskId);

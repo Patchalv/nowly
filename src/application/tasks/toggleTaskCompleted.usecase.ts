@@ -1,19 +1,12 @@
-// src/application/tasks/updateTask.usecase.ts
-import type { Task } from '@/src/domain/model/Task';
 import type { ITaskRepository } from '@/src/infrastructure/repositories/ITaskRepository';
 import { logger } from '@sentry/nextjs';
-
-export interface UpdateTaskResponse {
-  success: boolean;
-  task?: Task;
-  error?: string;
-}
+import { MutateTaskResponse } from './types';
 
 export async function toggleTaskCompleted(
   taskId: string,
   userId: string,
   repository: ITaskRepository
-): Promise<UpdateTaskResponse> {
+): Promise<MutateTaskResponse> {
   try {
     // Business logic: Validate task exists
     const existingTask = await repository.findById(taskId);

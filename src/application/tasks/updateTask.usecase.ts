@@ -1,21 +1,15 @@
-// src/application/tasks/updateTask.usecase.ts
 import type { Task } from '@/src/domain/model/Task';
 import type { UpdateTaskInput } from '@/src/domain/validation/task/task.schema';
 import type { ITaskRepository } from '@/src/infrastructure/repositories/ITaskRepository';
 import { logger } from '@sentry/nextjs';
-
-export interface UpdateTaskResponse {
-  success: boolean;
-  task?: Task;
-  error?: string;
-}
+import { MutateTaskResponse } from './types';
 
 export async function updateTask(
   taskId: string,
   userId: string,
   updates: UpdateTaskInput,
   repository: ITaskRepository
-): Promise<UpdateTaskResponse> {
+): Promise<MutateTaskResponse> {
   try {
     // Business logic: Validate task exists
     const existingTask = await repository.findById(taskId);
@@ -28,9 +22,13 @@ export async function updateTask(
     }
 
     function getCompletedAt(existingTask: Task, updates: UpdateTaskInput) {
+      if (updates.completed === undefined) return existingTask.completedAt;
+
       const wasAlreadyCompleted = existingTask.completed;
-      const hasNowBeenCompleted = updates.completed && !wasAlreadyCompleted;
-      const hasNowBeenUncompleted = !updates.completed && wasAlreadyCompleted;
+      const hasNowBeenCompleted =
+        updates.completed === true && !wasAlreadyCompleted;
+      const hasNowBeenUncompleted =
+        updates.completed === false && wasAlreadyCompleted;
 
       if (hasNowBeenCompleted) return new Date();
       if (hasNowBeenUncompleted) return null;

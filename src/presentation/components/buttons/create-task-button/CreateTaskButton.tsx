@@ -14,7 +14,7 @@ export const CreateTaskButton = ({
   onClick,
 }: CreateTaskButtonProps) => {
   return (
-    <Button variant={variant} size="default" onClick={onClick ?? undefined}>
+    <Button variant={variant} size="default" onClick={onClick}>
       {variant === 'ghost' ? <PlusIcon className="size-4" /> : null}
       <p className="text-sm font-medium">{text}</p>
     </Button>
