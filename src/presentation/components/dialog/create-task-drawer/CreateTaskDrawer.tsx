@@ -3,9 +3,13 @@
 import * as React from 'react';
 
 import { useMediaQuery } from '@/src/presentation/hooks/useMediaQuery';
+import { VariantProps } from 'class-variance-authority';
 import { CreateTaskButton } from '../../buttons/create-task-button/CreateTaskButton';
-import { CreateTaskForm } from '../../forms/CreateTaskForm';
-import { Button } from '../../ui/button';
+import {
+  CreateTaskForm,
+  CreateTaskFormProps,
+} from '../../forms/CreateTaskForm';
+import { Button, buttonVariants } from '../../ui/button';
 import {
   Dialog,
   DialogContent,
@@ -23,7 +27,18 @@ import {
   DrawerTrigger,
 } from '../../ui/drawer';
 
-export function CreateTaskDrawer() {
+const DIALOG_TITLE = 'Create Task';
+const CANCEL_BUTTON_TEXT = 'Cancel';
+
+export interface CreateTaskDrawerProps {
+  variant?: VariantProps<typeof buttonVariants>['variant'];
+  defaultScheduledDate?: CreateTaskFormProps['defaultScheduledDate'];
+}
+
+export function CreateTaskDrawer({
+  variant = 'ghost',
+  defaultScheduledDate,
+}: CreateTaskDrawerProps) {
   const [open, setOpen] = React.useState(false);
   const { isDesktop } = useMediaQuery();
 
@@ -31,13 +46,16 @@ export function CreateTaskDrawer() {
     return (
       <Dialog open={open} onOpenChange={setOpen}>
         <DialogTrigger asChild>
-          <CreateTaskButton />
+          <CreateTaskButton variant={variant} />
         </DialogTrigger>
         <DialogContent className="sm:max-w-[425px]">
           <DialogHeader>
-            <DialogTitle>Create Task</DialogTitle>
+            <DialogTitle>{DIALOG_TITLE}</DialogTitle>
           </DialogHeader>
-          <CreateTaskForm onSuccess={() => setOpen(false)} />
+          <CreateTaskForm
+            defaultScheduledDate={defaultScheduledDate}
+            onSuccess={() => setOpen(false)}
+          />
         </DialogContent>
       </Dialog>
     );
@@ -46,16 +64,20 @@ export function CreateTaskDrawer() {
   return (
     <Drawer open={open} onOpenChange={setOpen}>
       <DrawerTrigger asChild>
-        <CreateTaskButton />
+        <CreateTaskButton variant={variant} />
       </DrawerTrigger>
       <DrawerContent>
         <DrawerHeader className="text-left">
-          <DrawerTitle>Create Task</DrawerTitle>
+          <DrawerTitle>{DIALOG_TITLE}</DrawerTitle>
         </DrawerHeader>
-        <CreateTaskForm className="px-4" onSuccess={() => setOpen(false)} />
+        <CreateTaskForm
+          defaultScheduledDate={defaultScheduledDate}
+          className="px-4"
+          onSuccess={() => setOpen(false)}
+        />
         <DrawerFooter className="mt-0">
           <DrawerClose asChild>
-            <Button variant="outline">Cancel</Button>
+            <Button variant="outline">{CANCEL_BUTTON_TEXT}</Button>
           </DrawerClose>
         </DrawerFooter>
       </DrawerContent>

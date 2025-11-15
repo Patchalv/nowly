@@ -17,7 +17,7 @@ import {
 } from '../ui/form';
 import { Input } from '../ui/input';
 
-interface CreateTaskFormProps {
+export interface CreateTaskFormProps {
   defaultScheduledDate?: Date | null | undefined;
   className?: string;
   onSuccess?: () => void;

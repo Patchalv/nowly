@@ -1,5 +1,8 @@
 import { CalendarCheckIcon } from 'lucide-react';
-import { Button } from '../../ui/button';
+import {
+  CreateTaskDrawer,
+  CreateTaskDrawerProps,
+} from '../../dialog/create-task-drawer/CreateTaskDrawer';
 import {
   Empty,
   EmptyContent,
@@ -9,7 +12,11 @@ import {
   EmptyTitle,
 } from '../../ui/empty';
 
-export const TaskListEmpty = () => {
+interface TaskListEmptyProps {
+  currentDate: CreateTaskDrawerProps['defaultScheduledDate'];
+}
+
+export const TaskListEmpty = ({ currentDate }: TaskListEmptyProps) => {
   return (
     <Empty className="from-muted/50 to-background h-full bg-linear-to-b from-30%">
       <EmptyHeader>
@@ -22,9 +29,10 @@ export const TaskListEmpty = () => {
         </EmptyDescription>
       </EmptyHeader>
       <EmptyContent>
-        <Button variant="outline" size="sm">
-          Add Task
-        </Button>
+        <CreateTaskDrawer
+          variant="outline"
+          defaultScheduledDate={currentDate}
+        />
       </EmptyContent>
     </Empty>
   );

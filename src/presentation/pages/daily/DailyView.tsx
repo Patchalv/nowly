@@ -4,7 +4,6 @@ import { WeekCarousel } from '@/src/presentation/components/week-carousel/WeekCa
 import { formatDateForURL, parseDateFromURL } from '@/src/shared/utils';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { Suspense, useTransition } from 'react';
-import { CreateTaskDrawer } from '../../components/dialog/create-task-drawer/CreateTaskDrawer';
 import { FallbackView } from '../../components/loader/FallbackView';
 import { TaskList } from '../../components/tasks/task-list/TaskList';
 
@@ -39,10 +38,6 @@ function DailyViewContent() {
       {/* Task list */}
       <section className="p-4">
         <TaskList date={selectedDate} />
-      </section>
-
-      <section className="p-4">
-        <CreateTaskDrawer />
       </section>
     </main>
   );
