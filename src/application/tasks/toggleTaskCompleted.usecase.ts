@@ -1,6 +1,5 @@
 // src/application/tasks/updateTask.usecase.ts
 import type { Task } from '@/src/domain/model/Task';
-import type { UpdateTaskInput } from '@/src/domain/validation/task/task.schema';
 import type { ITaskRepository } from '@/src/infrastructure/repositories/ITaskRepository';
 import { logger } from '@sentry/nextjs';
 
@@ -10,10 +9,9 @@ export interface UpdateTaskResponse {
   error?: string;
 }
 
-export async function updateTask(
+export async function toggleTaskCompleted(
   taskId: string,
   userId: string,
-  updates: UpdateTaskInput,
   repository: ITaskRepository
 ): Promise<UpdateTaskResponse> {
   try {
@@ -27,23 +25,13 @@ export async function updateTask(
       };
     }
 
-    function getCompletedAt(existingTask: Task, updates: UpdateTaskInput) {
-      const wasAlreadyCompleted = existingTask.completed;
-      const hasNowBeenCompleted = updates.completed && !wasAlreadyCompleted;
-      const hasNowBeenUncompleted = !updates.completed && wasAlreadyCompleted;
-
-      if (hasNowBeenCompleted) return new Date();
-      if (hasNowBeenUncompleted) return null;
-      return existingTask.completedAt;
-    }
-
-    const updatesData = {
-      ...updates,
-      completedAt: getCompletedAt(existingTask, updates),
-    };
+    const isCompleted = !existingTask.completed;
 
     // Update the task
-    const task = await repository.update(taskId, updatesData);
+    const task = await repository.update(taskId, {
+      completed: isCompleted,
+      completedAt: isCompleted ? new Date() : null,
+    });
 
     return { success: true, task };
   } catch (error) {

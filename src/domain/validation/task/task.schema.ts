@@ -13,6 +13,7 @@ export const updateTaskSchema = z.object({
     .max(255, 'Title too long')
     .optional(),
   completed: z.boolean().optional(),
+  completedAt: optionalDateSchema,
   scheduledDate: optionalDateSchema,
 });
 
