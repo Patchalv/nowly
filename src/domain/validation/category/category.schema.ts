@@ -13,7 +13,7 @@ export const updateCategorySchema = z.object({
     .regex(/^#[0-9A-Fa-f]{6}$/)
     .optional(),
   icon: z.string().nullable().optional(),
-  position: z.string().optional(),
+  position: z.string(),
 });
 
 export type CreateCategoryInput = z.infer<typeof createCategorySchema>;

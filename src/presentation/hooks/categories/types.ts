@@ -13,7 +13,8 @@ export interface UpdateCategoryMutationInput {
   updates: {
     name?: string;
     color?: string;
-    icon?: string;
+    icon?: string | null;
+    position?: string | null;
   };
 }
 
