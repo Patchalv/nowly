@@ -268,40 +268,47 @@ export class SupabaseTaskRepository implements ITaskRepository {
     page: number
   ): Promise<{ tasks: Task[]; total: number }> {
     const offset = (page - 1) * 50;
-    const { data, error, count } = await this.client
+    let query = this.client
       .from('tasks')
-      .select('*', { count: 'exact', head: true })
-      .eq('user_id', userId)
-      .filter(
-        'scheduled_date',
-        'is',
-        filters.onlyScheduled ? null : filters.onlyScheduled
-      )
-      .filter('completed', 'is', filters.onlyCompleted ? true : null)
-      .filter('title', 'ilike', filters.search ? `%${filters.search}%` : null)
+      .select('*', { count: 'exact' })
+      .eq('user_id', userId);
+
+    // Apply categoryId filter
+    if (filters.categoryId !== null && filters.categoryId !== undefined) {
+      query = query.eq('category_id', filters.categoryId);
+    }
+
+    // Apply showCompleted filter
+    if (filters.showCompleted === 'IsCompleted') {
+      query = query.eq('completed', true);
+    } else if (filters.showCompleted === 'IsNotCompleted') {
+      query = query.eq('completed', false);
+    }
+    // 'All' case: skip filter
+
+    // Apply showScheduled filter
+    if (filters.showScheduled === 'IsScheduled') {
+      query = query.not('scheduled_date', 'is', null);
+    } else if (filters.showScheduled === 'IsNotScheduled') {
+      query = query.is('scheduled_date', null);
+    }
+    // 'All' case: skip filter
+
+    // Apply search filter
+    if (filters.search && filters.search.trim() !== '') {
+      query = query.ilike('title', `%${filters.search}%`);
+    }
+
+    const { data, error, count } = await query
       .order('position', { ascending: true })
       .range(offset, offset + 49);
+
     if (error) {
       handleError.throw(error);
     }
     return {
       tasks: data ? data.map((row) => this.toDomain(row)) : [],
       total: count ?? 0,
-    };
-  }
-
-  private buildFilters(filters: TaskFilters): (row: TaskRow) => boolean {
-    return (row: TaskRow) => {
-      if (filters.categoryId && row.category_id !== filters.categoryId)
-        return false;
-      if (filters.onlyCompleted && row.completed !== true) return false;
-      if (filters.onlyScheduled && row.scheduled_date === null) return false;
-      if (
-        filters.search &&
-        !row.title.toLowerCase().includes(filters.search.toLowerCase())
-      )
-        return false;
-      return true;
     };
   }
 }

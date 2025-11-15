@@ -29,7 +29,7 @@ export const TaskList = ({ tasks, isLoading }: TaskListProps) => {
   }
 
   return (
-    <ItemGroup className="flex flex-col gap-3 overflow-y-auto max-h-[calc(100vh-10rem)]">
+    <ItemGroup className="flex flex-col gap-3 overflow-y-auto">
       {tasks.map((task) => (
         <TaskListItem key={task.id} task={task} />
       ))}

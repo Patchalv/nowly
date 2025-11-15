@@ -637,11 +637,32 @@ export function useTasks(filters: TaskFilters) {
       // Convert 0-based page param to 1-based for repository
       const repositoryPage = (pageParam as number) + 1;
       const response = await listTasksAction(filters, repositoryPage);
-      return response.tasks || [];
+      if (!response.success) {
+        const errorMessage =
+          typeof response.error === 'string'
+            ? response.error
+            : response.error?.message || 'Failed to fetch tasks';
+        throw new Error(errorMessage);
+      }
+      // TypeScript narrows to success response after the check above
+      const successResponse = response as {
+        success: true;
+        tasks?: Task[];
+        total?: number;
+      };
+      return {
+        tasks: successResponse.tasks || [],
+        total: successResponse.total || 0,
+      };
     },
     getNextPageParam: (lastPage, pages) => {
-      // If last page has fewer items than page size, we've reached the end
-      if (lastPage.length < PAGINATION.DEFAULT_PAGE_SIZE) {
+      // Calculate total items fetched so far
+      const totalFetched = pages.length * PAGINATION.DEFAULT_PAGE_SIZE;
+      // If we've fetched all items or the last page has fewer items, we're done
+      if (
+        totalFetched >= lastPage.total ||
+        lastPage.tasks.length < PAGINATION.DEFAULT_PAGE_SIZE
+      ) {
         return undefined;
       }
       // Return next 0-based page number

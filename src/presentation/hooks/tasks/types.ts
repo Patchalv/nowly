@@ -48,7 +48,7 @@ export interface DeleteTaskActionResponse extends MutateTaskResponse {
 
 export interface TaskFilters {
   categoryId?: string | null;
-  onlyCompleted: boolean;
-  onlyScheduled: boolean;
+  showCompleted: 'IsCompleted' | 'IsNotCompleted' | 'All';
+  showScheduled: 'IsScheduled' | 'IsNotScheduled' | 'All';
   search?: string;
 }

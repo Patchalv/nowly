@@ -33,7 +33,7 @@ export const CategoryFilters = ({
   }
 
   return (
-    <section className="flex gap-4 overflow-y-auto justify-center">
+    <section className="flex gap-4 justify-center">
       <Button
         variant={selectedCategoryId === null ? 'default' : 'outline'}
         onClick={() => onCategorySelect(null)}

@@ -21,7 +21,7 @@ export const TaskListSection = ({ date }: TaskListSectionProps) => {
   }
 
   return (
-    <section className="flex flex-col gap-3 p-4">
+    <section className="h-full flex flex-col gap-3 p-4 overflow-y-auto">
       <TaskList tasks={tasks} isLoading={isLoading} />
       <div>
         <CreateTaskDrawer variant="ghost" defaultScheduledDate={date} />

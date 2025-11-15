@@ -36,9 +36,7 @@ function DailyViewContent() {
       </section>
 
       {/* Task list */}
-      <section className="p-4">
-        <TaskListSection date={selectedDate} />
-      </section>
+      <TaskListSection date={selectedDate} />
     </main>
   );
 }

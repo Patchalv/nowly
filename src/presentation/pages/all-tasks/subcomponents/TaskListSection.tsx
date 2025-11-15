@@ -21,7 +21,7 @@ export const TaskListSection = ({ filters }: TaskListSectionProps) => {
   } = useTasks(filters);
 
   const allTasks = useMemo(() => {
-    return data?.pages.flatMap((page) => page ?? []) ?? [];
+    return data?.pages.flatMap((page) => page?.tasks ?? []) ?? [];
   }, [data]);
 
   const renderTaskListItem = (task: Task) => {
@@ -29,7 +29,7 @@ export const TaskListSection = ({ filters }: TaskListSectionProps) => {
   };
 
   return (
-    <section>
+    <section className="h-full overflow-y-auto">
       <InfiniteList
         data={allTasks}
         itemKey={(item) => item.id}

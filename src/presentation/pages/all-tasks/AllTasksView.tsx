@@ -8,9 +8,9 @@ import { TaskListSection } from './subcomponents/TaskListSection';
 
 function AllTasksViewContent() {
   const [filters, setFilters] = useState<TaskFilters>({
-    categoryId: null,
-    onlyCompleted: false,
-    onlyScheduled: false,
+    categoryId: undefined,
+    showCompleted: 'IsNotCompleted',
+    showScheduled: 'All',
     search: '',
   });
 
