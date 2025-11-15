@@ -1,0 +1,46 @@
+import { Task } from '@/src/domain/model/Task';
+import { TaskListItem } from '@/src/presentation/components/lists/task-list/TaskListItem';
+import { TaskFilters } from '@/src/presentation/hooks/tasks/types';
+import { useTasks } from '@/src/presentation/hooks/tasks/useTasks';
+import { useMemo } from 'react';
+import { InfiniteList } from './InfiniteList';
+
+interface TaskListSectionProps {
+  filters: TaskFilters;
+}
+
+export const TaskListSection = ({ filters }: TaskListSectionProps) => {
+  const {
+    data,
+    error,
+    fetchNextPage,
+    hasNextPage,
+    isLoading,
+    isFetching,
+    isFetchingNextPage,
+  } = useTasks(filters);
+
+  const allTasks = useMemo(() => {
+    return data?.pages.flatMap((page) => page ?? []) ?? [];
+  }, [data]);
+
+  const renderTaskListItem = (task: Task) => {
+    return <TaskListItem key={task.id} task={task} />;
+  };
+
+  return (
+    <section>
+      <InfiniteList
+        data={allTasks}
+        itemKey={(item) => item.id}
+        listItemComponent={renderTaskListItem}
+        error={error}
+        isLoading={isLoading}
+        isFetching={isFetching}
+        isFetchingNextPage={isFetchingNextPage}
+        hasNextPage={hasNextPage}
+        fetchNextPage={fetchNextPage}
+      />
+    </section>
+  );
+};

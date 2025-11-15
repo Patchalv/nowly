@@ -1,7 +1,7 @@
+import { LogoutButton } from '@/src/presentation/components/buttons/LogoutButton';
+import { Skeleton } from '@/src/presentation/components/ui/skeleton';
 import { useUserProfile } from '@/src/presentation/hooks/user/useUser';
-import { useTimezone } from '../../hooks/useTimezone';
-import { LogoutButton } from '../buttons/LogoutButton';
-import { Skeleton } from '../ui/skeleton';
+import { useTimezone } from '@/src/presentation/hooks/useTimezone';
 
 export const AccountDetailsSection = () => {
   const { data: userProfile, isLoading, error } = useUserProfile();

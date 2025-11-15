@@ -1,4 +1,5 @@
 import type { Task } from '@/src/domain/model/Task';
+import { TaskFilters } from '@/src/presentation/hooks/tasks/types';
 import { handleError } from '@/src/shared/errors/handler';
 import { logger } from '@sentry/nextjs';
 import type { SupabaseClient } from '@supabase/supabase-js';
@@ -256,5 +257,51 @@ export class SupabaseTaskRepository implements ITaskRepository {
       logger.error('Failed to delete task', { error });
       throw new Error(`Failed to delete task: ${error.message}`);
     }
+  }
+
+  /**
+   * Find all tasks for a user with a specific filters
+   */
+  async findByUserIdAndFilters(
+    userId: string,
+    filters: TaskFilters,
+    page: number
+  ): Promise<{ tasks: Task[]; total: number }> {
+    const offset = (page - 1) * 50;
+    const { data, error, count } = await this.client
+      .from('tasks')
+      .select('*', { count: 'exact', head: true })
+      .eq('user_id', userId)
+      .filter(
+        'scheduled_date',
+        'is',
+        filters.onlyScheduled ? null : filters.onlyScheduled
+      )
+      .filter('completed', 'is', filters.onlyCompleted ? true : null)
+      .filter('title', 'ilike', filters.search ? `%${filters.search}%` : null)
+      .order('position', { ascending: true })
+      .range(offset, offset + 49);
+    if (error) {
+      handleError.throw(error);
+    }
+    return {
+      tasks: data ? data.map((row) => this.toDomain(row)) : [],
+      total: count ?? 0,
+    };
+  }
+
+  private buildFilters(filters: TaskFilters): (row: TaskRow) => boolean {
+    return (row: TaskRow) => {
+      if (filters.categoryId && row.category_id !== filters.categoryId)
+        return false;
+      if (filters.onlyCompleted && row.completed !== true) return false;
+      if (filters.onlyScheduled && row.scheduled_date === null) return false;
+      if (
+        filters.search &&
+        !row.title.toLowerCase().includes(filters.search.toLowerCase())
+      )
+        return false;
+      return true;
+    };
   }
 }

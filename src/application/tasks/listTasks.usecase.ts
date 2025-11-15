@@ -1,8 +1,9 @@
 import type { ITaskRepository } from '@/src/infrastructure/repositories/task/ITaskRepository';
+import { TaskFilters } from '@/src/presentation/hooks/tasks/types';
 import { handleError } from '@/src/shared/errors';
 import { logger } from '@sentry/nextjs';
 import { endOfWeek, startOfWeek } from 'date-fns';
-import { ListTasksResponse } from './types';
+import { ListTasksInfiniteResponse, ListTasksResponse } from './types';
 
 export async function listTasksByDate(
   userId: string,
@@ -45,6 +46,34 @@ export async function listTasksByWeek(
     return {
       success: false,
       tasks: [],
+      error: appError.message,
+    };
+  }
+}
+export async function findByUserIdAndFilters(
+  userId: string,
+  filters: TaskFilters,
+  page: number,
+  repository: ITaskRepository
+): Promise<ListTasksInfiniteResponse> {
+  try {
+    logger.info('Finding tasks by user ID and filters', {
+      userId,
+      filters,
+      page,
+    });
+    const tasks = await repository.findByUserIdAndFilters(
+      userId,
+      filters,
+      page
+    );
+    return { success: true, tasks: tasks.tasks, total: tasks.total };
+  } catch (error) {
+    const appError = handleError.silent(error);
+    return {
+      success: false,
+      tasks: [],
+      total: 0,
       error: appError.message,
     };
   }

@@ -11,3 +11,10 @@ export interface ListTasksResponse {
   tasks?: Task[];
   error?: string;
 }
+
+export interface ListTasksInfiniteResponse {
+  success: boolean;
+  tasks?: Task[];
+  total?: number;
+  error?: string;
+}

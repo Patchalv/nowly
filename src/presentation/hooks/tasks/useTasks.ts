@@ -2,15 +2,23 @@
 
 import { createTaskAction } from '@/app/actions/tasks/createTaskAction';
 import { deleteTaskAction } from '@/app/actions/tasks/deleteTaskAction';
-import { getTasksByWeekAction } from '@/app/actions/tasks/getTasksAction';
+import {
+  getTasksByWeekAction,
+  listTasksAction,
+} from '@/app/actions/tasks/getTasksAction';
 import { toggleTaskCompletedAction } from '@/app/actions/tasks/toggleTaskCompletedAction';
 import { updateTaskAction } from '@/app/actions/tasks/updateTaskAction';
-import { CACHE } from '@/src/config/constants';
+import { CACHE, PAGINATION } from '@/src/config/constants';
 import { queryKeys } from '@/src/config/query-keys';
 import type { Task } from '@/src/domain/model/Task';
 import { handleError } from '@/src/shared/errors/handler';
 import type { UseMutationResult } from '@tanstack/react-query';
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import {
+  useInfiniteQuery,
+  useMutation,
+  useQuery,
+  useQueryClient,
+} from '@tanstack/react-query';
 import { addWeeks, isSameDay, isSameWeek, startOfWeek } from 'date-fns';
 import { useEffect, useMemo } from 'react';
 import { toast } from 'sonner';
@@ -19,6 +27,7 @@ import type {
   CreateTaskMutationInput,
   DeleteTaskActionResponse,
   DeleteTaskMutationInput,
+  TaskFilters,
   UpdateTaskActionResponse,
   UpdateTaskMutationInput,
 } from './types';
@@ -619,4 +628,25 @@ export function useTasksByDate(date: Date) {
     data: tasksForDate,
     ...query,
   };
+}
+
+export function useTasks(filters: TaskFilters) {
+  return useInfiniteQuery({
+    queryKey: queryKeys.tasks.list(filters),
+    queryFn: async ({ pageParam }) => {
+      // Convert 0-based page param to 1-based for repository
+      const repositoryPage = (pageParam as number) + 1;
+      const response = await listTasksAction(filters, repositoryPage);
+      return response.tasks || [];
+    },
+    getNextPageParam: (lastPage, pages) => {
+      // If last page has fewer items than page size, we've reached the end
+      if (lastPage.length < PAGINATION.DEFAULT_PAGE_SIZE) {
+        return undefined;
+      }
+      // Return next 0-based page number
+      return pages.length;
+    },
+    initialPageParam: 0,
+  });
 }

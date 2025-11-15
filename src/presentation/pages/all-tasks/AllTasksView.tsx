@@ -1,0 +1,42 @@
+'use client';
+
+import { Suspense, useState } from 'react';
+import { FallbackView } from '../../components/loader/FallbackView';
+import { TaskFilters } from '../../hooks/tasks/types';
+import { CategoryFilters } from './subcomponents/CategoryFilters';
+import { TaskListSection } from './subcomponents/TaskListSection';
+
+function AllTasksViewContent() {
+  const [filters, setFilters] = useState<TaskFilters>({
+    categoryId: null,
+    onlyCompleted: false,
+    onlyScheduled: false,
+    search: '',
+  });
+
+  const onCategorySelect = (categoryId: string | null) => {
+    setFilters({
+      ...filters,
+      categoryId: categoryId,
+    });
+  };
+
+  return (
+    <main className="flex flex-col w-full h-full p-4 gap-8">
+      <h1 className="text-2xl font-bold text-center">All Tasks</h1>
+      <CategoryFilters
+        selectedCategoryId={filters.categoryId}
+        onCategorySelect={onCategorySelect}
+      />
+      <TaskListSection filters={filters} />
+    </main>
+  );
+}
+
+export function AllTasksView() {
+  return (
+    <Suspense fallback={<FallbackView />}>
+      <AllTasksViewContent />
+    </Suspense>
+  );
+}

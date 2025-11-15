@@ -1,4 +1,5 @@
 import { Task } from '@/src/domain/model/Task';
+import { TaskFilters } from '@/src/presentation/hooks/tasks/types';
 
 export interface ITaskRepository {
   /**
@@ -29,6 +30,15 @@ export interface ITaskRepository {
    * Find all tasks for a user with a specific categoryId
    */
   findByCategoryId(userId: string, categoryId: string): Promise<Task[]>;
+
+  /**
+   * Find all tasks for a user with a specific filters
+   */
+  findByUserIdAndFilters(
+    userId: string,
+    filters: TaskFilters,
+    page: number
+  ): Promise<{ tasks: Task[]; total: number }>;
 
   /**
    * Update a task

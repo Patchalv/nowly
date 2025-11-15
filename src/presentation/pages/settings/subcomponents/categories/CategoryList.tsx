@@ -1,8 +1,8 @@
 'use client';
 
 import { useCategories } from '@/src/presentation/hooks/categories/useCategories';
-import { ItemGroup } from '../../ui/item';
-import { Skeleton } from '../../ui/skeleton';
+import { ItemGroup } from '../../../../components/ui/item';
+import { Skeleton } from '../../../../components/ui/skeleton';
 import { CategoryListItem } from './CategoryListItem';
 
 export const CategoryList = () => {

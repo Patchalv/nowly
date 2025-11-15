@@ -1,13 +1,13 @@
 import type { Category } from '@/src/domain/model/Category';
-import { getIconComponent } from '@/src/shared/utils/icons';
-import { DeleteCategoryButton } from '../../buttons/category/DeleteCategoryButton';
+import { DeleteCategoryButton } from '@/src/presentation/components/buttons/category/DeleteCategoryButton';
 import {
   Item,
   ItemActions,
   ItemContent,
   ItemMedia,
   ItemTitle,
-} from '../../ui/item';
+} from '@/src/presentation/components/ui/item';
+import { getIconComponent } from '@/src/shared/utils/icons';
 import { UpdateCategoryDrawer } from './UpdateCategoryDrawer';
 
 interface CategoryListItemProps {

@@ -45,3 +45,10 @@ export interface UpdateTaskActionResponse extends MutateTaskResponse {
 export interface DeleteTaskActionResponse extends MutateTaskResponse {
   errors?: Record<string, string[]>;
 }
+
+export interface TaskFilters {
+  categoryId?: string | null;
+  onlyCompleted: boolean;
+  onlyScheduled: boolean;
+  search?: string;
+}

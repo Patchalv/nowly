@@ -4,6 +4,7 @@
  */
 
 import { startOfWeek } from 'date-fns';
+import { TaskFilters } from '../presentation/hooks/tasks/types';
 
 export const queryKeys = {
   // Auth keys
@@ -27,6 +28,7 @@ export const queryKeys = {
   // Tasks keys (will be used in Phase 1)
   tasks: {
     all: ['tasks'] as const,
+    list: (filters: TaskFilters) => ['tasks', 'list', filters] as const,
     byDate: (date: string) => ['tasks', 'date', date] as const,
     byWeek: (date: Date) => {
       const weekStart = startOfWeek(date, { weekStartsOn: 1 });

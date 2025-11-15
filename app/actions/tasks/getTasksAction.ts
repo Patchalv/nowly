@@ -1,11 +1,13 @@
 'use server';
 
 import {
+  findByUserIdAndFilters,
   listTasksByDate,
   listTasksByWeek,
 } from '@/src/application/tasks/listTasks.usecase';
 import { SupabaseTaskRepository } from '@/src/infrastructure/repositories/task/SupabaseTaskRepository';
 import { createClient } from '@/src/infrastructure/supabase/server';
+import { TaskFilters } from '@/src/presentation/hooks/tasks/types';
 import { handleError } from '@/src/shared/errors';
 import { logger } from '@sentry/nextjs';
 
@@ -52,6 +54,37 @@ export async function getTasksByWeekAction(date: Date) {
   // Execute use case
   const repository = new SupabaseTaskRepository(supabase);
   const response = await listTasksByWeek(user.id, date, repository);
+
+  if (!response.success) {
+    const error = handleError.silent(response.error);
+    return { success: false, error, tasks: [] };
+  }
+
+  return response;
+}
+
+export async function listTasksAction(filters: TaskFilters, page: number) {
+  const supabase = await createClient();
+
+  // Get authenticated user
+  const {
+    data: { user },
+    error: authError,
+  } = await supabase.auth.getUser();
+
+  if (authError || !user) {
+    const error = handleError.return(authError);
+    return { success: false, error, tasks: [] };
+  }
+
+  // Execute use case
+  const repository = new SupabaseTaskRepository(supabase);
+  const response = await findByUserIdAndFilters(
+    user.id,
+    filters,
+    page,
+    repository
+  );
 
   if (!response.success) {
     const error = handleError.silent(response.error);
