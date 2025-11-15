@@ -203,6 +203,25 @@ export class SupabaseTaskRepository implements ITaskRepository {
   }
 
   /**
+   * Find all tasks for a user with a specific categoryId
+   */
+  async findByCategoryId(userId: string, categoryId: string): Promise<Task[]> {
+    const { data, error } = await this.client
+      .from('tasks')
+      .select('*')
+      .eq('user_id', userId)
+      .eq('category_id', categoryId)
+      .order('position', { ascending: true });
+
+    if (error) {
+      logger.error('Failed to find tasks by category', { error });
+      throw new Error(`Failed to find tasks by category: ${error.message}`);
+    }
+
+    return data ? data.map((row) => this.toDomain(row)) : [];
+  }
+
+  /**
    * Update a task
    */
   async update(id: string, updates: Partial<Task>): Promise<Task> {

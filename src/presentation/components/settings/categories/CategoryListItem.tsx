@@ -1,7 +1,6 @@
 import type { Category } from '@/src/domain/model/Category';
 import { getIconComponent } from '@/src/shared/utils/icons';
-import { PencilIcon, TrashIcon } from 'lucide-react';
-import { Button } from '../../ui/button';
+import { DeleteCategoryButton } from '../../buttons/category/DeleteCategoryButton';
 import {
   Item,
   ItemActions,
@@ -9,6 +8,7 @@ import {
   ItemMedia,
   ItemTitle,
 } from '../../ui/item';
+import { UpdateCategoryDrawer } from './UpdateCategoryDrawer';
 
 interface CategoryListItemProps {
   category: Category;
@@ -31,12 +31,8 @@ export const CategoryListItem = ({ category }: CategoryListItemProps) => {
         <ItemTitle className="text-sm font-medium">{category.name}</ItemTitle>
       </ItemContent>
       <ItemActions className="flex flex-row gap-4 items-center justify-end transition-colors duration-100 p-4">
-        <Button variant="ghost" size="icon">
-          <PencilIcon className="size-4" />
-        </Button>
-        <Button variant="ghost" size="icon">
-          <TrashIcon className="size-4" />
-        </Button>
+        <UpdateCategoryDrawer category={category} />
+        <DeleteCategoryButton categoryId={category.id} />
       </ItemActions>
     </Item>
   );

@@ -140,4 +140,19 @@ export class SupabaseCategoryRepository implements ICategoryRepository {
 
     return this.toDomain(data);
   }
+
+  /**
+   * Delete a category
+   */
+  async delete(categoryId: string): Promise<void> {
+    const { error } = await this.client
+      .from('categories')
+      .delete()
+      .eq('id', categoryId);
+
+    if (error) {
+      logger.error('Failed to delete category', { error });
+      throw new Error(`Failed to delete category: ${error.message}`);
+    }
+  }
 }

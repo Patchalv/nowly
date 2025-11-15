@@ -1,4 +1,5 @@
 import { createCategoryAction } from '@/app/actions/categories/createCategoryAction';
+import { deleteCategoryAction } from '@/app/actions/categories/deleteCategoryAction';
 import { getCategoriesAction } from '@/app/actions/categories/getCategoriesAction';
 import { updateCategoryAction } from '@/app/actions/categories/updateCategoryAction';
 import { CACHE } from '@/src/config/constants';
@@ -14,6 +15,8 @@ import { handleActionResponse, ServerActionError } from '../tasks/utils';
 import {
   CreateCategoryActionResponse,
   CreateCategoryMutationInput,
+  DeleteCategoryActionResponse,
+  DeleteCategoryMutationInput,
   UpdateCategoryActionResponse,
   UpdateCategoryMutationInput,
 } from './types';
@@ -76,6 +79,28 @@ export function useUpdateCategory(): UseMutationResult<
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: queryKeys.categories.all });
+    },
+  });
+}
+
+export function useDeleteCategory(): UseMutationResult<
+  DeleteCategoryActionResponse,
+  ServerActionError,
+  DeleteCategoryMutationInput
+> {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async (categoryId: string) => {
+      const response = await deleteCategoryAction(categoryId);
+      return handleActionResponse<DeleteCategoryActionResponse>(response);
+    },
+    onError: (error) => {
+      handleError.toast(error, 'Failed to delete category');
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: queryKeys.categories.all });
+      queryClient.invalidateQueries({ queryKey: queryKeys.tasks.all });
     },
   });
 }

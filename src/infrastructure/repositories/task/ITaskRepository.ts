@@ -26,6 +26,11 @@ export interface ITaskRepository {
   ): Promise<Task[]>;
 
   /**
+   * Find all tasks for a user with a specific categoryId
+   */
+  findByCategoryId(userId: string, categoryId: string): Promise<Task[]>;
+
+  /**
    * Update a task
    */
   update(id: string, updates: Partial<Task>): Promise<Task>;

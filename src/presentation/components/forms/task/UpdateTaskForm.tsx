@@ -8,7 +8,7 @@ import { cn } from '@/src/shared/utils/cn';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { CalendarMinusIcon } from 'lucide-react';
 import { useForm } from 'react-hook-form';
-import { DeleteTaskButton } from '../../buttons/delete-task-button/DeleteTaskButton';
+import { DeleteTaskButton } from '../../buttons/task/DeleteTaskButton';
 import { TooltipButton } from '../../buttons/TooltipButton';
 import { DatePickerButton } from '../../date-picker/DatePickerButton';
 import { Button } from '../../ui/button';

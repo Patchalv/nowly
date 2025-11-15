@@ -22,4 +22,9 @@ export interface ICategoryRepository {
    * Update a category
    */
   update(categoryId: string, updates: Partial<Category>): Promise<Category>;
+
+  /**
+   * Delete a category
+   */
+  delete(categoryId: string): Promise<void>;
 }
