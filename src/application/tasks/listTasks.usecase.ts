@@ -41,11 +41,11 @@ export async function listTasksByWeek(
     );
     return { success: true, tasks };
   } catch (error) {
-    handleError.silent(error);
+    const appError = handleError.silent(error);
     return {
       success: false,
       tasks: [],
-      error: error instanceof Error ? error.message : 'Failed to fetch tasks',
+      error: appError.message,
     };
   }
 }

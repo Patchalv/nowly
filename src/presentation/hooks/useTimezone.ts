@@ -52,7 +52,7 @@ export interface UseTimezoneReturn {
 export function useTimezone(userTimezone?: string): UseTimezoneReturn {
   // Get timezone values
   const browserTimezone = getBrowserTimezone();
-  const effectiveTimezone = userTimezone || getEffectiveTimezone(userTimezone);
+  const effectiveTimezone = getEffectiveTimezone(userTimezone);
   const hasUserTimezone =
     userTimezone !== undefined && isValidTimezone(userTimezone);
 

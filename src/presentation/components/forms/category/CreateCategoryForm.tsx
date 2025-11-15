@@ -16,7 +16,7 @@ import {
   FormMessage,
 } from '../../ui/form';
 import { Input } from '../../ui/input';
-import { ColourPicker } from '../colour-picker/ColourPicker';
+import { ColorPicker } from '../color-picker/ColorPicker';
 import { IconPicker } from '../icon-picker/IconPicker';
 
 export interface CreateCategoryFormProps {
@@ -56,7 +56,7 @@ export const CreateCategoryForm = ({
   return (
     <Form {...form}>
       <form
-        id="create-task-form"
+        id="create-category-form"
         onSubmit={form.handleSubmit(onSubmit)}
         className={cn('space-y-4', className)}
       >
@@ -84,7 +84,7 @@ export const CreateCategoryForm = ({
           render={({ field }) => (
             <FormItem>
               <FormControl>
-                <ColourPicker
+                <ColorPicker
                   icon={<PaletteIcon className="size-4" />}
                   value={field.value}
                   onChange={field.onChange}

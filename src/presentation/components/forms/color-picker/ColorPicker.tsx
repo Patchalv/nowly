@@ -1,25 +1,25 @@
 'use client';
 
-import { CATEGORY_COLOUR_OPTIONS } from '@/src/config/constants';
+import { CATEGORY_COLOR_OPTIONS } from '@/src/config/constants';
 import { cn } from '@/src/shared/utils/cn';
 import { PaletteIcon } from 'lucide-react';
 import { useState } from 'react';
 import { Button } from '../../ui/button';
 import { Popover, PopoverContent, PopoverTrigger } from '../../ui/popover';
 
-interface ColourPickerProps {
-  icon: React.ReactNode;
+interface ColorPickerProps {
+  icon?: React.ReactNode;
   value: string | undefined;
   onChange: (value: string) => void;
 }
 
 const NEUTRAL_COLOR = '#6B7280';
 
-export const ColourPicker = ({
+export const ColorPicker = ({
   icon = <PaletteIcon className="size-4" />,
   value,
   onChange,
-}: ColourPickerProps) => {
+}: ColorPickerProps) => {
   const [open, setOpen] = useState(false);
   const iconColor = value || NEUTRAL_COLOR;
 
@@ -41,7 +41,7 @@ export const ColourPicker = ({
       </PopoverTrigger>
       <PopoverContent className="w-auto p-3" align="start">
         <div className="grid grid-cols-4 sm:grid-cols-5 md:grid-cols-6 gap-2">
-          {CATEGORY_COLOUR_OPTIONS.map((color) => (
+          {CATEGORY_COLOR_OPTIONS.map((color) => (
             <button
               key={color}
               onClick={() => {

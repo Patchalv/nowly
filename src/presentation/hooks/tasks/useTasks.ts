@@ -579,7 +579,6 @@ export function useTasksByWeek(date: Date) {
       queryKey: queryKeys.tasks.byWeek(previousWeek),
       queryFn: async () => {
         const response = await getTasksByWeekAction(previousWeek);
-        if (!response.success) throw new Error(response.error);
         return response.tasks || [];
       },
       staleTime: CACHE.TASKS_STALE_TIME_MS,
@@ -590,7 +589,6 @@ export function useTasksByWeek(date: Date) {
       queryKey: queryKeys.tasks.byWeek(nextWeek),
       queryFn: async () => {
         const response = await getTasksByWeekAction(nextWeek);
-        if (!response.success) throw new Error(response.error);
         return response.tasks || [];
       },
       staleTime: CACHE.TASKS_STALE_TIME_MS,

@@ -45,8 +45,8 @@ export async function getTasksByWeekAction(date: Date) {
   } = await supabase.auth.getUser();
 
   if (authError || !user) {
-    handleError.return(authError);
-    return { success: false, error: 'Unauthorized', tasks: [] };
+    const error = handleError.return(authError);
+    return { success: false, error, tasks: [] };
   }
 
   // Execute use case
@@ -54,8 +54,8 @@ export async function getTasksByWeekAction(date: Date) {
   const response = await listTasksByWeek(user.id, date, repository);
 
   if (!response.success) {
-    handleError.silent(response.error);
-    return { success: false, error: response.error, tasks: [] };
+    const error = handleError.silent(response.error);
+    return { success: false, error, tasks: [] };
   }
 
   return response;

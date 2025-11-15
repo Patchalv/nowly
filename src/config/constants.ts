@@ -289,7 +289,7 @@ export const STORAGE_KEYS = {
 // Category Configuration
 // ------------------------------------------------------------------------------
 
-export const CATEGORY_COLOUR_OPTIONS = [
+export const CATEGORY_COLOR_OPTIONS = [
   '#DF63DD',
   '#AF7BE9',
   '#7C5BD1',

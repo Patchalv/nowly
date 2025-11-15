@@ -11,7 +11,6 @@ export class SupabaseCategoryRepository implements ICategoryRepository {
 
   /**
    * Transform database row (snake_case, ISO strings) to domain entity (camelCase, Date objects)
-   * - DATE fields (scheduled_date, due_date) use dateFromDatabase
    * - TIMESTAMPTZ fields (created_at, updated_at, completed_at) use timestampFromDatabase
    */
   private toDomain(row: CategoryRow): Category {
@@ -27,11 +26,6 @@ export class SupabaseCategoryRepository implements ICategoryRepository {
     };
   }
 
-  /**
-   * Transform domain entity to database row for inserts (all required fields)
-   * - DATE fields use dateToDatabase
-   * - TIMESTAMPTZ fields use timestampToDatabase
-   */
   private toInsert(
     category: Omit<Category, 'id' | 'createdAt' | 'updatedAt'>
   ): Database['public']['Tables']['categories']['Insert'] {
@@ -44,11 +38,6 @@ export class SupabaseCategoryRepository implements ICategoryRepository {
     };
   }
 
-  /**
-   * Transform domain entity to database row for updates (partial fields)
-   * - DATE fields use dateToDatabase
-   * - TIMESTAMPTZ fields use timestampToDatabase
-   */
   private toDatabase(
     category: Partial<Category>
   ): Database['public']['Tables']['categories']['Update'] {

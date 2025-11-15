@@ -49,9 +49,7 @@ export function CreateCategoryDrawer() {
   return (
     <Drawer open={open} onOpenChange={setOpen}>
       <DrawerTrigger asChild>
-        <DialogTrigger asChild>
-          <Button>{ADD_CATEGORY_BUTTON_TEXT}</Button>
-        </DialogTrigger>
+        <Button>{ADD_CATEGORY_BUTTON_TEXT}</Button>
       </DrawerTrigger>
       <DrawerContent>
         <DrawerHeader className="text-left">

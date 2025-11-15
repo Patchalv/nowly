@@ -14,8 +14,8 @@ export async function getCategoriesAction() {
   } = await supabase.auth.getUser();
 
   if (authError || !authUser) {
-    handleError.return(authError);
-    return { success: false, error: authError, categories: [] };
+    const error = handleError.return(authError);
+    return { success: false, error, categories: [] };
   }
 
   // Execute use case
@@ -23,8 +23,8 @@ export async function getCategoriesAction() {
   const response = await getCategories(authUser.id, repository);
 
   if (!response.success) {
-    handleError.silent(response.error);
-    return { success: false, error: response.error, categories: [] };
+    const error = handleError.silent(response.error);
+    return { success: false, error, categories: [] };
   }
 
   return response;

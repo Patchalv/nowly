@@ -25,7 +25,9 @@ export const AccountDetailsSection = () => {
           <div className="flex gap-1">
             <p className="text-sm text-muted-foreground">Name:</p>
             <p className="text-sm font-medium">
-              {userProfile?.firstName} {userProfile?.lastName}
+              {[userProfile?.firstName, userProfile?.lastName]
+                .filter(Boolean)
+                .join(' ') || 'Not set'}
             </p>
           </div>
           <div className="flex gap-1">
