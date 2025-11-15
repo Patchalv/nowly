@@ -1,6 +1,7 @@
 'use client';
 
 import { useTasksByDate } from '@/src/presentation/hooks/tasks/useTasks';
+import { CreateTaskDrawer } from '../../dialog/create-task-drawer/CreateTaskDrawer';
 import { ItemGroup } from '../../ui/item';
 import { Skeleton } from '../../ui/skeleton';
 import { TaskListEmpty } from './TaskListEmpty';
@@ -33,14 +34,19 @@ export const TaskList = ({ date }: TaskListProps) => {
   }
 
   if (!tasks || tasks.length === 0) {
-    return <TaskListEmpty />;
+    return <TaskListEmpty currentDate={date} />;
   }
 
   return (
-    <ItemGroup className="flex flex-col gap-3 overflow-y-auto max-h-[calc(100vh-10rem)]">
-      {tasks.map((task) => (
-        <TaskListItem key={task.id} task={task} />
-      ))}
-    </ItemGroup>
+    <div className="flex flex-col gap-3">
+      <ItemGroup className="flex flex-col gap-3 overflow-y-auto max-h-[calc(100vh-10rem)]">
+        {tasks.map((task) => (
+          <TaskListItem key={task.id} task={task} />
+        ))}
+      </ItemGroup>
+      <div>
+        <CreateTaskDrawer variant="ghost" defaultScheduledDate={date} />
+      </div>
+    </div>
   );
 };

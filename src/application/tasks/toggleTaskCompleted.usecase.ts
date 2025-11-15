@@ -2,7 +2,7 @@ import type { ITaskRepository } from '@/src/infrastructure/repositories/ITaskRep
 import { logger } from '@sentry/nextjs';
 import { MutateTaskResponse } from './types';
 
-export async function deleteTask(
+export async function toggleTaskCompleted(
   taskId: string,
   userId: string,
   repository: ITaskRepository
@@ -18,15 +18,20 @@ export async function deleteTask(
       };
     }
 
-    // Delete the task
-    await repository.delete(taskId);
+    const isCompleted = !existingTask.completed;
 
-    return { success: true };
+    // Update the task
+    const task = await repository.update(taskId, {
+      completed: isCompleted,
+      completedAt: isCompleted ? new Date() : null,
+    });
+
+    return { success: true, task };
   } catch (error) {
-    logger.error('Delete task error', { error });
+    logger.error('Update task error', { error });
     return {
       success: false,
-      error: error instanceof Error ? error.message : 'Failed to delete task',
+      error: error instanceof Error ? error.message : 'Failed to update task',
     };
   }
 }

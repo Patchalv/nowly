@@ -3,6 +3,7 @@
 import { createTaskAction } from '@/app/actions/tasks/createTaskAction';
 import { deleteTaskAction } from '@/app/actions/tasks/deleteTaskAction';
 import { getTasksByWeekAction } from '@/app/actions/tasks/getTasksAction';
+import { toggleTaskCompletedAction } from '@/app/actions/tasks/toggleTaskCompletedAction';
 import { updateTaskAction } from '@/app/actions/tasks/updateTaskAction';
 import { queryKeys } from '@/src/config/query-keys';
 import type { Task } from '@/src/domain/model/Task';
@@ -122,8 +123,9 @@ export function useCreateTask(): UseMutationResult<
     },
     onSuccess: (_data, _formData, context) => {
       // Invalidate affected week queries to refetch fresh data
-      if (context?.previousQueries) {
-        context.previousQueries.forEach((_previousData, queryKeyStr) => {
+      const previousQueries = context?.previousQueries;
+      if (previousQueries && previousQueries.size > 0) {
+        previousQueries.forEach((_previousData, queryKeyStr) => {
           const queryKey = JSON.parse(queryKeyStr) as readonly [
             'tasks',
             'week',
@@ -300,8 +302,9 @@ export function useUpdateTask(): UseMutationResult<
     },
     onSuccess: (_data, _variables, context) => {
       // Invalidate affected week queries to refetch fresh data
-      if (context?.previousQueries) {
-        context.previousQueries.forEach((_previousData, queryKeyStr) => {
+      const previousQueries = context?.previousQueries;
+      if (previousQueries && previousQueries.size > 0) {
+        previousQueries.forEach((_previousData, queryKeyStr) => {
           const queryKey = JSON.parse(queryKeyStr) as readonly [
             'tasks',
             'week',
@@ -314,6 +317,134 @@ export function useUpdateTask(): UseMutationResult<
         queryClient.invalidateQueries({ queryKey: queryKeys.tasks.all });
       }
       toast.success('Task updated successfully');
+    },
+  });
+}
+
+/**
+ * Hook for toggling a task's completion status
+ *
+ * @returns Mutation object with methods to update a task completion status
+ * @example
+ * ```tsx
+ * const toggleTaskCompleted = useToggleTaskCompleted();
+ *
+ * const handleToggle = (taskId: string) => {
+ *   toggleTaskCompleted.mutate(taskId);
+ * };
+ * ```
+ *
+ * @remarks
+ * - Uses optimistic updates for instant UI feedback
+ * - Automatically invalidates task queries on success
+ * - Errors are logged to Sentry via centralized error handling
+ */
+export function useToggleTaskCompleted(): UseMutationResult<
+  UpdateTaskActionResponse,
+  ServerActionError,
+  string
+> {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async (taskId: string) => {
+      const response = await toggleTaskCompletedAction(taskId);
+      return handleActionResponse<UpdateTaskActionResponse>(response);
+    },
+    onMutate: async (taskId) => {
+      // Cancel outgoing refetches
+      await queryClient.cancelQueries({ queryKey: queryKeys.tasks.all });
+
+      // Find the task in weekly cache to get its current scheduledDate
+      let currentTask: Task | null = null;
+      let currentWeekKey: readonly ['tasks', 'week', string] | null = null;
+
+      // Search through all weekly queries to find the task
+      const allQueries = queryClient.getQueryCache().getAll();
+      for (const query of allQueries) {
+        const queryKey = query.queryKey;
+        if (
+          Array.isArray(queryKey) &&
+          queryKey[0] === 'tasks' &&
+          queryKey[1] === 'week'
+        ) {
+          const data = queryClient.getQueryData<Task[]>(queryKey);
+          if (data) {
+            const task = data.find((t) => t.id === taskId);
+            if (task) {
+              currentTask = task;
+              currentWeekKey = queryKey as unknown as readonly [
+                'tasks',
+                'week',
+                string,
+              ];
+              break;
+            }
+          }
+        }
+      }
+
+      // Snapshot previous values for rollback
+      const previousQueries = new Map<string, Task[] | undefined>();
+
+      if (currentTask && currentWeekKey) {
+        // Snapshot current week cache
+        const previousData = queryClient.getQueryData<Task[]>(currentWeekKey);
+        previousQueries.set(JSON.stringify(currentWeekKey), previousData);
+      }
+
+      // Optimistically update the task
+      if (currentWeekKey) {
+        queryClient.setQueryData<Task[]>(currentWeekKey, (old) => {
+          if (!old) return old;
+          return old.map((t) => {
+            if (t.id !== taskId) return t;
+            const isCompleted = !t.completed;
+            return {
+              ...t,
+              completed: isCompleted,
+              // Adjust this rule if the server uses a different strategy
+              completedAt: isCompleted ? new Date() : null,
+            };
+          });
+        });
+      }
+
+      return { previousQueries };
+    },
+    onError: (error, _taskId, context) => {
+      // Rollback optimistic updates
+      if (context?.previousQueries) {
+        context.previousQueries.forEach((previousData, queryKeyStr) => {
+          // Convert JSON string back to array format
+          const queryKey = JSON.parse(queryKeyStr) as readonly [
+            'tasks',
+            'week',
+            string,
+          ];
+          queryClient.setQueryData(queryKey, previousData);
+        });
+      }
+
+      // Show error toast with centralized error handling
+      handleError.toast(error, 'Failed to toggle task completion');
+    },
+    onSuccess: (_data, _taskId, context) => {
+      // Invalidate affected week queries to refetch fresh data
+      const previousQueries = context?.previousQueries;
+      if (previousQueries && previousQueries.size > 0) {
+        previousQueries.forEach((_previousData, queryKeyStr) => {
+          const queryKey = JSON.parse(queryKeyStr) as readonly [
+            'tasks',
+            'week',
+            string,
+          ];
+          queryClient.invalidateQueries({ queryKey });
+        });
+      } else {
+        // Fallback: invalidate all if no context
+        queryClient.invalidateQueries({ queryKey: queryKeys.tasks.all });
+      }
     },
   });
 }

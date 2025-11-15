@@ -1,6 +1,4 @@
-import type { CreateTaskResponse } from '@/src/application/tasks/createTask.usecase';
-import type { DeleteTaskResponse } from '@/src/application/tasks/deleteTask.usecase';
-import type { UpdateTaskResponse } from '@/src/application/tasks/updateTask.usecase';
+import { MutateTaskResponse } from '@/src/application/tasks/types';
 
 /**
  * Input type for create task mutation
@@ -28,7 +26,7 @@ export type DeleteTaskMutationInput = string;
  * Server action response type for create task
  * Extends the use case response to include validation errors
  */
-export interface CreateTaskActionResponse extends CreateTaskResponse {
+export interface CreateTaskActionResponse extends MutateTaskResponse {
   errors?: Record<string, string[]>;
 }
 
@@ -36,7 +34,7 @@ export interface CreateTaskActionResponse extends CreateTaskResponse {
  * Server action response type for update task
  * Extends the use case response to include validation errors
  */
-export interface UpdateTaskActionResponse extends UpdateTaskResponse {
+export interface UpdateTaskActionResponse extends MutateTaskResponse {
   errors?: Record<string, string[]>;
 }
 
@@ -44,6 +42,6 @@ export interface UpdateTaskActionResponse extends UpdateTaskResponse {
  * Server action response type for delete task
  * Extends the use case response to include validation errors
  */
-export interface DeleteTaskActionResponse extends DeleteTaskResponse {
+export interface DeleteTaskActionResponse extends MutateTaskResponse {
   errors?: Record<string, string[]>;
 }

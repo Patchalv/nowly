@@ -1,22 +1,15 @@
-// src/application/tasks/createTask.usecase.ts
-import type { Task } from '@/src/domain/model/Task';
 import type { CreateTaskInput } from '@/src/domain/validation/task/task.schema';
 import type { ITaskRepository } from '@/src/infrastructure/repositories/ITaskRepository';
 import { generatePositionForNewTask } from '@/src/infrastructure/utils/position';
 import { logger } from '@sentry/nextjs';
 import { LexoRank } from 'lexorank';
-
-export interface CreateTaskResponse {
-  success: boolean;
-  task?: Task;
-  error?: string;
-}
+import { MutateTaskResponse } from './types';
 
 export async function createTask(
   input: CreateTaskInput,
   userId: string,
   repository: ITaskRepository
-): Promise<CreateTaskResponse> {
+): Promise<MutateTaskResponse> {
   try {
     // Generate position for the new task, scoped per user+date
     // If scheduledDate is null, we can't query by date, so use min position

@@ -1,15 +1,8 @@
-// src/application/tasks/listTasks.usecase.ts
-import type { Task } from '@/src/domain/model/Task';
 import type { ITaskRepository } from '@/src/infrastructure/repositories/ITaskRepository';
 import { handleError } from '@/src/shared/errors';
 import { logger } from '@sentry/nextjs';
 import { endOfWeek, startOfWeek } from 'date-fns';
-
-export interface ListTasksResponse {
-  success: boolean;
-  tasks?: Task[];
-  error?: string;
-}
+import { ListTasksResponse } from './types';
 
 export async function listTasksByDate(
   userId: string,
