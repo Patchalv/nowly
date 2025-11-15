@@ -57,11 +57,10 @@ export const UpdateTaskForm = ({
       {
         onSuccess: (response) => {
           if (response.success) {
-            // Reset with updated values to maintain correct dirty state
             form.reset({
-              title: data.title,
-              scheduledDate: data.scheduledDate,
-              completed: data.completed,
+              title: data.title ?? task.title,
+              scheduledDate: data.scheduledDate ?? task.scheduledDate,
+              completed: data.completed ?? task.completed,
             });
             onSuccess?.();
           }
@@ -70,28 +69,19 @@ export const UpdateTaskForm = ({
     );
   };
 
-  const UnscheduleTaskButton = () => {
-    return (
-      <FormField
-        control={form.control}
-        name="scheduledDate"
-        render={({ field }) => (
-          <FormItem>
-            <FormControl>
-              <TooltipButton
-                tooltip="Unschedule task"
-                btnContent={<CalendarMinusIcon className="size-4" />}
-                btnVariant="ghost"
-                btnSize="icon-sm"
-                onClick={() => field.onChange(null)}
-              />
-            </FormControl>
-            <FormMessage />
-          </FormItem>
-        )}
-      />
-    );
-  };
+  const UnscheduleTaskButton = ({
+    onUnschedule,
+  }: {
+    onUnschedule: () => void;
+  }) => (
+    <TooltipButton
+      tooltip="Unschedule task"
+      btnContent={<CalendarMinusIcon className="size-4" />}
+      btnVariant="ghost"
+      btnSize="icon-sm"
+      onClick={onUnschedule}
+    />
+  );
 
   return (
     <Form {...form}>
@@ -150,7 +140,22 @@ export const UpdateTaskForm = ({
               </FormItem>
             )}
           />
-          {form.watch('scheduledDate') && <UnscheduleTaskButton />}
+          {form.watch('scheduledDate') && (
+            <FormField
+              control={form.control}
+              name="scheduledDate"
+              render={({ field }) => (
+                <FormItem>
+                  <FormControl>
+                    <UnscheduleTaskButton
+                      onUnschedule={() => field.onChange(null)}
+                    />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+          )}
           <DeleteTaskButton taskId={task.id} />
         </div>
         <Button
