@@ -6,7 +6,7 @@ describe('category schema', () => {
     const category = {
       name: 'Test Category',
       color: '#000000',
-      emoji: '🌟',
+      icon: 'Star',
     };
     const result = createCategorySchema.safeParse(category);
     expect(result.success).toBe(true);
@@ -16,7 +16,7 @@ describe('category schema', () => {
     const category = {
       name: 'Test Category'.repeat(10),
       color: '#000000',
-      emoji: '🌟',
+      icon: 'Star',
     };
     const result = createCategorySchema.safeParse(category);
     expect(result.success).toBe(false);
@@ -27,7 +27,7 @@ describe('category schema', () => {
     const category = {
       name: 'Test Category',
       color: '#0000000',
-      emoji: '🌟',
+      icon: 'Star',
     };
     const result = createCategorySchema.safeParse(category);
     expect(result.success).toBe(false);

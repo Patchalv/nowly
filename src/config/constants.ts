@@ -51,23 +51,58 @@ export const CATEGORY_LIMITS = {
 } as const;
 
 // ------------------------------------------------------------------------------
+// Category Icon Configuration
+// ------------------------------------------------------------------------------
+/**
+ * Available lucide-react icon names for category icons
+ * These icon names correspond to lucide-react icon components
+ */
+export const CATEGORY_ICON_OPTIONS = [
+  'Briefcase',
+  'Home',
+  'Heart',
+  'Calendar',
+  'CheckCircle',
+  'Star',
+  'Tag',
+  'Folder',
+  'Book',
+  'Coffee',
+  'ShoppingBag',
+  'Dumbbell',
+  'Music',
+  'Camera',
+  'Gift',
+  'Lightbulb',
+  'Target',
+  'TrendingUp',
+  'Users',
+  'Settings',
+] as const;
+
+/**
+ * Default icon to use when no icon is selected
+ */
+export const DEFAULT_CATEGORY_ICON = 'Tag' as const;
+
+// ------------------------------------------------------------------------------
 // Default Categories (created on user signup)
 // ------------------------------------------------------------------------------
 export const DEFAULT_CATEGORIES = [
   {
     name: 'Work',
     color: '#3B82F6', // blue-500
-    emoji: '💼',
+    icon: 'Briefcase',
   },
   {
     name: 'Personal',
     color: '#10B981', // green-500
-    emoji: '🏠',
+    icon: 'Home',
   },
   {
     name: 'Health',
     color: '#EF4444', // red-500
-    emoji: '❤️',
+    icon: 'Heart',
   },
 ] as const;
 
@@ -190,7 +225,7 @@ export const VALIDATION_MESSAGES = {
     NAME_TOO_SHORT: 'Category name must be at least 1 character',
     NAME_TOO_LONG: `Category name must be at most ${CATEGORY_LIMITS.NAME_MAX_LENGTH} characters`,
     COLOR_REQUIRED: 'Category color is required',
-    EMOJI_REQUIRED: 'Category emoji is required',
+    ICON_REQUIRED: 'Category icon is required',
   },
 } as const;
 
@@ -249,6 +284,27 @@ export const STORAGE_KEYS = {
   /** User's last viewed route */
   LAST_ROUTE: 'nowly-last-route',
 } as const;
+
+// ------------------------------------------------------------------------------
+// Category Configuration
+// ------------------------------------------------------------------------------
+
+export const CATEGORY_COLOUR_OPTIONS = [
+  '#DF63DD',
+  '#AF7BE9',
+  '#7C5BD1',
+  '#656CF7',
+  '#65E0DF',
+  '#65E0B9',
+  '#AEE76E',
+  '#FADD2B',
+  '#F6A957',
+  '#F8666E',
+  '#F765AC',
+  '#F78EC8',
+  '#95C0E9',
+  '#0EB0A3',
+] as const;
 
 // ------------------------------------------------------------------------------
 // Priority Configuration

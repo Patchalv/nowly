@@ -3,7 +3,7 @@ export interface Category {
   userId: string;
   name: string;
   color: string;
-  emoji: string | null;
+  icon: string | null;
   position: string;
   createdAt: Date;
   updatedAt: Date;

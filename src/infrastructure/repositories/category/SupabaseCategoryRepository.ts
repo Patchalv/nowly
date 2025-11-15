@@ -20,7 +20,7 @@ export class SupabaseCategoryRepository implements ICategoryRepository {
       userId: row.user_id,
       name: row.name,
       color: row.color,
-      emoji: row.emoji,
+      icon: row.icon,
       position: row.position,
       createdAt: timestampFromDatabase(row.created_at),
       updatedAt: timestampFromDatabase(row.updated_at),
@@ -39,7 +39,7 @@ export class SupabaseCategoryRepository implements ICategoryRepository {
       user_id: category.userId,
       name: category.name,
       color: category.color,
-      emoji: category.emoji,
+      icon: category.icon,
       position: category.position,
     };
   }
@@ -56,7 +56,7 @@ export class SupabaseCategoryRepository implements ICategoryRepository {
 
     if (category.name !== undefined) result.name = category.name;
     if (category.color !== undefined) result.color = category.color;
-    if (category.emoji !== undefined) result.emoji = category.emoji;
+    if (category.icon !== undefined) result.icon = category.icon;
     if (category.position !== undefined) result.position = category.position;
 
     return result;

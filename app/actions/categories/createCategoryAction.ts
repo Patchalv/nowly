@@ -24,7 +24,7 @@ export async function createCategoryAction(formData: FormData) {
   const result = createCategorySchema.safeParse({
     name: formData.get('name'),
     color: formData.get('color'),
-    emoji: formData.get('emoji'),
+    icon: formData.get('icon'),
   });
 
   if (!result.success) {

@@ -15,7 +15,7 @@ export async function createCategory(
       name: input.name,
       userId,
       color: input.color,
-      emoji: input.emoji,
+      icon: input.icon,
       position: LexoRank.min().toString(),
     });
 

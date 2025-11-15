@@ -13,7 +13,7 @@ export interface UpdateCategoryMutationInput {
   updates: {
     name?: string;
     color?: string;
-    emoji?: string;
+    icon?: string;
   };
 }
 

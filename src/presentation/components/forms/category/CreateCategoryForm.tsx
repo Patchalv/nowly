@@ -5,6 +5,7 @@ import {
 import { useCreateCategory } from '@/src/presentation/hooks/categories/useCategories';
 import { cn } from '@/src/shared/utils/cn';
 import { zodResolver } from '@hookform/resolvers/zod';
+import { PaletteIcon } from 'lucide-react';
 import { useForm } from 'react-hook-form';
 import { Button } from '../../ui/button';
 import {
@@ -15,6 +16,8 @@ import {
   FormMessage,
 } from '../../ui/form';
 import { Input } from '../../ui/input';
+import { ColourPicker } from '../colour-picker/ColourPicker';
+import { IconPicker } from '../icon-picker/IconPicker';
 
 export interface CreateCategoryFormProps {
   className?: string;
@@ -29,14 +32,19 @@ export const CreateCategoryForm = ({
 
   const form = useForm<CreateCategoryInput>({
     resolver: zodResolver(createCategorySchema),
+    defaultValues: {
+      name: '',
+      color: undefined,
+      icon: undefined,
+    },
   });
 
   const onSubmit = (data: CreateCategoryInput) => {
-    // Convert CreateTaskInput to FormData
+    // Convert CreateCategoryInput to FormData
     const formData = new FormData();
     formData.append('name', data.name);
     formData.append('color', data.color);
-    formData.append('emoji', data.emoji ?? '');
+    formData.append('icon', data.icon ?? '');
     createCategory(formData, {
       onSuccess: () => {
         form.reset();
@@ -76,11 +84,10 @@ export const CreateCategoryForm = ({
           render={({ field }) => (
             <FormItem>
               <FormControl>
-                <Input
-                  type="color"
-                  placeholder="#000000"
-                  autoComplete="off"
-                  {...field}
+                <ColourPicker
+                  icon={<PaletteIcon className="size-4" />}
+                  value={field.value}
+                  onChange={field.onChange}
                 />
               </FormControl>
               <FormMessage />
@@ -89,14 +96,12 @@ export const CreateCategoryForm = ({
         />
         <FormField
           control={form.control}
-          name="emoji"
+          name="icon"
           render={({ field }) => (
             <FormItem>
               <FormControl>
-                <Input
-                  type="text"
-                  placeholder="💼"
-                  value={field.value ?? ''}
+                <IconPicker
+                  value={field.value ?? undefined}
                   onChange={field.onChange}
                 />
               </FormControl>
