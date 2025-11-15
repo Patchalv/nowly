@@ -25,7 +25,7 @@ import {
 
 const UPDATE_CATEGORY_TOOLTIP = 'Update category';
 const CANCEL_BUTTON_TEXT = 'Cancel';
-const DIALOG_TITLE = 'Task Details';
+const DIALOG_TITLE = 'Category Details';
 
 interface CategoryListItemDrawerProps {
   category: Category;

@@ -132,7 +132,7 @@ export const UpdateCategoryForm = ({
           className="w-full"
           disabled={isPending}
         >
-          {isPending ? 'Creating...' : 'Create Category'}
+          {isPending ? 'Updating...' : 'Update Category'}
         </Button>
       </form>
     </Form>

@@ -5,6 +5,7 @@ import { updateCategorySchema } from '@/src/domain/validation/category/category.
 import { SupabaseCategoryRepository } from '@/src/infrastructure/repositories/category/SupabaseCategoryRepository';
 import { createClient } from '@/src/infrastructure/supabase/server';
 import { logger } from '@sentry/nextjs';
+import { revalidatePath } from 'next/cache';
 
 export async function updateCategoryAction(
   categoryId: string,
@@ -49,6 +50,8 @@ export async function updateCategoryAction(
     logger.error('Update category error', { error: response.error });
     return { success: false, error: response.error };
   }
+
+  revalidatePath('/daily');
 
   return response;
 }

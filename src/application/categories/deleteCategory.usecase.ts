@@ -24,9 +24,11 @@ export async function deleteCategory(
     );
 
     // Update each task to remove the categoryId
-    for (const task of tasksWithCategory) {
-      await taskRepository.update(task.id, { categoryId: null });
-    }
+    await Promise.all(
+      tasksWithCategory.map((task) =>
+        taskRepository.update(task.id, { categoryId: null })
+      )
+    );
 
     // Delete the category
     await categoryRepository.delete(categoryId);
