@@ -6,6 +6,7 @@ import {
   getTasksByWeekAction,
   listTasksAction,
 } from '@/app/actions/tasks/getTasksAction';
+import { reorderTaskAction } from '@/app/actions/tasks/reorderTaskAction';
 import { toggleTaskCompletedAction } from '@/app/actions/tasks/toggleTaskCompletedAction';
 import { updateTaskAction } from '@/app/actions/tasks/updateTaskAction';
 import { CACHE, PAGINATION } from '@/src/config/constants';
@@ -27,6 +28,8 @@ import type {
   CreateTaskMutationInput,
   DeleteTaskActionResponse,
   DeleteTaskMutationInput,
+  ReorderTaskActionResponse,
+  ReorderTaskMutationInput,
   TaskFilters,
   UpdateTaskActionResponse,
   UpdateTaskMutationInput,
@@ -553,6 +556,126 @@ export function useDeleteTask(): UseMutationResult<
         queryClient.invalidateQueries({ queryKey: queryKeys.tasks.all });
       }
       toast.success('Task deleted successfully');
+    },
+  });
+}
+
+/**
+ * Hook for reordering a task by updating its position
+ *
+ * @returns Mutation object with methods to reorder a task
+ * @example
+ * ```tsx
+ * const reorderTask = useReorderTask();
+ *
+ * const handleDragEnd = (taskId: string, newPosition: string) => {
+ *   reorderTask.mutate({ taskId, newPosition });
+ * };
+ * ```
+ *
+ * @remarks
+ * - Uses optimistic updates for instant UI feedback
+ * - Updates task position in weekly cache immediately
+ * - Automatically invalidates task queries on success
+ * - Errors are logged to Sentry via centralized error handling
+ */
+export function useReorderTask(): UseMutationResult<
+  ReorderTaskActionResponse,
+  ServerActionError,
+  ReorderTaskMutationInput
+> {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async ({ taskId, newPosition }: ReorderTaskMutationInput) => {
+      const response = await reorderTaskAction(taskId, newPosition);
+      return handleActionResponse<ReorderTaskActionResponse>(response);
+    },
+    onMutate: async ({ taskId, newPosition }) => {
+      // Cancel outgoing refetches
+      await queryClient.cancelQueries({ queryKey: queryKeys.tasks.all });
+
+      // Find the task in weekly cache
+      let currentTask: Task | null = null;
+      let currentWeekKey: readonly ['tasks', 'week', string] | null = null;
+
+      // Search through all weekly queries to find the task
+      const allQueries = queryClient.getQueryCache().getAll();
+      for (const query of allQueries) {
+        const queryKey = query.queryKey;
+        if (
+          Array.isArray(queryKey) &&
+          queryKey[0] === 'tasks' &&
+          queryKey[1] === 'week'
+        ) {
+          const data = queryClient.getQueryData<Task[]>(queryKey);
+          if (data) {
+            const task = data.find((t) => t.id === taskId);
+            if (task) {
+              currentTask = task;
+              currentWeekKey = queryKey as unknown as readonly [
+                'tasks',
+                'week',
+                string,
+              ];
+              break;
+            }
+          }
+        }
+      }
+
+      // Snapshot previous values for rollback
+      const previousQueries = new Map<string, Task[] | undefined>();
+
+      if (currentTask && currentWeekKey) {
+        // Snapshot current week cache
+        const previousData = queryClient.getQueryData<Task[]>(currentWeekKey);
+        previousQueries.set(JSON.stringify(currentWeekKey), previousData);
+
+        // Optimistically update task position in cache
+        queryClient.setQueryData<Task[]>(currentWeekKey, (old) => {
+          if (!old) return old;
+          return old.map((t) =>
+            t.id === taskId ? { ...t, position: newPosition } : t
+          );
+        });
+      }
+
+      return { previousQueries };
+    },
+    onError: (error, _variables, context) => {
+      // Rollback optimistic updates
+      if (context?.previousQueries) {
+        context.previousQueries.forEach((previousData, queryKeyStr) => {
+          // Convert JSON string back to array format
+          const queryKey = JSON.parse(queryKeyStr) as readonly [
+            'tasks',
+            'week',
+            string,
+          ];
+          queryClient.setQueryData(queryKey, previousData);
+        });
+      }
+
+      // Show error toast with centralized error handling
+      handleError.toast(error, 'Failed to reorder task');
+    },
+    onSuccess: (_data, _variables, context) => {
+      // Invalidate affected week queries to refetch fresh data
+      const previousQueries = context?.previousQueries;
+      if (previousQueries && previousQueries.size > 0) {
+        previousQueries.forEach((_previousData, queryKeyStr) => {
+          const queryKey = JSON.parse(queryKeyStr) as readonly [
+            'tasks',
+            'week',
+            string,
+          ];
+          queryClient.invalidateQueries({ queryKey });
+        });
+      } else {
+        // Fallback: invalidate all if no context
+        queryClient.invalidateQueries({ queryKey: queryKeys.tasks.all });
+      }
     },
   });
 }

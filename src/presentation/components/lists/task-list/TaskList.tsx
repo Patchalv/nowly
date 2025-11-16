@@ -1,8 +1,31 @@
+'use client';
+
 import { Task } from '@/src/domain/model/Task';
+import {
+  generatePositionBetween,
+  rebalancePositions,
+} from '@/src/infrastructure/utils/position';
 import { ItemGroup } from '@/src/presentation/components/ui/item';
 import { Skeleton } from '@/src/presentation/components/ui/skeleton';
+import { useRebalanceTasks } from '@/src/presentation/hooks/tasks/useRebalanceTasks';
+import { useReorderTask } from '@/src/presentation/hooks/tasks/useTasks';
+import {
+  DndContext,
+  DragEndEvent,
+  DragOverlay,
+  DragStartEvent,
+  PointerSensor,
+  closestCenter,
+  useSensor,
+  useSensors,
+} from '@dnd-kit/core';
+import {
+  SortableContext,
+  verticalListSortingStrategy,
+} from '@dnd-kit/sortable';
+import { useState } from 'react';
 import { TaskListEmpty } from './TaskListEmpty';
-import { TaskListItem } from './TaskListItem';
+import { SortableTaskListItem, TaskListItemContent } from './TaskListItem';
 
 interface TaskListProps {
   tasks: Task[];
@@ -10,6 +33,107 @@ interface TaskListProps {
 }
 
 export const TaskList = ({ tasks, isLoading }: TaskListProps) => {
+  const [activeTask, setActiveTask] = useState<Task | null>(null);
+  const reorderTask = useReorderTask();
+  const rebalanceTasks = useRebalanceTasks();
+
+  // Configure sensors for drag detection
+  const sensors = useSensors(
+    useSensor(PointerSensor, {
+      activationConstraint: {
+        distance: 8, // Require 8px movement before dragging starts
+      },
+    })
+  );
+
+  const handleDragStart = (event: DragStartEvent) => {
+    const task = tasks.find((t) => t.id === event.active.id);
+    setActiveTask(task || null);
+  };
+
+  const handleDragEnd = (event: DragEndEvent) => {
+    const { active, over } = event;
+    setActiveTask(null);
+
+    if (!over || active.id === over.id) {
+      return;
+    }
+
+    // Sort tasks by position before calculating new position
+    const sortedTasks = [...tasks].sort((a, b) =>
+      a.position.localeCompare(b.position)
+    );
+
+    const oldIndex = sortedTasks.findIndex((t) => t.id === active.id);
+    const newIndex = sortedTasks.findIndex((t) => t.id === over.id);
+
+    if (oldIndex === -1 || newIndex === -1) {
+      return;
+    }
+
+    // Calculate new position based on neighbors
+    let newPosition: string;
+
+    // When moving up (to a lower index), we want to place BEFORE the target
+    // When moving down (to a higher index), we want to place AFTER the target
+    if (oldIndex < newIndex) {
+      // Moving down - place AFTER the target item
+      if (newIndex === sortedTasks.length - 1) {
+        // Moving to the very end
+        newPosition = generatePositionBetween(
+          sortedTasks[sortedTasks.length - 1].position,
+          ''
+        );
+      } else {
+        // Moving between target and the item after it
+        newPosition = generatePositionBetween(
+          sortedTasks[newIndex].position,
+          sortedTasks[newIndex + 1].position
+        );
+      }
+    } else {
+      // Moving up - place BEFORE the target item
+      if (newIndex === 0) {
+        // Moving to the very top
+        newPosition = generatePositionBetween('', sortedTasks[0].position);
+      } else {
+        // Moving between the item before target and the target
+        newPosition = generatePositionBetween(
+          sortedTasks[newIndex - 1].position,
+          sortedTasks[newIndex].position
+        );
+      }
+    }
+
+    // Check if rebalancing is needed (when first task is at min)
+    if (newPosition === 'REBALANCE_NEEDED') {
+      // Create the new order by moving the task to its new position
+      const reorderedTasks = [...sortedTasks];
+      const [movedTask] = reorderedTasks.splice(oldIndex, 1);
+      reorderedTasks.splice(newIndex, 0, movedTask);
+
+      // Generate new positions for all tasks
+      const newPositions = rebalancePositions(reorderedTasks.length);
+
+      // Prepare updates for all tasks
+      const updates = reorderedTasks.map((task, index) => ({
+        taskId: task.id,
+        newPosition: newPositions[index],
+      }));
+
+      // Execute batch update with optimistic updates
+      rebalanceTasks.mutate({ updates });
+
+      return; // Don't proceed with single-task update
+    }
+
+    // Execute single-task reorder mutation
+    reorderTask.mutate({
+      taskId: active.id as string,
+      newPosition,
+    });
+  };
+
   if (isLoading) {
     return (
       <section className="space-y-2 p-4">
@@ -28,11 +152,36 @@ export const TaskList = ({ tasks, isLoading }: TaskListProps) => {
     );
   }
 
+  // Sort tasks by position for consistent rendering
+  const sortedTasks = [...tasks].sort((a, b) =>
+    a.position.localeCompare(b.position)
+  );
+
   return (
-    <ItemGroup className="flex flex-col gap-3 overflow-y-auto">
-      {tasks.map((task) => (
-        <TaskListItem key={task.id} task={task} />
-      ))}
-    </ItemGroup>
+    <DndContext
+      sensors={sensors}
+      collisionDetection={closestCenter}
+      onDragStart={handleDragStart}
+      onDragEnd={handleDragEnd}
+    >
+      <SortableContext
+        items={sortedTasks.map((t) => t.id)}
+        strategy={verticalListSortingStrategy}
+      >
+        <ItemGroup className="flex flex-col gap-3 overflow-y-auto">
+          {sortedTasks.map((task) => (
+            <SortableTaskListItem key={task.id} task={task} />
+          ))}
+        </ItemGroup>
+      </SortableContext>
+
+      <DragOverlay>
+        {activeTask ? (
+          <div className="opacity-80">
+            <TaskListItemContent task={activeTask} />
+          </div>
+        ) : null}
+      </DragOverlay>
+    </DndContext>
   );
 };

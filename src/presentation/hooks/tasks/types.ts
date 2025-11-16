@@ -23,6 +23,14 @@ export interface UpdateTaskMutationInput {
 export type DeleteTaskMutationInput = string;
 
 /**
+ * Input type for reorder task mutation
+ */
+export interface ReorderTaskMutationInput {
+  taskId: string;
+  newPosition: string;
+}
+
+/**
  * Server action response type for create task
  * Extends the use case response to include validation errors
  */
@@ -43,6 +51,13 @@ export interface UpdateTaskActionResponse extends MutateTaskResponse {
  * Extends the use case response to include validation errors
  */
 export interface DeleteTaskActionResponse extends MutateTaskResponse {
+  errors?: Record<string, string[]>;
+}
+
+/**
+ * Server action response type for reorder task
+ */
+export interface ReorderTaskActionResponse extends MutateTaskResponse {
   errors?: Record<string, string[]>;
 }
 
