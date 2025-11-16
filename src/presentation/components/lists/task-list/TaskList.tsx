@@ -1,6 +1,5 @@
 'use client';
 
-import { rebalanceTasksAction } from '@/app/actions/tasks/rebalanceTasksAction';
 import { Task } from '@/src/domain/model/Task';
 import {
   generatePositionBetween,
@@ -8,6 +7,7 @@ import {
 } from '@/src/infrastructure/utils/position';
 import { ItemGroup } from '@/src/presentation/components/ui/item';
 import { Skeleton } from '@/src/presentation/components/ui/skeleton';
+import { useRebalanceTasks } from '@/src/presentation/hooks/tasks/useRebalanceTasks';
 import { useReorderTask } from '@/src/presentation/hooks/tasks/useTasks';
 import {
   DndContext,
@@ -35,6 +35,7 @@ interface TaskListProps {
 export const TaskList = ({ tasks, isLoading }: TaskListProps) => {
   const [activeTask, setActiveTask] = useState<Task | null>(null);
   const reorderTask = useReorderTask();
+  const rebalanceTasks = useRebalanceTasks();
 
   // Configure sensors for drag detection
   const sensors = useSensors(
@@ -73,19 +74,6 @@ export const TaskList = ({ tasks, isLoading }: TaskListProps) => {
     // Calculate new position based on neighbors
     let newPosition: string;
 
-    // Debug logging
-    console.log('Drag end:', {
-      activeId: active.id,
-      overId: over.id,
-      oldIndex,
-      newIndex,
-      sortedTasksPositions: sortedTasks.map((t) => ({
-        id: t.id,
-        title: t.title,
-        position: t.position,
-      })),
-    });
-
     // When moving up (to a lower index), we want to place BEFORE the target
     // When moving down (to a higher index), we want to place AFTER the target
     if (oldIndex < newIndex) {
@@ -117,14 +105,8 @@ export const TaskList = ({ tasks, isLoading }: TaskListProps) => {
       }
     }
 
-    console.log('Calculated new position:', newPosition);
-
     // Check if rebalancing is needed (when first task is at min)
     if (newPosition === 'REBALANCE_NEEDED') {
-      console.warn(
-        'Rebalancing needed: First task is at min position. Updating all tasks...'
-      );
-
       // Create the new order by moving the task to its new position
       const reorderedTasks = [...sortedTasks];
       const [movedTask] = reorderedTasks.splice(oldIndex, 1);
@@ -139,22 +121,8 @@ export const TaskList = ({ tasks, isLoading }: TaskListProps) => {
         newPosition: newPositions[index],
       }));
 
-      console.log('Rebalancing updates:', updates);
-
-      // Execute batch update
-      rebalanceTasksAction(updates)
-        .then((result) => {
-          if (result.success) {
-            console.log('Rebalancing successful');
-            // Force refetch since we updated multiple tasks
-            window.location.reload(); // Simple but effective for now
-          } else {
-            console.error('Rebalancing failed:', result.error);
-          }
-        })
-        .catch((error) => {
-          console.error('Rebalancing error:', error);
-        });
+      // Execute batch update with optimistic updates
+      rebalanceTasks.mutate({ updates });
 
       return; // Don't proceed with single-task update
     }
