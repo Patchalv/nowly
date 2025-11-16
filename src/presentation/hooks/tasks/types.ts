@@ -1,4 +1,5 @@
 import { MutateTaskResponse } from '@/src/application/tasks/types';
+import { TaskPriority } from '@/src/domain/types/tasks';
 
 /**
  * Input type for create task mutation
@@ -11,9 +12,13 @@ export type CreateTaskMutationInput = FormData;
 export interface UpdateTaskMutationInput {
   taskId: string;
   updates: {
-    completed?: boolean;
     title?: string;
+    description?: string | null;
     scheduledDate?: Date | null;
+    dueDate?: Date | null;
+    completed?: boolean;
+    categoryId?: string | null;
+    priority?: TaskPriority | null;
   };
 }
 
