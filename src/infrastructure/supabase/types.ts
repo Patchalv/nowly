@@ -88,7 +88,17 @@ export interface Database {
       [key: string]: unknown;
     };
     Functions: {
-      [key: string]: unknown;
+      rebalance_tasks: {
+        Args: {
+          p_user_id: string;
+          p_updates: Json;
+        };
+        Returns: Array<{
+          task_id: string;
+          success: boolean;
+          error_message: string | null;
+        }>;
+      };
     };
     Enums: {
       priority_level: 'high' | 'medium' | 'low';
