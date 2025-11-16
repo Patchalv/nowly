@@ -22,7 +22,7 @@ export async function reorderTask(
     // Validate task exists and belongs to user
     const existingTask = await repository.findById(taskId);
     if (!existingTask || existingTask.userId !== userId) {
-      logger.error('Task not found or unauthorized', { taskId, userId });
+      logger.error('Task not found or unauthorized', { taskId });
       return {
         success: false,
         error: 'Task not found',
@@ -34,7 +34,7 @@ export async function reorderTask(
 
     return { success: true, task };
   } catch (error) {
-    logger.error('Reorder task error', { error, taskId, newPosition });
+    logger.error('Reorder task error', { error });
     return {
       success: false,
       error: error instanceof Error ? error.message : 'Failed to reorder task',
