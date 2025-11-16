@@ -1,6 +1,5 @@
 'use server';
 
-import { SupabaseTaskRepository } from '@/src/infrastructure/repositories/task/SupabaseTaskRepository';
 import { createClient } from '@/src/infrastructure/supabase/server';
 import { logger } from '@sentry/nextjs';
 import { revalidatePath } from 'next/cache';
@@ -35,22 +34,52 @@ export async function rebalanceTasksAction(
   }
 
   try {
-    const repository = new SupabaseTaskRepository(supabase);
+    // Call stored procedure to atomically update all task positions
+    // Note: Using type assertion due to Supabase RPC type inference limitations
+    // for manually created stored procedures
+    //
+    // The stored procedure implements all-or-nothing behavior:
+    // - If any validation or authorization check fails, an exception is raised
+    // - If successful, returns array of updated tasks (all with success=true)
+    // - Transaction automatically rolls back on exceptions
+    type RebalanceResult = Array<{
+      task_id: string;
+      success: boolean;
+      error_message: string | null;
+    }>;
 
-    // Update all tasks
-    for (const { taskId, newPosition } of updates) {
-      // Verify task ownership
-      const task = await repository.findById(taskId);
-      if (!task || task.userId !== user.id) {
-        logger.error('Task not found or unauthorized', {
-          taskId,
-          userId: user.id,
-        });
-        return { success: false, error: 'Task not found' };
+    // @ts-expect-error - Supabase RPC types don't recognize manually created stored procedures
+    const { data, error } = (await supabase.rpc('rebalance_tasks', {
+      p_user_id: user.id,
+      p_updates: updates,
+    })) as { data: RebalanceResult | null; error: any };
+
+    if (error) {
+      logger.error('RPC rebalance_tasks failed', { error, updates });
+
+      // Check for serialization conflict
+      if (error.code === '40001') {
+        return {
+          success: false,
+          error: 'Database conflict, please try again',
+        };
       }
 
-      // Update position
-      await repository.update(taskId, { position: newPosition });
+      return {
+        success: false,
+        error: error.message || 'Failed to rebalance tasks',
+      };
+    }
+
+    // If we reach here, all tasks were successfully updated
+    // (stored procedure raises exceptions on any failure, so data only exists on success)
+    // All rows in data will have success=true, but we verify data exists as a sanity check
+    if (!data || data.length === 0) {
+      logger.error('Rebalance returned no data', { updates });
+      return {
+        success: false,
+        error: 'No tasks were updated',
+      };
     }
 
     // Revalidate daily page
