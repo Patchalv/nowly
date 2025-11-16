@@ -14,8 +14,15 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: 'Nowly',
+  title: { default: 'Nowly', template: '%s | Nowly' },
   description: 'Today-first task management for focused productivity.',
+  authors: [{ name: 'Patrick Alvarez', url: 'https://patrickalvarez.com' }],
+  creator: 'Patrick Alvarez',
+  publisher: 'Patrick Alvarez',
+  icons: {
+    icon: '/favicon.ico',
+  },
+  manifest: '/manifest.json',
 };
 
 export default function RootLayout({

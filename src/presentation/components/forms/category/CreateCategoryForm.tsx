@@ -16,8 +16,8 @@ import {
   FormMessage,
 } from '../../ui/form';
 import { Input } from '../../ui/input';
-import { ColorPicker } from '../color-picker/ColorPicker';
-import { IconPicker } from '../icon-picker/IconPicker';
+import { ColorPicker } from '../pickers/ColorPicker';
+import { IconPicker } from '../pickers/IconPicker';
 
 export interface CreateCategoryFormProps {
   className?: string;

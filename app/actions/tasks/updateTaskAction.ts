@@ -1,6 +1,7 @@
 'use server';
 
 import { updateTask } from '@/src/application/tasks/updateTask.usecase';
+import { TaskPriority } from '@/src/domain/types/tasks';
 import { updateTaskSchema } from '@/src/domain/validation/task/task.schema';
 import { SupabaseTaskRepository } from '@/src/infrastructure/repositories/task/SupabaseTaskRepository';
 import { createClient } from '@/src/infrastructure/supabase/server';
@@ -10,9 +11,14 @@ import { revalidatePath } from 'next/cache';
 export async function updateTaskAction(
   taskId: string,
   updates: {
-    completed?: boolean;
     title?: string;
+    description?: string | null;
     scheduledDate?: Date | null;
+    dueDate?: Date | null;
+    completed?: boolean;
+    categoryId?: string | null;
+    priority?: TaskPriority | null;
+    position?: string;
   }
 ) {
   const supabase = await createClient();

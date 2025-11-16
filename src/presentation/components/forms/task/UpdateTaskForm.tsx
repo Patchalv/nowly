@@ -21,6 +21,8 @@ import {
   FormMessage,
 } from '../../ui/form';
 import { Input } from '../../ui/input';
+import { CategoryPicker } from '../pickers/CategoryPicker';
+import { PriorityPicker } from '../pickers/PriorityPicker';
 
 interface UpdateTaskFormProps {
   task: Task;
@@ -39,8 +41,12 @@ export const UpdateTaskForm = ({
     resolver: zodResolver(updateTaskSchema),
     defaultValues: {
       title: task.title,
-      scheduledDate: task.scheduledDate,
+      description: task.description ?? undefined,
+      scheduledDate: task.scheduledDate ?? undefined,
+      dueDate: task.dueDate ?? undefined,
       completed: task.completed,
+      categoryId: task.categoryId ?? undefined,
+      priority: task.priority ?? undefined,
     },
   });
 
@@ -50,8 +56,10 @@ export const UpdateTaskForm = ({
         taskId: task.id,
         updates: {
           title: data.title,
+          priority: data.priority,
           completed: data.completed,
           scheduledDate: data.scheduledDate,
+          categoryId: data.categoryId,
         },
       },
       {
@@ -61,6 +69,8 @@ export const UpdateTaskForm = ({
               title: data.title ?? task.title,
               scheduledDate: data.scheduledDate ?? task.scheduledDate,
               completed: data.completed ?? task.completed,
+              priority: data.priority ?? task.priority ?? undefined,
+              categoryId: data.categoryId ?? task.categoryId ?? undefined,
             });
             onSuccess?.();
           }
@@ -157,6 +167,34 @@ export const UpdateTaskForm = ({
             />
           )}
           <DeleteTaskButton taskId={task.id} />
+          <FormField
+            control={form.control}
+            name="priority"
+            render={({ field }) => (
+              <FormItem>
+                <FormControl>
+                  <PriorityPicker
+                    value={field.value}
+                    onChange={field.onChange}
+                  />
+                </FormControl>
+              </FormItem>
+            )}
+          />
+          <FormField
+            control={form.control}
+            name="categoryId"
+            render={({ field }) => (
+              <FormItem>
+                <FormControl>
+                  <CategoryPicker
+                    categoryId={field.value}
+                    onChange={field.onChange}
+                  />
+                </FormControl>
+              </FormItem>
+            )}
+          />
         </div>
         <Button
           type="submit"

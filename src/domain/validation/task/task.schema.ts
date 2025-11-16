@@ -1,6 +1,8 @@
 import { z } from 'zod';
 import { optionalDateSchema } from '../date/date.schema';
 
+export const taskPrioritySchema = z.enum(['high', 'medium', 'low']);
+
 export const createTaskSchema = z.object({
   title: z.string().min(1, 'Title is required').max(255, 'Title too long'),
   scheduledDate: optionalDateSchema,
@@ -12,9 +14,13 @@ export const updateTaskSchema = z.object({
     .min(1, 'Title is required')
     .max(255, 'Title too long')
     .optional(),
+  description: z.string().max(2000, 'Description too long').optional(),
+  scheduledDate: optionalDateSchema,
+  dueDate: optionalDateSchema,
   completed: z.boolean().optional(),
   completedAt: optionalDateSchema,
-  scheduledDate: optionalDateSchema,
+  categoryId: z.uuid().nullable().optional(),
+  priority: taskPrioritySchema.optional(),
   position: z.string().optional(),
 });
 
