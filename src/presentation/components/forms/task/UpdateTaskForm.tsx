@@ -21,7 +21,8 @@ import {
   FormMessage,
 } from '../../ui/form';
 import { Input } from '../../ui/input';
-import { PriorityPicker } from '../priority-picker/PriorityPicker';
+import { CategoryPicker } from '../pickers/CategoryPicker';
+import { PriorityPicker } from '../pickers/PriorityPicker';
 
 interface UpdateTaskFormProps {
   task: Task;
@@ -58,6 +59,7 @@ export const UpdateTaskForm = ({
           priority: data.priority,
           completed: data.completed,
           scheduledDate: data.scheduledDate,
+          categoryId: data.categoryId,
         },
       },
       {
@@ -68,6 +70,7 @@ export const UpdateTaskForm = ({
               scheduledDate: data.scheduledDate ?? task.scheduledDate,
               completed: data.completed ?? task.completed,
               priority: data.priority ?? task.priority ?? undefined,
+              categoryId: data.categoryId ?? task.categoryId ?? undefined,
             });
             onSuccess?.();
           }
@@ -172,6 +175,20 @@ export const UpdateTaskForm = ({
                 <FormControl>
                   <PriorityPicker
                     value={field.value}
+                    onChange={field.onChange}
+                  />
+                </FormControl>
+              </FormItem>
+            )}
+          />
+          <FormField
+            control={form.control}
+            name="categoryId"
+            render={({ field }) => (
+              <FormItem>
+                <FormControl>
+                  <CategoryPicker
+                    categoryId={field.value}
                     onChange={field.onChange}
                   />
                 </FormControl>

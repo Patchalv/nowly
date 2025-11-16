@@ -19,7 +19,7 @@ export const updateTaskSchema = z.object({
   dueDate: optionalDateSchema,
   completed: z.boolean().optional(),
   completedAt: optionalDateSchema,
-  categoryId: z.uuid().optional(),
+  categoryId: z.uuid().nullable().optional(),
   priority: taskPrioritySchema.optional(),
   position: z.string().optional(),
 });

@@ -5,12 +5,14 @@ import {
   Item,
   ItemActions,
   ItemContent,
+  ItemDescription,
   ItemTitle,
 } from '@/src/presentation/components/ui/item';
 import { cn } from '@/src/shared/utils/cn';
 import { useSortable } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
 import { forwardRef } from 'react';
+import { PriorityBadge } from '../../badge/PriorityBadge';
 import { UpdateDatePickerButton } from '../../date-picker/UpdateDatePickerButton';
 import { TaskCheckbox } from './TaskCheckbox';
 import { TaskListItemDrawer } from './TaskListItemDrawer';
@@ -45,13 +47,19 @@ export const TaskListItemContent = forwardRef<
           <ItemActions>
             <TaskCheckbox task={task} />
           </ItemActions>
-          <ItemTitle
-            className={cn(
-              task.completed && 'line-through text-muted-foreground'
-            )}
-          >
-            {task.title}
-          </ItemTitle>
+          <div className="flex flex-col gap-1">
+            <ItemTitle
+              className={cn(
+                'font-semibold',
+                task.completed && 'line-through text-muted-foreground'
+              )}
+            >
+              {task.title}
+            </ItemTitle>
+            <ItemDescription>
+              {task.priority && <PriorityBadge priority={task.priority} />}
+            </ItemDescription>
+          </div>
         </div>
         <ItemActions>
           <UpdateDatePickerButton task={task} />
