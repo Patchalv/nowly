@@ -13,7 +13,7 @@ import {
 } from '../../ui/empty';
 
 interface TaskListEmptyProps {
-  currentDate: CreateTaskDrawerProps['defaultScheduledDate'];
+  currentDate?: CreateTaskDrawerProps['defaultScheduledDate'];
 }
 
 export const TaskListEmpty = ({ currentDate }: TaskListEmptyProps) => {

@@ -2,8 +2,8 @@
 
 import { Suspense } from 'react';
 import { FallbackView } from '../../components/loader/FallbackView';
-import { AccountDetailsSection } from '../../components/settings/AccountSection';
-import { CategoriesSection } from '../../components/settings/categories/CategoriesSection';
+import { AccountDetailsSection } from './subcomponents/AccountSection';
+import { CategoriesSection } from './subcomponents/categories/CategoriesSection';
 
 function SettingsViewContent() {
   return (

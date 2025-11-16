@@ -3,37 +3,37 @@
 import * as React from 'react';
 
 import { Category } from '@/src/domain/model/Category';
-import { useMediaQuery } from '@/src/presentation/hooks/useMediaQuery';
-import { SettingsIcon } from 'lucide-react';
-import { TooltipButton } from '../../buttons/TooltipButton';
-import { UpdateCategoryForm } from '../../forms/category/UpdateCategoryForm';
-import { Button } from '../../ui/button';
+import { TooltipButton } from '@/src/presentation/components/buttons/TooltipButton';
+import { UpdateCategoryForm } from '@/src/presentation/components/forms/category/UpdateCategoryForm';
+import { Button } from '@/src/presentation/components/ui/button';
 import {
   Dialog,
   DialogContent,
   DialogHeader,
   DialogTitle,
   DialogTrigger,
-} from '../../ui/dialog';
+} from '@/src/presentation/components/ui/dialog';
 import {
   Drawer,
   DrawerClose,
   DrawerContent,
   DrawerFooter,
+  DrawerHeader,
+  DrawerTitle,
   DrawerTrigger,
-} from '../../ui/drawer';
+} from '@/src/presentation/components/ui/drawer';
+import { useMediaQuery } from '@/src/presentation/hooks/useMediaQuery';
+import { SettingsIcon } from 'lucide-react';
 
 const UPDATE_CATEGORY_TOOLTIP = 'Update category';
-const CANCEL_BUTTON_TEXT = 'Cancel';
 const DIALOG_TITLE = 'Category Details';
+const CANCEL_BUTTON_TEXT = 'Cancel';
 
-interface CategoryListItemDrawerProps {
+interface UpdateCategoryDrawerProps {
   category: Category;
 }
 
-export function CategoryListItemDrawer({
-  category,
-}: CategoryListItemDrawerProps) {
+export function UpdateCategoryDrawer({ category }: UpdateCategoryDrawerProps) {
   const [open, setOpen] = React.useState(false);
   const { isDesktop } = useMediaQuery();
 
@@ -71,9 +71,13 @@ export function CategoryListItemDrawer({
           btnSize="icon"
         />
       </DrawerTrigger>
-      <DrawerContent className="p-4">
+      <DrawerContent>
+        <DrawerHeader className="text-left">
+          <DrawerTitle>{DIALOG_TITLE}</DrawerTitle>
+        </DrawerHeader>
         <UpdateCategoryForm
           category={category}
+          className="px-4"
           onSuccess={() => setOpen(false)}
         />
         <DrawerFooter className="mt-0">

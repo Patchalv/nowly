@@ -1,17 +1,14 @@
 'use client';
 
-import * as React from 'react';
-
-import { useMediaQuery } from '@/src/presentation/hooks/useMediaQuery';
-import { CreateCategoryForm } from '../../forms/category/CreateCategoryForm';
-import { Button } from '../../ui/button';
+import { CreateCategoryForm } from '@/src/presentation/components/forms/category/CreateCategoryForm';
+import { Button } from '@/src/presentation/components/ui/button';
 import {
   Dialog,
   DialogContent,
   DialogHeader,
   DialogTitle,
   DialogTrigger,
-} from '../../ui/dialog';
+} from '@/src/presentation/components/ui/dialog';
 import {
   Drawer,
   DrawerClose,
@@ -20,7 +17,9 @@ import {
   DrawerHeader,
   DrawerTitle,
   DrawerTrigger,
-} from '../../ui/drawer';
+} from '@/src/presentation/components/ui/drawer';
+import { useMediaQuery } from '@/src/presentation/hooks/useMediaQuery';
+import * as React from 'react';
 
 const DIALOG_TITLE = 'Create Category';
 const ADD_CATEGORY_BUTTON_TEXT = 'Add Category';

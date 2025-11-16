@@ -136,6 +136,7 @@ describe('position generation utilities', () => {
         findByUserIdAndDate: vi.fn().mockResolvedValue([]),
         findByUserIdAndDateRange: vi.fn().mockResolvedValue([]),
         findByCategoryId: vi.fn().mockResolvedValue([]),
+        findByUserIdAndFilters: vi.fn().mockResolvedValue([]),
         update: vi.fn(),
         delete: vi.fn(),
       };
@@ -199,6 +200,7 @@ describe('position generation utilities', () => {
         findByUserIdAndDate: vi.fn().mockResolvedValue(existingTasks),
         findByUserIdAndDateRange: vi.fn().mockResolvedValue([]),
         findByCategoryId: vi.fn().mockResolvedValue([]),
+        findByUserIdAndFilters: vi.fn().mockResolvedValue([]),
         update: vi.fn(),
         delete: vi.fn(),
       };
@@ -225,6 +227,7 @@ describe('position generation utilities', () => {
           .mockRejectedValue(new Error('Database error')),
         findByUserIdAndDateRange: vi.fn().mockResolvedValue([]),
         findByCategoryId: vi.fn().mockResolvedValue([]),
+        findByUserIdAndFilters: vi.fn().mockResolvedValue([]),
         update: vi.fn(),
         delete: vi.fn(),
       };
@@ -296,6 +299,7 @@ describe('position generation utilities', () => {
           }),
         findByUserIdAndDateRange: vi.fn().mockResolvedValue([]),
         findByCategoryId: vi.fn().mockResolvedValue([]),
+        findByUserIdAndFilters: vi.fn().mockResolvedValue([]),
         update: vi.fn(),
         delete: vi.fn(),
       };
@@ -367,6 +371,7 @@ describe('position generation utilities', () => {
         findByUserIdAndDate: vi.fn().mockResolvedValue(existingTasks),
         findByUserIdAndDateRange: vi.fn().mockResolvedValue([]),
         findByCategoryId: vi.fn().mockResolvedValue([]),
+        findByUserIdAndFilters: vi.fn().mockResolvedValue([]),
         update: vi.fn(),
         delete: vi.fn(),
       };

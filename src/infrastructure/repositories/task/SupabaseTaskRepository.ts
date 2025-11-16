@@ -1,4 +1,5 @@
 import type { Task } from '@/src/domain/model/Task';
+import { TaskFilters } from '@/src/presentation/hooks/tasks/types';
 import { handleError } from '@/src/shared/errors/handler';
 import { logger } from '@sentry/nextjs';
 import type { SupabaseClient } from '@supabase/supabase-js';
@@ -256,5 +257,58 @@ export class SupabaseTaskRepository implements ITaskRepository {
       logger.error('Failed to delete task', { error });
       throw new Error(`Failed to delete task: ${error.message}`);
     }
+  }
+
+  /**
+   * Find all tasks for a user with a specific filters
+   */
+  async findByUserIdAndFilters(
+    userId: string,
+    filters: TaskFilters,
+    page: number
+  ): Promise<{ tasks: Task[]; total: number }> {
+    const offset = (page - 1) * 50;
+    let query = this.client
+      .from('tasks')
+      .select('*', { count: 'exact' })
+      .eq('user_id', userId);
+
+    // Apply categoryId filter
+    if (filters.categoryId !== null && filters.categoryId !== undefined) {
+      query = query.eq('category_id', filters.categoryId);
+    }
+
+    // Apply showCompleted filter
+    if (filters.showCompleted === 'IsCompleted') {
+      query = query.eq('completed', true);
+    } else if (filters.showCompleted === 'IsNotCompleted') {
+      query = query.eq('completed', false);
+    }
+    // 'All' case: skip filter
+
+    // Apply showScheduled filter
+    if (filters.showScheduled === 'IsScheduled') {
+      query = query.not('scheduled_date', 'is', null);
+    } else if (filters.showScheduled === 'IsNotScheduled') {
+      query = query.is('scheduled_date', null);
+    }
+    // 'All' case: skip filter
+
+    // Apply search filter
+    if (filters.search && filters.search.trim() !== '') {
+      query = query.ilike('title', `%${filters.search}%`);
+    }
+
+    const { data, error, count } = await query
+      .order('position', { ascending: true })
+      .range(offset, offset + 49);
+
+    if (error) {
+      handleError.throw(error);
+    }
+    return {
+      tasks: data ? data.map((row) => this.toDomain(row)) : [],
+      total: count ?? 0,
+    };
   }
 }

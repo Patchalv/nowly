@@ -1,11 +1,11 @@
 'use client';
 
-import { WeekCarousel } from '@/src/presentation/components/week-carousel/WeekCarousel';
+import { WeekCarousel } from '@/src/presentation/pages/daily/subcomponents/week-carousel/WeekCarousel';
 import { formatDateForURL, parseDateFromURL } from '@/src/shared/utils';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { Suspense, useTransition } from 'react';
 import { FallbackView } from '../../components/loader/FallbackView';
-import { TaskList } from '../../components/tasks/task-list/TaskList';
+import { TaskListSection } from './subcomponents/task-list/TaskListSection';
 
 function DailyViewContent() {
   const router = useRouter();
@@ -36,9 +36,7 @@ function DailyViewContent() {
       </section>
 
       {/* Task list */}
-      <section className="p-4">
-        <TaskList date={selectedDate} />
-      </section>
+      <TaskListSection date={selectedDate} />
     </main>
   );
 }
