@@ -15,6 +15,7 @@ export const updateTaskSchema = z.object({
   completed: z.boolean().optional(),
   completedAt: optionalDateSchema,
   scheduledDate: optionalDateSchema,
+  position: z.string().optional(),
 });
 
 export type CreateTaskInput = z.infer<typeof createTaskSchema>;

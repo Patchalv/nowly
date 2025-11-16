@@ -44,6 +44,93 @@ export function generateNextPosition(existingPositions: string[]): string {
 }
 
 /**
+ * Generate a position between two existing positions for drag-and-drop reordering.
+ * Handles edge cases like moving to start or end of the list.
+ *
+ * @param beforePosition - Position string of the task before the target position (empty string for start)
+ * @param afterPosition - Position string of the task after the target position (empty string for end)
+ * @returns New position string between the two positions
+ */
+export function generatePositionBetween(
+  beforePosition: string,
+  afterPosition: string
+): string {
+  // Moving to the start (before first task)
+  if (!beforePosition && afterPosition) {
+    try {
+      const afterRank = LexoRank.parse(afterPosition);
+      const minRank = LexoRank.min();
+
+      // Check if the first task is already at min position
+      // Lexorank cannot generate a position before min, so this is a special case
+      // The caller will need to handle rebalancing
+      if (afterRank.compareTo(minRank) === 0) {
+        // Return a special marker that indicates rebalancing is needed
+        // The caller should detect this and handle it appropriately
+        return 'REBALANCE_NEEDED';
+      }
+
+      // Generate a position between min and the first task
+      return minRank.between(afterRank).toString();
+    } catch {
+      // If parsing fails, return minimum
+      return LexoRank.min().toString();
+    }
+  }
+
+  // Moving to the end (after last task)
+  if (beforePosition && !afterPosition) {
+    try {
+      const beforeRank = LexoRank.parse(beforePosition);
+      return beforeRank.genNext().toString();
+    } catch {
+      // If parsing fails, return minimum
+      return LexoRank.min().toString();
+    }
+  }
+
+  // Moving between two tasks
+  if (beforePosition && afterPosition) {
+    try {
+      const beforeRank = LexoRank.parse(beforePosition);
+      const afterRank = LexoRank.parse(afterPosition);
+      return beforeRank.between(afterRank).toString();
+    } catch {
+      // If parsing fails, return minimum
+      return LexoRank.min().toString();
+    }
+  }
+
+  // Fallback for edge case where both are empty (shouldn't happen)
+  return LexoRank.min().toString();
+}
+
+/**
+ * Rebalance positions for a list of tasks.
+ * Generates evenly-spaced positions for all tasks in their current order.
+ * Used when positions become too dense or when inserting before the minimum position.
+ *
+ * @param taskCount - Number of tasks to generate positions for
+ * @returns Array of position strings, evenly spaced from min to max
+ */
+export function rebalancePositions(taskCount: number): string[] {
+  if (taskCount === 0) return [];
+  if (taskCount === 1) return [LexoRank.min().toString()];
+
+  const positions: string[] = [];
+  let currentRank = LexoRank.min();
+  positions.push(currentRank.toString());
+
+  // Generate evenly-spaced positions
+  for (let i = 1; i < taskCount; i++) {
+    currentRank = currentRank.genNext();
+    positions.push(currentRank.toString());
+  }
+
+  return positions;
+}
+
+/**
  * Generate a position for a new task, scoped per user and date.
  * Fetches existing tasks for the user+date, extracts their positions,
  * and generates the next position to append to the end.
