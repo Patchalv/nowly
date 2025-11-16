@@ -14,7 +14,7 @@ export const updateTaskSchema = z.object({
     .min(1, 'Title is required')
     .max(255, 'Title too long')
     .optional(),
-  description: z.string().optional(),
+  description: z.string().max(2000, 'Description too long').optional(),
   scheduledDate: optionalDateSchema,
   dueDate: optionalDateSchema,
   completed: z.boolean().optional(),

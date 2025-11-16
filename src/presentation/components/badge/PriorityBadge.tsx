@@ -4,12 +4,12 @@ import { FlagIcon } from 'lucide-react';
 
 export const PriorityBadge = ({ priority }: { priority: TaskPriority }) => {
   return (
-    <div className="flex flex-row gap-2 items-center">
+    <span className="flex flex-row gap-2 items-center">
       <FlagIcon
         className="size-4"
         style={{ color: PRIORITY_CONFIG[priority].color }}
       />
       {priority}
-    </div>
+    </span>
   );
 };

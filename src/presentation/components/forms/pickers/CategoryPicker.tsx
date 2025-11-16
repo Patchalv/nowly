@@ -24,6 +24,7 @@ export const CategoryPicker = ({
         tooltip="Category"
         btnVariant="ghost"
         btnSize="icon"
+        disabled
         btnContent={<TagIcon className="size-4" />}
       />
     );
