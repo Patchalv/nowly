@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import * as Sentry from '@sentry/nextjs';
 import { toast } from 'sonner';
 import type { AppError } from './app-errors';
@@ -9,20 +10,21 @@ import { parseSupabaseError } from './parser';
 function logToSentry(error: AppError) {
   if (process.env.NODE_ENV === 'development') {
     console.error('[Error]', { error: error });
-  }
-  Sentry.captureException(error.originalError || new Error(error.message), {
-    level: 'error',
-    tags: {
-      error_code: error.code,
-    },
-    contexts: {
-      error_details: {
-        code: error.code,
-        message: error.message,
-        ...error.context,
+  } else {
+    Sentry.captureException(error.originalError || new Error(error.message), {
+      level: 'error',
+      tags: {
+        error_code: error.code,
       },
-    },
-  });
+      contexts: {
+        error_details: {
+          code: error.code,
+          message: error.message,
+          ...error.context,
+        },
+      },
+    });
+  }
 }
 
 /**
