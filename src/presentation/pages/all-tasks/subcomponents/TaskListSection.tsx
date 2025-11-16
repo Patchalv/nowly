@@ -1,9 +1,9 @@
 import { Task } from '@/src/domain/model/Task';
+import { InfiniteList } from '@/src/presentation/components/lists/InfiniteList';
 import { TaskListItem } from '@/src/presentation/components/lists/task-list/TaskListItem';
 import { TaskFilters } from '@/src/presentation/hooks/tasks/types';
 import { useTasks } from '@/src/presentation/hooks/tasks/useTasks';
 import { useMemo } from 'react';
-import { InfiniteList } from './InfiniteList';
 
 interface TaskListSectionProps {
   filters: TaskFilters;

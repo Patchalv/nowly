@@ -1,7 +1,7 @@
 'use client';
 
 import { Skeleton } from '@/src/presentation/components/ui/skeleton';
-import React, { useCallback, useRef } from 'react';
+import React, { useCallback, useEffect, useRef } from 'react';
 
 interface InfiniteListProps<T> {
   data: T[];
@@ -27,6 +27,15 @@ export const InfiniteList = <T,>({
   fetchNextPage,
 }: InfiniteListProps<T>) => {
   const observer = useRef<IntersectionObserver | null>(null);
+
+  useEffect(() => {
+    return () => {
+      if (observer.current) {
+        observer.current.disconnect();
+        observer.current = null;
+      }
+    };
+  }, [isLoading]);
 
   const lastElementRef = useCallback(
     (node: HTMLDivElement) => {
