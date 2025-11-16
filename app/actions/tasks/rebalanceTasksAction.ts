@@ -37,6 +37,11 @@ export async function rebalanceTasksAction(
     // Call stored procedure to atomically update all task positions
     // Note: Using type assertion due to Supabase RPC type inference limitations
     // for manually created stored procedures
+    //
+    // The stored procedure implements all-or-nothing behavior:
+    // - If any validation or authorization check fails, an exception is raised
+    // - If successful, returns array of updated tasks (all with success=true)
+    // - Transaction automatically rolls back on exceptions
     type RebalanceResult = Array<{
       task_id: string;
       success: boolean;
@@ -66,16 +71,14 @@ export async function rebalanceTasksAction(
       };
     }
 
-    // Check if any individual task failed
-    const failedTask = data?.find((row) => !row.success);
-    if (failedTask) {
-      logger.error('Task rebalance failed', {
-        taskId: failedTask.task_id,
-        error: failedTask.error_message,
-      });
+    // If we reach here, all tasks were successfully updated
+    // (stored procedure raises exceptions on any failure, so data only exists on success)
+    // All rows in data will have success=true, but we verify data exists as a sanity check
+    if (!data || data.length === 0) {
+      logger.error('Rebalance returned no data', { updates });
       return {
         success: false,
-        error: failedTask.error_message || 'Task not found',
+        error: 'No tasks were updated',
       };
     }
 

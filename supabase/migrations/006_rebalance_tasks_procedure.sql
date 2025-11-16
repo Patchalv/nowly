@@ -33,14 +33,12 @@ DECLARE
 BEGIN
     -- Validate that p_updates is an array
     IF jsonb_typeof(p_updates) != 'array' THEN
-        RETURN QUERY SELECT NULL::UUID, FALSE, 'Invalid updates format: expected array';
-        RETURN;
+        RAISE EXCEPTION 'Invalid updates format: expected array';
     END IF;
 
     -- Validate that array is not empty
     IF jsonb_array_length(p_updates) = 0 THEN
-        RETURN QUERY SELECT NULL::UUID, FALSE, 'No updates provided';
-        RETURN;
+        RAISE EXCEPTION 'No updates provided';
     END IF;
 
     -- Loop through updates to verify ownership and lock rows
@@ -52,11 +50,7 @@ BEGIN
 
         -- Validate required fields exist
         IF task_uuid IS NULL OR new_pos IS NULL THEN
-            RETURN QUERY SELECT 
-                task_uuid, 
-                FALSE, 
-                'Missing taskId or newPosition in update';
-            RETURN;
+            RAISE EXCEPTION 'Missing taskId or newPosition in update';
         END IF;
 
         -- Lock and verify task ownership
@@ -67,20 +61,12 @@ BEGIN
 
         -- Check if task exists
         IF NOT FOUND THEN
-            RETURN QUERY SELECT 
-                task_uuid, 
-                FALSE, 
-                'Task not found';
-            RETURN;
+            RAISE EXCEPTION 'Task not found: %', task_uuid;
         END IF;
 
         -- Check ownership
         IF task_user_id != p_user_id THEN
-            RETURN QUERY SELECT 
-                task_uuid, 
-                FALSE, 
-                'Unauthorized: task does not belong to user';
-            RETURN;
+            RAISE EXCEPTION 'Unauthorized: task % does not belong to user', task_uuid;
         END IF;
     END LOOP;
 
@@ -100,6 +86,7 @@ BEGIN
     END LOOP;
 
     -- Transaction will commit automatically if no errors
+    -- If any exception was raised above, transaction will roll back automatically
 END;
 $$;
 
@@ -116,9 +103,14 @@ COMMENT ON FUNCTION rebalance_tasks(UUID, JSONB) IS
     
     Returns:
     - Table with columns: task_id, success, error_message
-    - Each row represents the result of updating one task
-    - If any authorization check fails, transaction is rolled back
-    - Uses SELECT ... FOR UPDATE to prevent concurrent modification conflicts
+    - Each row represents a successfully updated task (all rows have success=true)
+    - Only returned if ALL tasks are validated and updated successfully
+    - If any validation or authorization check fails, an exception is raised and transaction rolls back
+    
+    Behavior:
+    - All-or-nothing: Either all tasks are updated or none are (atomic transaction)
+    - Validates all tasks before updating any (prevents partial updates)
+    - Uses SELECT ... FOR UPDATE to lock rows and prevent concurrent modification conflicts
     
     Security:
     - SECURITY DEFINER bypasses RLS for performance
@@ -126,11 +118,9 @@ COMMENT ON FUNCTION rebalance_tasks(UUID, JSONB) IS
     - All tasks must belong to p_user_id or transaction fails
     
     Error Handling:
-    - Returns error row on invalid input
-    - Returns error row on task not found
-    - Returns error row on unauthorized access
-    - PostgreSQL automatically rolls back on errors
-    - Serialization conflicts (SQLSTATE 40001) are surfaced to caller';
+    - Raises exceptions on invalid input, missing tasks, or unauthorized access
+    - PostgreSQL automatically rolls back transaction on exceptions
+    - Serialization conflicts (SQLSTATE 40001) are surfaced to caller as RPC errors';
 
 -- ============================================================================
 -- VERIFICATION
