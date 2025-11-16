@@ -3,7 +3,7 @@
 import { Suspense, useState } from 'react';
 import { FallbackView } from '../../components/loader/FallbackView';
 import { TaskFilters } from '../../hooks/tasks/types';
-import { CategoryFilters } from './subcomponents/CategoryFilters';
+import { Filters } from './subcomponents/Filters';
 import { TaskListSection } from './subcomponents/TaskListSection';
 
 function AllTasksViewContent() {
@@ -14,20 +14,10 @@ function AllTasksViewContent() {
     search: '',
   });
 
-  const onCategorySelect = (categoryId: string | null) => {
-    setFilters({
-      ...filters,
-      categoryId: categoryId,
-    });
-  };
-
   return (
     <main className="flex flex-col w-full h-full p-4 gap-8">
       <h1 className="text-2xl font-bold text-center">All Tasks</h1>
-      <CategoryFilters
-        selectedCategoryId={filters.categoryId}
-        onCategorySelect={onCategorySelect}
-      />
+      <Filters filters={filters} setFilters={setFilters} />
       <TaskListSection filters={filters} />
     </main>
   );
