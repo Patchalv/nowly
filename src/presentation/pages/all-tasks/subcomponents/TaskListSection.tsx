@@ -1,6 +1,6 @@
 import { Task } from '@/src/domain/model/Task';
 import { InfiniteList } from '@/src/presentation/components/lists/InfiniteList';
-import { TaskListItem } from '@/src/presentation/components/lists/task-list/TaskListItem';
+import { TaskListItemContent } from '@/src/presentation/components/lists/task-list/TaskListItem';
 import { TaskFilters } from '@/src/presentation/hooks/tasks/types';
 import { useTasks } from '@/src/presentation/hooks/tasks/useTasks';
 import { useMemo } from 'react';
@@ -25,7 +25,7 @@ export const TaskListSection = ({ filters }: TaskListSectionProps) => {
   }, [data]);
 
   const renderTaskListItem = (task: Task) => {
-    return <TaskListItem key={task.id} task={task} />;
+    return <TaskListItemContent key={task.id} task={task} />;
   };
 
   return (

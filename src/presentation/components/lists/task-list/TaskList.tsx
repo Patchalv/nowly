@@ -25,7 +25,7 @@ import {
 } from '@dnd-kit/sortable';
 import { useState } from 'react';
 import { TaskListEmpty } from './TaskListEmpty';
-import { TaskListItem } from './TaskListItem';
+import { SortableTaskListItem, TaskListItemContent } from './TaskListItem';
 
 interface TaskListProps {
   tasks: Task[];
@@ -170,7 +170,7 @@ export const TaskList = ({ tasks, isLoading }: TaskListProps) => {
       >
         <ItemGroup className="flex flex-col gap-3 overflow-y-auto">
           {sortedTasks.map((task) => (
-            <TaskListItem key={task.id} task={task} />
+            <SortableTaskListItem key={task.id} task={task} />
           ))}
         </ItemGroup>
       </SortableContext>
@@ -178,7 +178,7 @@ export const TaskList = ({ tasks, isLoading }: TaskListProps) => {
       <DragOverlay>
         {activeTask ? (
           <div className="opacity-80">
-            <TaskListItem task={activeTask} />
+            <TaskListItemContent task={activeTask} />
           </div>
         ) : null}
       </DragOverlay>
