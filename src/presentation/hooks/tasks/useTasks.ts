@@ -660,22 +660,9 @@ export function useReorderTask(): UseMutationResult<
       // Show error toast with centralized error handling
       handleError.toast(error, 'Failed to reorder task');
     },
-    onSuccess: (_data, _variables, context) => {
-      // Invalidate affected week queries to refetch fresh data
-      const previousQueries = context?.previousQueries;
-      if (previousQueries && previousQueries.size > 0) {
-        previousQueries.forEach((_previousData, queryKeyStr) => {
-          const queryKey = JSON.parse(queryKeyStr) as readonly [
-            'tasks',
-            'week',
-            string,
-          ];
-          queryClient.invalidateQueries({ queryKey });
-        });
-      } else {
-        // Fallback: invalidate all if no context
-        queryClient.invalidateQueries({ queryKey: queryKeys.tasks.all });
-      }
+    onSuccess: () => {
+      // No invalidation needed - optimistic update is already correct
+      // Cache will naturally expire based on staleTime configuration
     },
   });
 }
