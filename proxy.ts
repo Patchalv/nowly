@@ -75,6 +75,16 @@ export async function proxy(request: NextRequest) {
   // Get current pathname
   const { pathname } = request.nextUrl;
 
+  // Skip middleware for static assets including manifest.json
+  if (
+    pathname === '/manifest.json' ||
+    pathname.startsWith('/_next/') ||
+    pathname.startsWith('/favicon.ico') ||
+    /\.(svg|png|jpg|jpeg|gif|webp|json)$/.test(pathname)
+  ) {
+    return response;
+  }
+
   // Handle root path redirect
   if (pathname === ROUTES.HOME) {
     if (user) {
@@ -111,8 +121,9 @@ export const config = {
      * - _next/static (static files)
      * - _next/image (image optimization files)
      * - favicon.ico (favicon file)
-     * - public folder
+     * - manifest.json (handled by route handler)
+     * - public folder assets
      */
-    '/((?!_next/static|_next/image|favicon.ico|.*\\.(?:svg|png|jpg|jpeg|gif|webp)$).*)',
+    '/((?!_next/static|_next/image|favicon.ico|manifest.json|.*\\.(?:svg|png|jpg|jpeg|gif|webp)$).*)',
   ],
 };

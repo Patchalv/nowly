@@ -48,6 +48,15 @@ export async function rebalanceTasksAction(
       error_message: string | null;
     }>;
 
+    logger.info('Calling rebalance_tasks RPC', {
+      userId: user.id,
+      updateCount: updates.length,
+      updates: updates.map((u) => ({
+        taskId: u.taskId,
+        newPosition: u.newPosition,
+      })),
+    });
+
     // @ts-expect-error - Supabase RPC types don't recognize manually created stored procedures
     const { data, error } = (await supabase.rpc('rebalance_tasks', {
       p_user_id: user.id,
@@ -55,7 +64,13 @@ export async function rebalanceTasksAction(
     })) as { data: RebalanceResult | null; error: any };
 
     if (error) {
-      logger.error('RPC rebalance_tasks failed', { error, updates });
+      logger.error('RPC rebalance_tasks failed', {
+        error,
+        errorCode: error.code,
+        errorMessage: error.message,
+        errorDetails: error.details,
+        updates,
+      });
 
       // Check for serialization conflict
       if (error.code === '40001') {
@@ -65,9 +80,17 @@ export async function rebalanceTasksAction(
         };
       }
 
+      // Check for invalid format errors
+      if (error.message?.includes('Invalid updates format')) {
+        return {
+          success: false,
+          error: 'Invalid task data format',
+        };
+      }
+
       return {
         success: false,
-        error: error.message || 'Failed to rebalance tasks',
+        error: error.message || error.details || 'Failed to rebalance tasks',
       };
     }
 

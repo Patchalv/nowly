@@ -9,7 +9,12 @@ import { parseSupabaseError } from './parser';
  */
 function logToSentry(error: AppError) {
   if (process.env.NODE_ENV === 'development') {
-    console.error('[Error]', { error: error });
+    console.error('[Error]', {
+      code: error.code,
+      message: error.message,
+      originalError: error.originalError,
+      context: error.context,
+    });
   } else {
     Sentry.captureException(error.originalError || new Error(error.message), {
       level: 'error',

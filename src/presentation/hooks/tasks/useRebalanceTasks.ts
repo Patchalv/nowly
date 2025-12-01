@@ -46,11 +46,25 @@ export function useRebalanceTasks(): UseMutationResult<
 
   return useMutation({
     mutationFn: async ({ updates }: RebalanceTasksInput) => {
-      const response = await rebalanceTasksAction(updates);
-      if (!response.success) {
-        throw new Error(response.error || 'Failed to rebalance tasks');
+      try {
+        if (!updates || updates.length === 0) {
+          throw new Error('No updates provided for rebalancing');
+        }
+
+        const response = await rebalanceTasksAction(updates);
+
+        if (!response.success) {
+          const errorMessage = response.error || 'Failed to rebalance tasks';
+          throw new Error(errorMessage);
+        }
+
+        return response;
+      } catch (error) {
+        // Re-throw with additional context
+        const message =
+          error instanceof Error ? error.message : 'Unknown rebalancing error';
+        throw new Error(`Rebalance failed: ${message}`);
       }
-      return response;
     },
     onMutate: async ({ updates }) => {
       // Cancel outgoing refetches
@@ -121,7 +135,17 @@ export function useRebalanceTasks(): UseMutationResult<
       }
 
       // Show error toast with centralized error handling
-      handleError.toast(error, 'Failed to rebalance tasks');
+      try {
+        handleError.toast(error, 'Failed to rebalance tasks');
+      } catch (toastError) {
+        // Fallback if toast fails
+        console.error('[Rebalance Error]', {
+          originalError: error,
+          toastError: toastError,
+        });
+        // Try showing a simple toast without error handling
+        toast.error('Failed to reorder tasks. Please try again.');
+      }
     },
     onSuccess: (_data, _variables, context) => {
       // Invalidate affected week queries to refetch fresh data
