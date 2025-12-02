@@ -134,18 +134,7 @@ export function useRebalanceTasks(): UseMutationResult<
         });
       }
 
-      // Show error toast with centralized error handling
-      try {
-        handleError.toast(error, 'Failed to rebalance tasks');
-      } catch (toastError) {
-        // Fallback if toast fails
-        console.error('[Rebalance Error]', {
-          originalError: error,
-          toastError: toastError,
-        });
-        // Try showing a simple toast without error handling
-        toast.error('Failed to reorder tasks. Please try again.');
-      }
+      handleError.toast(error, 'Failed to rebalance tasks');
     },
     onSuccess: () => {
       // No invalidation needed - optimistic update is already correct

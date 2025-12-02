@@ -77,9 +77,8 @@ export async function proxy(request: NextRequest) {
 
   // Skip middleware for static assets including manifest.json
   if (
-    pathname === '/manifest.json' ||
     pathname.startsWith('/_next/') ||
-    pathname.startsWith('/favicon.ico') ||
+    pathname === '/favicon.ico' ||
     /\.(svg|png|jpg|jpeg|gif|webp|json)$/.test(pathname)
   ) {
     return response;
