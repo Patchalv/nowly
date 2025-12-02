@@ -1,5 +1,5 @@
 import type { ITaskRepository } from '@/src/infrastructure/repositories/task/ITaskRepository';
-import { logger } from '@sentry/nextjs';
+import * as Sentry from '@sentry/nextjs';
 import { RolloverTasksResponse } from './types';
 
 export async function rolloverTasks(
@@ -8,6 +8,7 @@ export async function rolloverTasks(
   newDate: Date,
   repository: ITaskRepository
 ): Promise<RolloverTasksResponse> {
+  const { logger } = Sentry;
   try {
     if (taskIds.length === 0) {
       logger.info('No tasks to rollover', { userId });
@@ -27,9 +28,10 @@ export async function rolloverTasks(
     const tasks = await Promise.all(taskValidationPromises);
 
     // Check if any task doesn't exist or doesn't belong to user
-    const invalidTasks = tasks.filter(
-      (task) => !task || task.userId !== userId
-    );
+    const invalidTasks = tasks.filter((task) => {
+      if (!task) return true;
+      return task.userId !== userId;
+    });
 
     if (invalidTasks.length > 0) {
       logger.error('Attempted to rollover tasks not belonging to user', {

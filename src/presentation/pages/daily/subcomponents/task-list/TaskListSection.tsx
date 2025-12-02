@@ -1,10 +1,10 @@
 'use client';
 
+import { CreateTaskDrawer } from '@/src/presentation/components/dialog/create-task-drawer/CreateTaskDrawer';
 import { TaskList } from '@/src/presentation/components/lists/task-list/TaskList';
+import { OverdueTasksBanner } from '@/src/presentation/components/overdue/OverdueTasksBanner';
 import { useTasksByDate } from '@/src/presentation/hooks/tasks/useTasks';
 import { isSameDay } from 'date-fns';
-import { OverdueTasksBanner } from '../../../../components/overdue/OverdueTasksBanner';
-import { CreateTaskDrawer } from '../../../../components/dialog/create-task-drawer/CreateTaskDrawer';
 
 interface TaskListSectionProps {
   date: Date;

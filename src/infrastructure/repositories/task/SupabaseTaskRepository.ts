@@ -346,15 +346,15 @@ export class SupabaseTaskRepository implements ITaskRepository {
     taskIds: string[],
     newDate: Date
   ): Promise<void> {
+    if (taskIds.length === 0) {
+      logger.warn('No task IDs provided for bulk update');
+      return;
+    }
+
     const dateStr = dateToDatabase(newDate);
     if (!dateStr) {
       logger.error('Invalid date provided for bulk update', { newDate });
       throw new Error('Invalid date provided for bulk update');
-    }
-
-    if (taskIds.length === 0) {
-      logger.warn('No task IDs provided for bulk update');
-      return;
     }
 
     const { error } = await this.client

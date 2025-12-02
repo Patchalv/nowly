@@ -3,10 +3,11 @@
 import { findOverdueTasks } from '@/src/application/tasks/findOverdueTasks.usecase';
 import { SupabaseTaskRepository } from '@/src/infrastructure/repositories/task/SupabaseTaskRepository';
 import { createClient } from '@/src/infrastructure/supabase/server';
-import { logger } from '@sentry/nextjs';
+import * as Sentry from '@sentry/nextjs';
 
 export async function getOverdueTasksCountAction() {
   const supabase = await createClient();
+  const { logger } = Sentry;
 
   // Get authenticated user
   const {

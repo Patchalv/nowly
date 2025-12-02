@@ -1,5 +1,5 @@
 import type { ITaskRepository } from '@/src/infrastructure/repositories/task/ITaskRepository';
-import { logger } from '@sentry/nextjs';
+import * as Sentry from '@sentry/nextjs';
 import { ListTasksResponse } from './types';
 
 export async function findOverdueTasks(
@@ -7,6 +7,7 @@ export async function findOverdueTasks(
   beforeDate: Date,
   repository: ITaskRepository
 ): Promise<ListTasksResponse> {
+  const { logger } = Sentry;
   try {
     logger.info('Finding overdue tasks', { userId, beforeDate });
     const tasks = await repository.findOverdueTasks(userId, beforeDate);
