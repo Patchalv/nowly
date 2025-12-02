@@ -1,4 +1,9 @@
 import { z } from 'zod';
+import {
+  taskPrioritySchema,
+  dailySectionSchema,
+  bonusSectionSchema,
+} from '../task/task.schema';
 
 /**
  * Schema for recurrence frequency enum
@@ -11,21 +16,6 @@ export const recurringFrequencySchema = z.enum([
   'weekdays',
   'weekends',
 ]);
-
-/**
- * Schema for task priority
- */
-const taskPrioritySchema = z.enum(['high', 'medium', 'low']);
-
-/**
- * Schema for daily section
- */
-const dailySectionSchema = z.enum(['morning', 'afternoon', 'evening']);
-
-/**
- * Schema for bonus section
- */
-const bonusSectionSchema = z.enum(['essential', 'bonus']);
 
 /**
  * Schema for creating a recurring task item
@@ -131,11 +121,13 @@ export const updateRecurringTaskItemSchema = z.object({
 
 /**
  * Inferred types from schemas
+ * These are the single source of truth for input types.
+ * Use these types in use cases and application layer.
  */
 export type RecurringFrequencyInput = z.infer<typeof recurringFrequencySchema>;
-export type CreateRecurringTaskItemSchemaInput = z.infer<
+export type CreateRecurringTaskItemInput = z.infer<
   typeof createRecurringTaskItemSchema
 >;
-export type UpdateRecurringTaskItemSchemaInput = z.infer<
+export type UpdateRecurringTaskItemInput = z.infer<
   typeof updateRecurringTaskItemSchema
 >;

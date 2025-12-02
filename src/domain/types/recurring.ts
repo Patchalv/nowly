@@ -48,38 +48,11 @@ export interface RecurringTaskItem {
 }
 
 /**
- * Input for creating a new recurring task item
+ * Input types for creating and updating recurring task items
+ *
+ * These types are inferred from Zod schemas to ensure type-schema alignment.
+ * Import them from the validation layer:
+ *
+ * @example
+ * import type { CreateRecurringTaskItemInput, UpdateRecurringTaskItemInput } from '@/src/domain/validation/recurring/recurringTaskItem.schema';
  */
-export interface CreateRecurringTaskItemInput {
-  title: string;
-  description?: string;
-  categoryId?: string;
-  priority?: TaskPriority;
-  dailySection?: DailySection;
-  bonusSection?: BonusSection;
-  frequency: RecurringFrequency;
-  startDate: Date;
-  endDate?: Date;
-  dueOffsetDays?: number;
-
-  // Frequency-specific configuration
-  weeklyDays?: number[]; // 0-6, Sunday = 0 (for weekly frequency)
-  monthlyDay?: number; // 1-31 (for monthly frequency)
-  yearlyMonth?: number; // 1-12 (for yearly frequency)
-  yearlyDay?: number; // 1-31 (for yearly frequency)
-}
-
-/**
- * Input for updating an existing recurring task item
- * Note: frequency and rrule cannot be changed after creation
- */
-export interface UpdateRecurringTaskItemInput {
-  title?: string;
-  description?: string | null;
-  categoryId?: string | null;
-  priority?: TaskPriority;
-  dailySection?: DailySection | null;
-  bonusSection?: BonusSection | null;
-  endDate?: Date | null;
-  isActive?: boolean;
-}
