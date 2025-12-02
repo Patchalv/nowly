@@ -80,6 +80,9 @@ CREATE INDEX IF NOT EXISTS idx_recurring_items_user_active ON recurring_task_ite
 CREATE INDEX IF NOT EXISTS idx_recurring_items_generation ON recurring_task_items(user_id, last_generated_date)
     WHERE is_active = TRUE;
 
+-- Index foreign key for category filtering and FK operations
+CREATE INDEX IF NOT EXISTS idx_recurring_items_category_id ON recurring_task_items(category_id);
+
 -- ============================================================================
 -- ROW LEVEL SECURITY
 -- ============================================================================
