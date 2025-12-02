@@ -40,99 +40,125 @@ After researching common patterns (Microsoft Planner, Asana, ClickUp), the PRD's
 
 ```sql
 -- Migration: 007_recurring_task_items.sql
+-- Note: This migration is idempotent and can be safely re-run
 
--- Create frequency enum
-CREATE TYPE recurring_frequency AS ENUM (
-  'daily',
-  'weekly',
-  'monthly',
-  'yearly',
-  'weekdays',
-  'weekends'
-);
+-- Create frequency enum (idempotent: catches duplicate_object exception)
+DO $$ BEGIN
+    CREATE TYPE recurring_frequency AS ENUM (
+        'daily',
+        'weekly',
+        'monthly',
+        'yearly',
+        'weekdays',
+        'weekends'
+    );
+EXCEPTION
+    WHEN duplicate_object THEN NULL;
+END $$;
 
 -- Create recurring_task_items table
-CREATE TABLE recurring_task_items (
-  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  user_id UUID NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE,
+CREATE TABLE IF NOT EXISTS recurring_task_items (
+    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    user_id UUID NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE,
 
-  -- Task template fields (copied to generated tasks)
-  title TEXT NOT NULL CHECK (char_length(title) > 0),
-  description TEXT,
-  category_id UUID REFERENCES categories(id) ON DELETE SET NULL,
-  priority task_priority DEFAULT 'medium',
-  daily_section daily_section,
-  bonus_section bonus_section,
+    -- Task template fields (copied to generated tasks)
+    title TEXT NOT NULL CHECK (title <> ''),
+    description TEXT,
+    category_id UUID REFERENCES categories(id) ON DELETE SET NULL,
+    priority priority_level DEFAULT 'medium',
+    daily_section daily_section_type,
+    bonus_section bonus_section_type,
 
-  -- Recurrence configuration
-  frequency recurring_frequency NOT NULL,
-  rrule_string TEXT NOT NULL,  -- iCal RRULE format
+    -- Recurrence configuration
+    frequency recurring_frequency NOT NULL,
+    rrule_string TEXT NOT NULL,  -- iCal RRULE format for flexible recurrence patterns
 
-  -- Schedule boundaries
-  start_date DATE NOT NULL,
-  end_date DATE,  -- NULL = indefinite
-  due_offset_days INTEGER DEFAULT 0,  -- Days after scheduled_date for due_date
+    -- Schedule boundaries
+    start_date DATE NOT NULL,
+    end_date DATE,  -- NULL = indefinite recurrence
+    due_offset_days INTEGER DEFAULT 0 CHECK (due_offset_days >= 0),  -- Days after scheduled_date for due_date
 
-  -- Generation tracking
-  last_generated_date DATE,  -- Last date we generated tasks up to
-  tasks_to_generate_ahead INTEGER DEFAULT 15,  -- Max tasks to generate ahead
+    -- Generation tracking
+    last_generated_date DATE,  -- Last date tasks were generated up to
+    tasks_to_generate_ahead INTEGER DEFAULT 15 CHECK (tasks_to_generate_ahead > 0),  -- Max tasks to generate ahead
 
-  -- Status
-  is_active BOOLEAN DEFAULT true,
+    -- Status
+    is_active BOOLEAN DEFAULT TRUE NOT NULL,
 
-  -- Timestamps
-  created_at TIMESTAMPTZ DEFAULT NOW(),
-  updated_at TIMESTAMPTZ DEFAULT NOW()
+    -- Timestamps
+    created_at TIMESTAMPTZ DEFAULT NOW() NOT NULL,
+    updated_at TIMESTAMPTZ DEFAULT NOW() NOT NULL,
+
+    -- Ensure end_date is not before start_date
+    CONSTRAINT end_after_start CHECK (
+        end_date IS NULL OR end_date >= start_date
+    )
 );
 
 -- Indexes
-CREATE INDEX idx_recurring_items_user_id ON recurring_task_items(user_id);
-CREATE INDEX idx_recurring_items_user_active ON recurring_task_items(user_id, is_active);
-CREATE INDEX idx_recurring_items_generation ON recurring_task_items(user_id, last_generated_date)
-  WHERE is_active = true;
+CREATE INDEX IF NOT EXISTS idx_recurring_items_user_id ON recurring_task_items(user_id);
+CREATE INDEX IF NOT EXISTS idx_recurring_items_user_active ON recurring_task_items(user_id, is_active);
+CREATE INDEX IF NOT EXISTS idx_recurring_items_generation ON recurring_task_items(user_id, last_generated_date)
+    WHERE is_active = TRUE;
+CREATE INDEX IF NOT EXISTS idx_recurring_items_category_id ON recurring_task_items(category_id);
 
 -- RLS Policies
 ALTER TABLE recurring_task_items ENABLE ROW LEVEL SECURITY;
 
+DROP POLICY IF EXISTS "Users can view own recurring items" ON recurring_task_items;
 CREATE POLICY "Users can view own recurring items"
-  ON recurring_task_items FOR SELECT
-  USING (auth.uid() = user_id);
+    ON recurring_task_items
+    FOR SELECT
+    USING (auth.uid() = user_id);
 
-CREATE POLICY "Users can create own recurring items"
-  ON recurring_task_items FOR INSERT
-  WITH CHECK (auth.uid() = user_id);
+DROP POLICY IF EXISTS "Users can insert own recurring items" ON recurring_task_items;
+CREATE POLICY "Users can insert own recurring items"
+    ON recurring_task_items
+    FOR INSERT
+    WITH CHECK (auth.uid() = user_id);
 
+DROP POLICY IF EXISTS "Users can update own recurring items" ON recurring_task_items;
 CREATE POLICY "Users can update own recurring items"
-  ON recurring_task_items FOR UPDATE
-  USING (auth.uid() = user_id);
+    ON recurring_task_items
+    FOR UPDATE
+    USING (auth.uid() = user_id)
+    WITH CHECK (auth.uid() = user_id);
 
+DROP POLICY IF EXISTS "Users can delete own recurring items" ON recurring_task_items;
 CREATE POLICY "Users can delete own recurring items"
-  ON recurring_task_items FOR DELETE
-  USING (auth.uid() = user_id);
+    ON recurring_task_items
+    FOR DELETE
+    USING (auth.uid() = user_id);
 
 -- Updated_at trigger
-CREATE TRIGGER set_recurring_items_updated_at
-  BEFORE UPDATE ON recurring_task_items
-  FOR EACH ROW
-  EXECUTE FUNCTION update_updated_at_column();
+DROP TRIGGER IF EXISTS update_recurring_task_items_updated_at ON recurring_task_items;
+CREATE TRIGGER update_recurring_task_items_updated_at
+    BEFORE UPDATE ON recurring_task_items
+    FOR EACH ROW
+    EXECUTE FUNCTION update_updated_at_column();
 ```
 
 ### 2.2 Modify `tasks` Table
 
 ```sql
 -- Migration: 008_tasks_recurring_link.sql
+-- Note: This migration is idempotent and can be safely re-run
+-- Note: The recurring_item_id column was already added in 001_initial_schema.sql,
+--       but the foreign key constraint couldn't be added until recurring_task_items table exists
 
--- Add recurring item reference to tasks
+-- Add foreign key constraint to existing recurring_item_id column
+-- Idempotent: Drop constraint if exists before creating
+ALTER TABLE tasks DROP CONSTRAINT IF EXISTS fk_tasks_recurring_item;
 ALTER TABLE tasks
-ADD COLUMN recurring_item_id UUID REFERENCES recurring_task_items(id) ON DELETE SET NULL;
-
--- Index for finding tasks by recurring item
-CREATE INDEX idx_tasks_recurring_item ON tasks(recurring_item_id)
-  WHERE recurring_item_id IS NOT NULL;
+ADD CONSTRAINT fk_tasks_recurring_item
+    FOREIGN KEY (recurring_item_id)
+    REFERENCES recurring_task_items(id)
+    ON DELETE SET NULL;
 
 -- Index for finding incomplete tasks by recurring item (for cleanup on delete)
-CREATE INDEX idx_tasks_recurring_incomplete ON tasks(recurring_item_id, is_completed)
-  WHERE recurring_item_id IS NOT NULL AND is_completed = false;
+CREATE INDEX IF NOT EXISTS idx_tasks_recurring_incomplete
+    ON tasks(recurring_item_id, completed)
+    WHERE recurring_item_id IS NOT NULL AND completed = FALSE;
 ```
 
 ### 2.3 Generation Counts per Frequency (from PRD)
@@ -1046,7 +1072,7 @@ export const queryKeys = {
 
 ### 8.1 Component Tree
 
-```
+```text
 /recurring (page)
 ├── RecurringTaskItemsPage
 │   ├── CreateRecurringTaskButton
@@ -1743,7 +1769,7 @@ test.describe('Recurring Tasks', () => {
 
 ### New Files
 
-```
+```text
 supabase/migrations/
 ├── 007_recurring_task_items.sql
 └── 008_tasks_recurring_link.sql
@@ -1811,7 +1837,7 @@ tests/
 
 ### Modified Files
 
-```
+```text
 src/config/query-keys.ts         # Add recurringItems keys
 src/infrastructure/repositories/SupabaseTaskRepository.ts  # Add batch methods
 src/application/tasks/completeTask.usecase.ts  # Add next generation
