@@ -83,7 +83,7 @@ export interface RecurringTaskItemRow {
   title: string;
   description: string | null;
   category_id: string | null;
-  priority: TaskPriority;
+  priority: TaskPriority | null; // Nullable to match database schema (DEFAULT 'medium' but no NOT NULL)
   daily_section: DailySection | null;
   bonus_section: BonusSection | null;
 
