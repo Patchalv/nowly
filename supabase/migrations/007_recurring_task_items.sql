@@ -36,7 +36,7 @@ CREATE TABLE IF NOT EXISTS recurring_task_items (
     title TEXT NOT NULL CHECK (title <> ''),
     description TEXT,
     category_id UUID REFERENCES categories(id) ON DELETE SET NULL,
-    priority priority_level DEFAULT 'medium',
+    priority priority_level DEFAULT 'medium' NOT NULL,
     daily_section daily_section_type,
     bonus_section bonus_section_type,
     
