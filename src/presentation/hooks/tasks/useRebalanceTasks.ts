@@ -46,11 +46,25 @@ export function useRebalanceTasks(): UseMutationResult<
 
   return useMutation({
     mutationFn: async ({ updates }: RebalanceTasksInput) => {
-      const response = await rebalanceTasksAction(updates);
-      if (!response.success) {
-        throw new Error(response.error || 'Failed to rebalance tasks');
+      try {
+        if (!updates || updates.length === 0) {
+          throw new Error('No updates provided for rebalancing');
+        }
+
+        const response = await rebalanceTasksAction(updates);
+
+        if (!response.success) {
+          const errorMessage = response.error || 'Failed to rebalance tasks';
+          throw new Error(errorMessage);
+        }
+
+        return response;
+      } catch (error) {
+        // Re-throw with additional context
+        const message =
+          error instanceof Error ? error.message : 'Unknown rebalancing error';
+        throw new Error(`Rebalance failed: ${message}`);
       }
-      return response;
     },
     onMutate: async ({ updates }) => {
       // Cancel outgoing refetches
@@ -120,25 +134,11 @@ export function useRebalanceTasks(): UseMutationResult<
         });
       }
 
-      // Show error toast with centralized error handling
       handleError.toast(error, 'Failed to rebalance tasks');
     },
-    onSuccess: (_data, _variables, context) => {
-      // Invalidate affected week queries to refetch fresh data
-      const previousQueries = context?.previousQueries;
-      if (previousQueries && previousQueries.size > 0) {
-        previousQueries.forEach((_previousData, queryKeyStr) => {
-          const queryKey = JSON.parse(queryKeyStr) as readonly [
-            'tasks',
-            'week',
-            string,
-          ];
-          queryClient.invalidateQueries({ queryKey });
-        });
-      } else {
-        // Fallback: invalidate all if no context
-        queryClient.invalidateQueries({ queryKey: queryKeys.tasks.all });
-      }
+    onSuccess: () => {
+      // No invalidation needed - optimistic update is already correct
+      // Cache will naturally expire based on staleTime configuration
       toast.success('Tasks reordered successfully');
     },
   });
