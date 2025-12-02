@@ -1,6 +1,13 @@
 // This file will be updated later with auto-generated types
 // For now, we'll use a basic type definition
 
+import type { RecurringFrequency } from '@/src/domain/types/recurring';
+import type {
+  BonusSection,
+  DailySection,
+  TaskPriority,
+} from '@/src/domain/types/tasks';
+
 export type Json =
   | string
   | number
@@ -28,9 +35,9 @@ export interface TaskRow {
   completed: boolean;
   completed_at: string | null; // TIMESTAMPTZ: ISO string
   category_id: string | null;
-  priority: 'high' | 'medium' | 'low' | null;
-  daily_section: 'morning' | 'afternoon' | 'evening' | null;
-  bonus_section: 'essential' | 'bonus' | null;
+  priority: TaskPriority | null;
+  daily_section: DailySection | null;
+  bonus_section: BonusSection | null;
   position: string;
   recurring_item_id: string | null;
   created_at: string; // TIMESTAMPTZ: ISO string
@@ -63,6 +70,44 @@ export interface UserProfileRow {
   updated_at: string; // TIMESTAMPTZ: ISO string
 }
 
+/**
+ * Recurring task item row from database
+ * DATE fields are stored as YYYY-MM-DD strings
+ * TIMESTAMPTZ fields are stored as ISO strings
+ */
+export interface RecurringTaskItemRow {
+  id: string;
+  user_id: string;
+
+  // Task template fields
+  title: string;
+  description: string | null;
+  category_id: string | null;
+  priority: TaskPriority | null; // Nullable to match database schema (DEFAULT 'medium' but no NOT NULL)
+  daily_section: DailySection | null;
+  bonus_section: BonusSection | null;
+
+  // Recurrence configuration
+  frequency: RecurringFrequency;
+  rrule_string: string;
+
+  // Schedule boundaries
+  start_date: string; // DATE: YYYY-MM-DD string
+  end_date: string | null; // DATE: YYYY-MM-DD string
+  due_offset_days: number;
+
+  // Generation tracking
+  last_generated_date: string | null; // DATE: YYYY-MM-DD string
+  tasks_to_generate_ahead: number;
+
+  // Status
+  is_active: boolean;
+
+  // Timestamps
+  created_at: string; // TIMESTAMPTZ: ISO string
+  updated_at: string; // TIMESTAMPTZ: ISO string
+}
+
 export interface Database {
   public: {
     Tables: {
@@ -81,6 +126,13 @@ export interface Database {
         Insert: Omit<UserProfileRow, 'id' | 'created_at' | 'updated_at'>;
         Update: Partial<
           Omit<UserProfileRow, 'id' | 'created_at' | 'updated_at'>
+        >;
+      };
+      recurring_task_items: {
+        Row: RecurringTaskItemRow;
+        Insert: Omit<RecurringTaskItemRow, 'id' | 'created_at' | 'updated_at'>;
+        Update: Partial<
+          Omit<RecurringTaskItemRow, 'id' | 'created_at' | 'updated_at'>
         >;
       };
     };
@@ -104,6 +156,13 @@ export interface Database {
       priority_level: 'high' | 'medium' | 'low';
       daily_section_type: 'morning' | 'afternoon' | 'evening';
       bonus_section_type: 'essential' | 'bonus';
+      recurring_frequency:
+        | 'daily'
+        | 'weekly'
+        | 'monthly'
+        | 'yearly'
+        | 'weekdays'
+        | 'weekends';
     };
   };
 }
