@@ -139,6 +139,8 @@ describe('position generation utilities', () => {
         findByUserIdAndFilters: vi.fn().mockResolvedValue([]),
         update: vi.fn(),
         delete: vi.fn(),
+        findOverdueTasks: vi.fn().mockResolvedValue([]),
+        bulkUpdateScheduledDate: vi.fn(),
       };
 
       const result = await generatePositionForNewTask(
@@ -203,6 +205,8 @@ describe('position generation utilities', () => {
         findByUserIdAndFilters: vi.fn().mockResolvedValue([]),
         update: vi.fn(),
         delete: vi.fn(),
+        findOverdueTasks: vi.fn().mockResolvedValue([]),
+        bulkUpdateScheduledDate: vi.fn(),
       };
 
       const result = await generatePositionForNewTask(
@@ -230,6 +234,8 @@ describe('position generation utilities', () => {
         findByUserIdAndFilters: vi.fn().mockResolvedValue([]),
         update: vi.fn(),
         delete: vi.fn(),
+        findOverdueTasks: vi.fn().mockResolvedValue([]),
+        bulkUpdateScheduledDate: vi.fn(),
       };
 
       const result = await generatePositionForNewTask(
@@ -302,6 +308,8 @@ describe('position generation utilities', () => {
         findByUserIdAndFilters: vi.fn().mockResolvedValue([]),
         update: vi.fn(),
         delete: vi.fn(),
+        findOverdueTasks: vi.fn().mockResolvedValue([]),
+        bulkUpdateScheduledDate: vi.fn(),
       };
 
       // Generate position for date1
@@ -374,6 +382,8 @@ describe('position generation utilities', () => {
         findByUserIdAndFilters: vi.fn().mockResolvedValue([]),
         update: vi.fn(),
         delete: vi.fn(),
+        findOverdueTasks: vi.fn().mockResolvedValue([]),
+        bulkUpdateScheduledDate: vi.fn(),
       };
 
       const result = await generatePositionForNewTask(
