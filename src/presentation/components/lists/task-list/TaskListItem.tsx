@@ -17,7 +17,6 @@ import { UpdateDatePickerButton } from '../../date-picker/UpdateDatePickerButton
 import { TaskCheckbox } from './TaskCheckbox';
 import { TaskListItemDrawer } from './TaskListItemDrawer';
 
-// eslint-disable-next-line prettier/prettier
 interface TaskListItemContentProps extends React.ComponentPropsWithoutRef<'div'> {
   task: Task;
   className?: string;

@@ -49,4 +49,14 @@ export interface ITaskRepository {
    * Delete a task
    */
   delete(id: string): Promise<void>;
+
+  /**
+   * Find all uncompleted tasks scheduled before a given date
+   */
+  findOverdueTasks(userId: string, beforeDate: Date): Promise<Task[]>;
+
+  /**
+   * Bulk update scheduled_date for multiple tasks (keeps existing positions)
+   */
+  bulkUpdateScheduledDate(taskIds: string[], newDate: Date): Promise<void>;
 }

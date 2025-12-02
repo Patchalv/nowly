@@ -36,6 +36,11 @@ export const queryKeys = {
     },
   },
 
+  // Overdue tasks keys
+  overdue: {
+    count: ['overdue-tasks-count'] as const,
+  },
+
   // Recurring tasks keys (will be used in Phase 6)
   recurringTasks: {
     all: ['recurring-tasks'] as const,
