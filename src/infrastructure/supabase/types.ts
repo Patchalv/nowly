@@ -1,6 +1,13 @@
 // This file will be updated later with auto-generated types
 // For now, we'll use a basic type definition
 
+import type { RecurringFrequency } from '@/src/domain/types/recurring';
+import type {
+  BonusSection,
+  DailySection,
+  TaskPriority,
+} from '@/src/domain/types/tasks';
+
 export type Json =
   | string
   | number
@@ -28,9 +35,9 @@ export interface TaskRow {
   completed: boolean;
   completed_at: string | null; // TIMESTAMPTZ: ISO string
   category_id: string | null;
-  priority: 'high' | 'medium' | 'low' | null;
-  daily_section: 'morning' | 'afternoon' | 'evening' | null;
-  bonus_section: 'essential' | 'bonus' | null;
+  priority: TaskPriority | null;
+  daily_section: DailySection | null;
+  bonus_section: BonusSection | null;
   position: string;
   recurring_item_id: string | null;
   created_at: string; // TIMESTAMPTZ: ISO string
@@ -76,18 +83,12 @@ export interface RecurringTaskItemRow {
   title: string;
   description: string | null;
   category_id: string | null;
-  priority: 'high' | 'medium' | 'low';
-  daily_section: 'morning' | 'afternoon' | 'evening' | null;
-  bonus_section: 'essential' | 'bonus' | null;
+  priority: TaskPriority;
+  daily_section: DailySection | null;
+  bonus_section: BonusSection | null;
 
   // Recurrence configuration
-  frequency:
-    | 'daily'
-    | 'weekly'
-    | 'monthly'
-    | 'yearly'
-    | 'weekdays'
-    | 'weekends';
+  frequency: RecurringFrequency;
   rrule_string: string;
 
   // Schedule boundaries
