@@ -311,4 +311,62 @@ export class SupabaseTaskRepository implements ITaskRepository {
       total: count ?? 0,
     };
   }
+
+  /**
+   * Find all uncompleted tasks scheduled before a given date
+   */
+  async findOverdueTasks(userId: string, beforeDate: Date): Promise<Task[]> {
+    const dateStr = dateToDatabase(beforeDate);
+    if (!dateStr) {
+      logger.error('Invalid date provided for overdue query', { beforeDate });
+      throw new Error('Invalid date provided for overdue query');
+    }
+
+    const { data, error } = await this.client
+      .from('tasks')
+      .select('*')
+      .eq('user_id', userId)
+      .eq('completed', false)
+      .not('scheduled_date', 'is', null)
+      .lt('scheduled_date', dateStr)
+      .order('scheduled_date', { ascending: true });
+
+    if (error) {
+      logger.error('Failed to find overdue tasks', { error });
+      throw new Error(`Failed to find overdue tasks: ${error.message}`);
+    }
+
+    return data ? data.map((row) => this.toDomain(row)) : [];
+  }
+
+  /**
+   * Bulk update scheduled_date for multiple tasks (keeps existing positions)
+   */
+  async bulkUpdateScheduledDate(
+    taskIds: string[],
+    newDate: Date
+  ): Promise<void> {
+    const dateStr = dateToDatabase(newDate);
+    if (!dateStr) {
+      logger.error('Invalid date provided for bulk update', { newDate });
+      throw new Error('Invalid date provided for bulk update');
+    }
+
+    if (taskIds.length === 0) {
+      logger.warn('No task IDs provided for bulk update');
+      return;
+    }
+
+    const { error } = await this.client
+      .from('tasks')
+      .update({ scheduled_date: dateStr } as never)
+      .in('id', taskIds);
+
+    if (error) {
+      logger.error('Failed to bulk update scheduled dates', { error });
+      throw new Error(
+        `Failed to bulk update scheduled dates: ${error.message}`
+      );
+    }
+  }
 }

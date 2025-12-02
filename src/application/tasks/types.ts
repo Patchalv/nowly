@@ -18,3 +18,8 @@ export interface ListTasksInfiniteResponse {
   total?: number;
   error?: string;
 }
+
+export interface RolloverTasksResponse {
+  success: boolean;
+  error?: string;
+}
