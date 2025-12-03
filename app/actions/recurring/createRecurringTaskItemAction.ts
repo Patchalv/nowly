@@ -32,9 +32,20 @@ export async function createRecurringTaskItemAction(formData: FormData) {
   const yearlyDayStr = formData.get('yearlyDay');
 
   // Parse arrays and numbers
-  const weeklyDays = weeklyDaysRaw
-    ? JSON.parse(weeklyDaysRaw as string)
-    : undefined;
+  let weeklyDays: number[] | undefined;
+  if (weeklyDaysRaw) {
+    try {
+      weeklyDays = JSON.parse(weeklyDaysRaw as string);
+    } catch {
+      logger.error('Invalid weeklyDays JSON format', {
+        weeklyDays: weeklyDaysRaw,
+      });
+      return {
+        success: false,
+        errors: { weeklyDays: ['Invalid format for weekly days'] },
+      };
+    }
+  }
   const dueOffsetDays = dueOffsetDaysStr
     ? parseInt(dueOffsetDaysStr as string, 10)
     : undefined;
