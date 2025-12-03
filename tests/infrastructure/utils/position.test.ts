@@ -141,6 +141,11 @@ describe('position generation utilities', () => {
         delete: vi.fn(),
         findOverdueTasks: vi.fn().mockResolvedValue([]),
         bulkUpdateScheduledDate: vi.fn().mockResolvedValue(undefined),
+        createBatch: vi.fn().mockResolvedValue([]),
+        getByRecurringItemId: vi.fn().mockResolvedValue([]),
+        deleteUncompletedByRecurringItemId: vi
+          .fn()
+          .mockResolvedValue(undefined),
       };
 
       const result = await generatePositionForNewTask(
@@ -207,6 +212,11 @@ describe('position generation utilities', () => {
         delete: vi.fn(),
         findOverdueTasks: vi.fn().mockResolvedValue([]),
         bulkUpdateScheduledDate: vi.fn().mockResolvedValue(undefined),
+        createBatch: vi.fn().mockResolvedValue([]),
+        getByRecurringItemId: vi.fn().mockResolvedValue([]),
+        deleteUncompletedByRecurringItemId: vi
+          .fn()
+          .mockResolvedValue(undefined),
       };
 
       const result = await generatePositionForNewTask(
@@ -236,6 +246,11 @@ describe('position generation utilities', () => {
         delete: vi.fn(),
         findOverdueTasks: vi.fn().mockResolvedValue([]),
         bulkUpdateScheduledDate: vi.fn().mockResolvedValue(undefined),
+        createBatch: vi.fn().mockResolvedValue([]),
+        getByRecurringItemId: vi.fn().mockResolvedValue([]),
+        deleteUncompletedByRecurringItemId: vi
+          .fn()
+          .mockResolvedValue(undefined),
       };
 
       const result = await generatePositionForNewTask(
@@ -310,6 +325,11 @@ describe('position generation utilities', () => {
         delete: vi.fn(),
         findOverdueTasks: vi.fn().mockResolvedValue([]),
         bulkUpdateScheduledDate: vi.fn().mockResolvedValue(undefined),
+        createBatch: vi.fn().mockResolvedValue([]),
+        getByRecurringItemId: vi.fn().mockResolvedValue([]),
+        deleteUncompletedByRecurringItemId: vi
+          .fn()
+          .mockResolvedValue(undefined),
       };
 
       // Generate position for date1
@@ -384,6 +404,11 @@ describe('position generation utilities', () => {
         delete: vi.fn(),
         findOverdueTasks: vi.fn().mockResolvedValue([]),
         bulkUpdateScheduledDate: vi.fn().mockResolvedValue(undefined),
+        createBatch: vi.fn().mockResolvedValue([]),
+        getByRecurringItemId: vi.fn().mockResolvedValue([]),
+        deleteUncompletedByRecurringItemId: vi
+          .fn()
+          .mockResolvedValue(undefined),
       };
 
       const result = await generatePositionForNewTask(
