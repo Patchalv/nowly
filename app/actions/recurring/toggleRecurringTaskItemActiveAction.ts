@@ -1,16 +1,34 @@
 'use server';
 
 import { updateRecurringTaskItem } from '@/src/application/recurring/updateRecurringTaskItem.usecase';
+import { ROUTES } from '@/src/config/constants';
 import { SupabaseRecurringTaskItemRepository } from '@/src/infrastructure/repositories/recurring-task-item/SupabaseRecurringTaskItemRepository';
 import { SupabaseTaskRepository } from '@/src/infrastructure/repositories/task/SupabaseTaskRepository';
 import { createClient } from '@/src/infrastructure/supabase/server';
-import { logger } from '@sentry/nextjs';
+import * as Sentry from '@sentry/nextjs';
 import { revalidatePath } from 'next/cache';
+import { z } from 'zod';
+
+const { logger } = Sentry;
+
+const toggleActiveSchema = z.object({
+  recurringItemId: z.string().uuid(),
+  isActive: z.boolean(),
+});
 
 export async function toggleRecurringTaskItemActiveAction(
   recurringItemId: string,
   isActive: boolean
 ) {
+  // Validate input
+  const result = toggleActiveSchema.safeParse({ recurringItemId, isActive });
+  if (!result.success) {
+    logger.error('Toggle recurring task item validation errors', {
+      error: result.error,
+    });
+    return { success: false, error: 'Invalid input parameters' };
+  }
+
   const supabase = await createClient();
 
   // Verify authentication
@@ -29,9 +47,9 @@ export async function toggleRecurringTaskItemActiveAction(
   const recurringRepository = new SupabaseRecurringTaskItemRepository(supabase);
   const taskRepository = new SupabaseTaskRepository(supabase);
   const response = await updateRecurringTaskItem(
-    recurringItemId,
+    result.data.recurringItemId,
     user.id,
-    { isActive },
+    { isActive: result.data.isActive },
     recurringRepository,
     taskRepository
   );
@@ -44,9 +62,9 @@ export async function toggleRecurringTaskItemActiveAction(
   }
 
   // Revalidate affected paths
-  revalidatePath('/recurring');
-  revalidatePath('/daily');
-  revalidatePath('/all-tasks');
+  revalidatePath(ROUTES.RECURRING);
+  revalidatePath(ROUTES.DAILY);
+  revalidatePath(ROUTES.ALL_TASKS);
 
   return response;
 }

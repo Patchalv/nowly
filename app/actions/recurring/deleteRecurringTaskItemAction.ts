@@ -6,8 +6,22 @@ import { SupabaseTaskRepository } from '@/src/infrastructure/repositories/task/S
 import { createClient } from '@/src/infrastructure/supabase/server';
 import { logger } from '@sentry/nextjs';
 import { revalidatePath } from 'next/cache';
+import { z } from 'zod';
+
+const deleteRecurringItemSchema = z.object({
+  recurringItemId: z.string().uuid(),
+});
 
 export async function deleteRecurringTaskItemAction(recurringItemId: string) {
+  // Validate input
+  const result = deleteRecurringItemSchema.safeParse({ recurringItemId });
+  if (!result.success) {
+    logger.error('Delete recurring task item validation errors', {
+      error: result.error,
+    });
+    return { success: false, error: 'Invalid recurring item ID' };
+  }
+
   const supabase = await createClient();
 
   // Verify authentication
@@ -25,7 +39,7 @@ export async function deleteRecurringTaskItemAction(recurringItemId: string) {
   const recurringRepository = new SupabaseRecurringTaskItemRepository(supabase);
   const taskRepository = new SupabaseTaskRepository(supabase);
   const response = await deleteRecurringTaskItem(
-    recurringItemId,
+    result.data.recurringItemId,
     user.id,
     recurringRepository,
     taskRepository

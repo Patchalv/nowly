@@ -1,12 +1,16 @@
 'use server';
 
 import { ensureTasksGenerated } from '@/src/application/recurring/ensureTasksGenerated.usecase';
+import { ROUTES } from '@/src/config/constants';
 import { SupabaseRecurringTaskItemRepository } from '@/src/infrastructure/repositories/recurring-task-item/SupabaseRecurringTaskItemRepository';
 import { SupabaseTaskRepository } from '@/src/infrastructure/repositories/task/SupabaseTaskRepository';
 import { createClient } from '@/src/infrastructure/supabase/server';
-import { logger } from '@sentry/nextjs';
+import * as Sentry from '@sentry/nextjs';
+import { revalidatePath } from 'next/cache';
 
 export async function ensureTasksGeneratedAction() {
+  const { logger } = Sentry;
+
   const supabase = await createClient();
 
   // Get authenticated user
@@ -37,6 +41,11 @@ export async function ensureTasksGeneratedAction() {
       generatedTasks: [],
     };
   }
+
+  // Revalidate affected paths
+  revalidatePath(ROUTES.DAILY);
+  revalidatePath(ROUTES.ALL_TASKS);
+  revalidatePath(ROUTES.RECURRING);
 
   return response;
 }

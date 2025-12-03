@@ -1,26 +1,33 @@
 'use server';
 
 import { updateRecurringTaskItem } from '@/src/application/recurring/updateRecurringTaskItem.usecase';
-import { updateRecurringTaskItemSchema } from '@/src/domain/validation/recurring/recurringTaskItem.schema';
+import { ROUTES } from '@/src/config/constants';
+import {
+  UpdateRecurringTaskItemInput,
+  updateRecurringTaskItemSchema,
+} from '@/src/domain/validation/recurring/recurringTaskItem.schema';
 import { SupabaseRecurringTaskItemRepository } from '@/src/infrastructure/repositories/recurring-task-item/SupabaseRecurringTaskItemRepository';
 import { SupabaseTaskRepository } from '@/src/infrastructure/repositories/task/SupabaseTaskRepository';
 import { createClient } from '@/src/infrastructure/supabase/server';
 import { logger } from '@sentry/nextjs';
 import { revalidatePath } from 'next/cache';
+import z from 'zod';
+
+const updateParamsSchema = z.object({
+  recurringItemId: z.string().uuid(),
+});
 
 export async function updateRecurringTaskItemAction(
   recurringItemId: string,
-  updates: {
-    title?: string;
-    description?: string | null;
-    categoryId?: string | null;
-    priority?: 'high' | 'medium' | 'low';
-    dailySection?: 'morning' | 'afternoon' | 'evening' | null;
-    bonusSection?: 'essential' | 'bonus' | null;
-    endDate?: Date | null;
-    isActive?: boolean;
-  }
+  updates: UpdateRecurringTaskItemInput
 ) {
+  // Validate recurringItemId
+  const paramsResult = updateParamsSchema.safeParse({ recurringItemId });
+  if (!paramsResult.success) {
+    logger.error('Invalid recurring item ID', { error: paramsResult.error });
+    return { success: false, error: 'Invalid recurring item ID' };
+  }
+
   const supabase = await createClient();
 
   // Verify authentication
@@ -47,7 +54,7 @@ export async function updateRecurringTaskItemAction(
   const recurringRepository = new SupabaseRecurringTaskItemRepository(supabase);
   const taskRepository = new SupabaseTaskRepository(supabase);
   const response = await updateRecurringTaskItem(
-    recurringItemId,
+    paramsResult.data.recurringItemId,
     user.id,
     result.data,
     recurringRepository,
@@ -60,9 +67,9 @@ export async function updateRecurringTaskItemAction(
   }
 
   // Revalidate affected paths
-  revalidatePath('/recurring');
-  revalidatePath('/daily');
-  revalidatePath('/all-tasks');
+  revalidatePath(ROUTES.RECURRING);
+  revalidatePath(ROUTES.DAILY);
+  revalidatePath(ROUTES.ALL_TASKS);
 
   return response;
 }
