@@ -369,4 +369,77 @@ export class SupabaseTaskRepository implements ITaskRepository {
       );
     }
   }
+
+  /**
+   * Create multiple tasks in a single batch operation
+   * Used for generating recurring task instances
+   */
+  async createBatch(
+    tasks: Omit<Task, 'id' | 'createdAt' | 'updatedAt'>[]
+  ): Promise<Task[]> {
+    if (tasks.length === 0) {
+      return [];
+    }
+
+    const rows = tasks.map((task) => this.toInsert(task));
+
+    const { data, error } = await this.client
+      .from('tasks')
+      .insert(rows as never)
+      .select();
+
+    if (error) {
+      logger.error('Failed to batch create tasks', { error });
+      throw new Error(`Failed to batch create tasks: ${error.message}`);
+    }
+    if (!data) {
+      logger.error('No data returned after batch insert');
+      throw new Error('No data returned after batch insert');
+    }
+
+    return data.map((row) => this.toDomain(row));
+  }
+
+  /**
+   * Find all tasks for a specific recurring item
+   */
+  async getByRecurringItemId(recurringItemId: string): Promise<Task[]> {
+    const { data, error } = await this.client
+      .from('tasks')
+      .select('*')
+      .eq('recurring_item_id', recurringItemId)
+      .order('scheduled_date', { ascending: true });
+
+    if (error) {
+      logger.error('Failed to find tasks by recurring item ID', { error });
+      throw new Error(
+        `Failed to find tasks by recurring item ID: ${error.message}`
+      );
+    }
+
+    return data ? data.map((row) => this.toDomain(row)) : [];
+  }
+
+  /**
+   * Delete all uncompleted tasks for a recurring item
+   * Used when deactivating or deleting a recurring item
+   */
+  async deleteUncompletedByRecurringItemId(
+    recurringItemId: string
+  ): Promise<void> {
+    const { error } = await this.client
+      .from('tasks')
+      .delete()
+      .eq('recurring_item_id', recurringItemId)
+      .eq('completed', false);
+
+    if (error) {
+      logger.error('Failed to delete uncompleted tasks by recurring item ID', {
+        error,
+      });
+      throw new Error(
+        `Failed to delete uncompleted tasks by recurring item ID: ${error.message}`
+      );
+    }
+  }
 }

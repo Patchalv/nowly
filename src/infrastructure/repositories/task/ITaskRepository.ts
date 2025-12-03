@@ -59,4 +59,23 @@ export interface ITaskRepository {
    * Bulk update scheduled_date for multiple tasks (keeps existing positions)
    */
   bulkUpdateScheduledDate(taskIds: string[], newDate: Date): Promise<void>;
+
+  /**
+   * Create multiple tasks in a single batch operation
+   * Used for generating recurring task instances
+   */
+  createBatch(
+    tasks: Omit<Task, 'id' | 'createdAt' | 'updatedAt'>[]
+  ): Promise<Task[]>;
+
+  /**
+   * Find all tasks for a specific recurring item
+   */
+  getByRecurringItemId(recurringItemId: string): Promise<Task[]>;
+
+  /**
+   * Delete all uncompleted tasks for a recurring item
+   * Used when deactivating or deleting a recurring item
+   */
+  deleteUncompletedByRecurringItemId(recurringItemId: string): Promise<void>;
 }
