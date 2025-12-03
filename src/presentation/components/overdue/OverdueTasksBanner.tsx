@@ -20,7 +20,7 @@ export function OverdueTasksBanner({ isToday }: OverdueTasksBannerProps) {
   return (
     <div className="bg-amber-50 dark:bg-amber-950/20 border border-amber-200 dark:border-amber-800 rounded-lg p-3 flex items-center justify-between">
       <div className="flex items-center gap-2">
-        <AlertCircle className="h-4 w-4 text-amber-600 flex-shrink-0" />
+        <AlertCircle className="h-4 w-4 text-amber-600 shrink-0" />
         <span className="text-sm font-medium text-amber-800 dark:text-amber-200">
           {overdueCount} overdue {overdueCount === 1 ? 'task' : 'tasks'}
         </span>
