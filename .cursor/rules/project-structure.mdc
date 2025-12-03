@@ -146,6 +146,7 @@ nowly/
 - `infrastructure` may import from `domain` and `application`
 - Never import directly from `infrastructure` into `presentation`
 - Use `@/src/...` absolute paths for all imports
+- **No barrel files (`index.ts`)** - import directly from source files, not from directory re-exports
 
 ### 🧩 File Naming
 
