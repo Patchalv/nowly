@@ -68,26 +68,68 @@ export function useToggleRecurringTaskItemActive(): UseMutationResult<
         RecurringTaskItem[] | undefined
       >();
 
-      // Update both activeOnly=true and activeOnly=false caches
-      const listKeys = [
-        queryKeys.recurringItems.list(true),
-        queryKeys.recurringItems.list(false),
-      ];
+      // Get the full list cache to find the item details
+      const activeOnlyKey = queryKeys.recurringItems.list(true);
+      const allItemsKey = queryKeys.recurringItems.list(false);
 
-      for (const listKey of listKeys) {
-        const previousData =
-          queryClient.getQueryData<RecurringTaskItem[]>(listKey);
-        if (previousData) {
-          previousQueries.set(JSON.stringify(listKey), previousData);
+      const activeOnlyData =
+        queryClient.getQueryData<RecurringTaskItem[]>(activeOnlyKey);
+      const allItemsData =
+        queryClient.getQueryData<RecurringTaskItem[]>(allItemsKey);
 
-          // Optimistically toggle isActive in cache
-          queryClient.setQueryData<RecurringTaskItem[]>(listKey, (old) => {
-            if (!old) return old;
+      // Snapshot both caches for rollback
+      if (activeOnlyData) {
+        previousQueries.set(JSON.stringify(activeOnlyKey), activeOnlyData);
+      }
+      if (allItemsData) {
+        previousQueries.set(JSON.stringify(allItemsKey), allItemsData);
+      }
+
+      // Find the item in either cache to get its full data
+      const existingItem =
+        allItemsData?.find((item) => item.id === recurringItemId) ||
+        activeOnlyData?.find((item) => item.id === recurringItemId);
+
+      // Update active-only cache (list(true))
+      if (activeOnlyData) {
+        queryClient.setQueryData<RecurringTaskItem[]>(activeOnlyKey, (old) => {
+          if (!old) return old;
+
+          if (isActive) {
+            // Adding to active list - update if exists, add if missing
+            const exists = old.some((item) => item.id === recurringItemId);
+            if (exists) {
+              return old.map((item) =>
+                item.id === recurringItemId ? { ...item, isActive } : item
+              );
+            } else if (existingItem) {
+              // Add the item to active list
+              return [...old, { ...existingItem, isActive }];
+            }
+            return old;
+          } else {
+            // Removing from active list
+            return old.filter((item) => item.id !== recurringItemId);
+          }
+        });
+      }
+
+      // Update all-items cache (list(false)) - item should always be present
+      if (allItemsData) {
+        queryClient.setQueryData<RecurringTaskItem[]>(allItemsKey, (old) => {
+          if (!old) return old;
+
+          const exists = old.some((item) => item.id === recurringItemId);
+          if (exists) {
             return old.map((item) =>
               item.id === recurringItemId ? { ...item, isActive } : item
             );
-          });
-        }
+          } else if (existingItem) {
+            // Append if missing (shouldn't happen normally)
+            return [...old, { ...existingItem, isActive }];
+          }
+          return old;
+        });
       }
 
       return { previousQueries };

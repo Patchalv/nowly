@@ -1,5 +1,5 @@
-import { MutateRecurringTaskItemResponse } from '@/src/application/recurring/types';
-import { UpdateRecurringTaskItemInput } from '@/src/domain/validation/recurring/recurringTaskItem.schema';
+import type { MutateRecurringTaskItemResponse } from '@/src/application/recurring/types';
+import type { UpdateRecurringTaskItemInput } from '@/src/domain/validation/recurring/recurringTaskItem.schema';
 
 /**
  * Input type for create recurring item mutation

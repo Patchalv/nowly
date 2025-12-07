@@ -1,17 +1,19 @@
 'use client';
 
-import { updateRecurringTaskItemAction } from '@/app/actions/recurring/updateRecurringTaskItemAction';
-import { queryKeys } from '@/src/config/query-keys';
-import { RecurringTaskItem } from '@/src/domain/types/recurring';
-import { handleError } from '@/src/shared/errors';
 import {
   useMutation,
   UseMutationResult,
   useQueryClient,
 } from '@tanstack/react-query';
 import { toast } from 'sonner';
+
+import { updateRecurringTaskItemAction } from '@/app/actions/recurring/updateRecurringTaskItemAction';
+import { queryKeys } from '@/src/config/query-keys';
+import type { RecurringTaskItem } from '@/src/domain/types/recurring';
+import { handleError } from '@/src/shared/errors';
+
 import { handleActionResponse, ServerActionError } from '../tasks/utils';
-import {
+import type {
   UpdateRecurringItemActionResponse,
   UpdateRecurringItemMutationInput,
 } from './types';
