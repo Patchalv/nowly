@@ -423,7 +423,7 @@ export function useToggleTaskCompleted(): UseMutationResult<
         });
       }
 
-      return { previousQueries };
+      return { previousQueries, currentTask };
     },
     onError: (error, _taskId, context) => {
       // Rollback optimistic updates
@@ -445,7 +445,13 @@ export function useToggleTaskCompleted(): UseMutationResult<
     onSuccess: (_data, _taskId, context) => {
       // Invalidate affected week queries to refetch fresh data
       const previousQueries = context?.previousQueries;
-      if (previousQueries && previousQueries.size > 0) {
+      const hasRecurringItem = context?.currentTask?.recurringItemId;
+
+      // If the task has a recurring item, invalidate all tasks
+      // to pick up newly generated tasks from the recurring item
+      if (hasRecurringItem) {
+        queryClient.invalidateQueries({ queryKey: queryKeys.tasks.all });
+      } else if (previousQueries && previousQueries.size > 0) {
         previousQueries.forEach((_previousData, queryKeyStr) => {
           const queryKey = JSON.parse(queryKeyStr) as readonly [
             'tasks',

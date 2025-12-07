@@ -41,10 +41,11 @@ export const queryKeys = {
     count: ['overdue-tasks-count'] as const,
   },
 
-  // Recurring tasks keys (will be used in Phase 6)
-  recurringTasks: {
-    all: ['recurring-tasks'] as const,
-    detail: (recurringTaskId: string) =>
-      ['recurring-tasks', recurringTaskId] as const,
+  // Recurring task items keys
+  recurringItems: {
+    all: ['recurring-items'] as const,
+    list: (activeOnly: boolean) =>
+      ['recurring-items', 'list', { activeOnly }] as const,
+    detail: (id: string) => ['recurring-items', 'detail', id] as const,
   },
 } as const;

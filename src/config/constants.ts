@@ -206,6 +206,8 @@ export const CACHE = {
   CATEGORIES_STALE_TIME_MS: 15 * 60 * 1000, // 15 minutes
   /** React Query stale time for user profile (ms) */
   USER_PROFILE_STALE_TIME_MS: 30 * 60 * 1000, // 30 minutes
+  /** React Query stale time for recurring items (ms) */
+  RECURRING_ITEMS_STALE_TIME_MS: 5 * 60 * 1000, // 5 minutes
 } as const;
 
 // ------------------------------------------------------------------------------
