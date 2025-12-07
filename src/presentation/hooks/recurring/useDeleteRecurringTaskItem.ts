@@ -1,17 +1,19 @@
 'use client';
 
-import { deleteRecurringTaskItemAction } from '@/app/actions/recurring/deleteRecurringTaskItemAction';
-import { queryKeys } from '@/src/config/query-keys';
-import { RecurringTaskItem } from '@/src/domain/types/recurring';
-import { handleError } from '@/src/shared/errors';
 import {
   useMutation,
   UseMutationResult,
   useQueryClient,
 } from '@tanstack/react-query';
 import { toast } from 'sonner';
-import { handleActionResponse, ServerActionError } from '../tasks/utils';
-import {
+
+import { deleteRecurringTaskItemAction } from '@/app/actions/recurring/deleteRecurringTaskItemAction';
+import { queryKeys } from '@/src/config/query-keys';
+import type { RecurringTaskItem } from '@/src/domain/types/recurring';
+import { handleError } from '@/src/shared/errors';
+import type { ServerActionError } from '../tasks/utils';
+import { handleActionResponse } from '../tasks/utils';
+import type {
   DeleteRecurringItemActionResponse,
   DeleteRecurringItemMutationInput,
 } from './types';
@@ -49,7 +51,7 @@ export function useDeleteRecurringTaskItem(): UseMutationResult<
       const response = await deleteRecurringTaskItemAction(recurringItemId);
       return handleActionResponse<DeleteRecurringItemActionResponse>(response);
     },
-    onMutate: async (recurringItemId) => {
+    onMutate: async ({ recurringItemId }) => {
       // Cancel outgoing refetches
       await queryClient.cancelQueries({
         queryKey: queryKeys.recurringItems.all,
@@ -76,9 +78,7 @@ export function useDeleteRecurringTaskItem(): UseMutationResult<
           // Optimistically remove the item from cache
           queryClient.setQueryData<RecurringTaskItem[]>(listKey, (old) => {
             if (!old) return old;
-            return old.filter(
-              (item) => item.id !== recurringItemId.recurringItemId
-            );
+            return old.filter((item) => item.id !== recurringItemId);
           });
         }
       }
