@@ -423,7 +423,7 @@ export function useToggleTaskCompleted(): UseMutationResult<
         });
       }
 
-      return { previousQueries };
+      return { previousQueries, currentTask };
     },
     onError: (error, _taskId, context) => {
       // Rollback optimistic updates
@@ -456,6 +456,12 @@ export function useToggleTaskCompleted(): UseMutationResult<
         });
       } else {
         // Fallback: invalidate all if no context
+        queryClient.invalidateQueries({ queryKey: queryKeys.tasks.all });
+      }
+
+      // If the task has a recurring item, invalidate all task queries
+      // to pick up newly generated tasks from the recurring item
+      if (context?.currentTask?.recurringItemId) {
         queryClient.invalidateQueries({ queryKey: queryKeys.tasks.all });
       }
     },
