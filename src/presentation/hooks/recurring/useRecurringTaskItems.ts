@@ -1,10 +1,11 @@
 'use client';
 
+import { useQuery } from '@tanstack/react-query';
+
 import { getRecurringTaskItemsAction } from '@/app/actions/recurring/getRecurringTaskItemsAction';
 import { CACHE } from '@/src/config/constants';
 import { queryKeys } from '@/src/config/query-keys';
 import { handleError } from '@/src/shared/errors';
-import { useQuery } from '@tanstack/react-query';
 
 /**
  * Hook for fetching recurring task items

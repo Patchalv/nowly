@@ -10,9 +10,9 @@ import { toast } from 'sonner';
 import { deleteRecurringTaskItemAction } from '@/app/actions/recurring/deleteRecurringTaskItemAction';
 import { queryKeys } from '@/src/config/query-keys';
 import type { RecurringTaskItem } from '@/src/domain/types/recurring';
+import type { ServerActionError } from '@/src/presentation/hooks/tasks/utils';
+import { handleActionResponse } from '@/src/presentation/hooks/tasks/utils';
 import { handleError } from '@/src/shared/errors';
-import type { ServerActionError } from '../tasks/utils';
-import { handleActionResponse } from '../tasks/utils';
 import type {
   DeleteRecurringItemActionResponse,
   DeleteRecurringItemMutationInput,
@@ -27,7 +27,7 @@ import type {
  * const deleteRecurringItem = useDeleteRecurringTaskItem();
  *
  * const handleDelete = (itemId: string) => {
- *   deleteRecurringItem.mutate(itemId);
+ *   deleteRecurringItem.mutate({ recurringItemId: itemId });
  * };
  * ```
  *

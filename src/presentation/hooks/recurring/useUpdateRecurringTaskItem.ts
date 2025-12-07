@@ -10,9 +10,9 @@ import { toast } from 'sonner';
 import { updateRecurringTaskItemAction } from '@/app/actions/recurring/updateRecurringTaskItemAction';
 import { queryKeys } from '@/src/config/query-keys';
 import type { RecurringTaskItem } from '@/src/domain/types/recurring';
+import type { ServerActionError } from '@/src/presentation/hooks/tasks/utils';
+import { handleActionResponse } from '@/src/presentation/hooks/tasks/utils';
 import { handleError } from '@/src/shared/errors';
-
-import { handleActionResponse, ServerActionError } from '../tasks/utils';
 import type {
   UpdateRecurringItemActionResponse,
   UpdateRecurringItemMutationInput,
