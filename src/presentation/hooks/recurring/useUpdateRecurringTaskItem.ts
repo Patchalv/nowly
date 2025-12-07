@@ -86,7 +86,9 @@ export function useUpdateRecurringTaskItem(): UseMutationResult<
           queryClient.setQueryData<RecurringTaskItem[]>(listKey, (old) => {
             if (!old) return old;
             return old.map((item) =>
-              item.id === recurringItemId ? { ...item, ...updates } : item
+              item.id === recurringItemId
+                ? ({ ...item, ...updates } as RecurringTaskItem)
+                : item
             );
           });
         }

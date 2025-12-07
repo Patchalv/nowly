@@ -43,7 +43,9 @@ export function useDeleteRecurringTaskItem(): UseMutationResult<
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: async (recurringItemId: string) => {
+    mutationFn: async ({
+      recurringItemId,
+    }: DeleteRecurringItemMutationInput) => {
       const response = await deleteRecurringTaskItemAction(recurringItemId);
       return handleActionResponse<DeleteRecurringItemActionResponse>(response);
     },
@@ -74,7 +76,9 @@ export function useDeleteRecurringTaskItem(): UseMutationResult<
           // Optimistically remove the item from cache
           queryClient.setQueryData<RecurringTaskItem[]>(listKey, (old) => {
             if (!old) return old;
-            return old.filter((item) => item.id !== recurringItemId);
+            return old.filter(
+              (item) => item.id !== recurringItemId.recurringItemId
+            );
           });
         }
       }

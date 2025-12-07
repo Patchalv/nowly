@@ -17,7 +17,9 @@ export interface UpdateRecurringItemMutationInput {
 /**
  * Input type for delete recurring item mutation
  */
-export type DeleteRecurringItemMutationInput = string;
+export interface DeleteRecurringItemMutationInput {
+  recurringItemId: string;
+}
 
 /**
  * Input type for toggle recurring item active mutation
