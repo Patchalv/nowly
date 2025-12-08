@@ -53,17 +53,14 @@ export function useCreateRecurringTaskItem(): UseMutationResult<
       // Invalidate recurring items queries to refetch fresh data
       queryClient.invalidateQueries({
         queryKey: queryKeys.recurringItems.all,
-        refetchType: 'active',
       });
       // Invalidate task queries as new tasks may have been generated
       queryClient.invalidateQueries({
         queryKey: queryKeys.tasks.all,
-        refetchType: 'active',
       });
       // Invalidate overdue count as new tasks may affect overdue status
       queryClient.invalidateQueries({
         queryKey: queryKeys.overdue.count,
-        refetchType: 'active',
       });
     },
   });
