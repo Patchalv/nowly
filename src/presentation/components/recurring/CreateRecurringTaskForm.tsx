@@ -28,6 +28,7 @@ import { Label } from '@/src/presentation/components/ui/label';
 import { Textarea } from '@/src/presentation/components/ui/textarea';
 import { useCreateRecurringTaskItem } from '@/src/presentation/hooks/recurring/useCreateRecurringTaskItem';
 import { cn } from '@/src/shared/utils/cn';
+import { toast } from 'sonner';
 import { DueOffsetInput } from './DueOffsetInput';
 import { FrequencySelector } from './FrequencySelector';
 import { MonthlyDayPicker } from './MonthlyDayPicker';
@@ -127,6 +128,7 @@ export function CreateRecurringTaskForm({
 
   const form = useForm<FormData>({
     resolver: zodResolver(formSchema),
+    mode: 'onBlur',
     defaultValues: {
       title: '',
       description: undefined,
@@ -148,48 +150,53 @@ export function CreateRecurringTaskForm({
   const frequency = form.watch('frequency');
 
   const onSubmit = (data: FormData) => {
-    const formData = new FormData();
-    formData.append('title', data.title);
+    const payload = new FormData();
+    payload.set('title', data.title);
     if (data.description) {
-      formData.append('description', data.description);
+      payload.set('description', data.description);
     }
     if (data.categoryId) {
-      formData.append('categoryId', data.categoryId);
+      payload.set('categoryId', data.categoryId);
     }
     if (data.priority) {
-      formData.append('priority', data.priority);
+      payload.set('priority', data.priority);
     }
     if (data.dailySection) {
-      formData.append('dailySection', data.dailySection);
+      payload.set('dailySection', data.dailySection);
     }
     if (data.bonusSection) {
-      formData.append('bonusSection', data.bonusSection);
+      payload.set('bonusSection', data.bonusSection);
     }
-    formData.append('frequency', data.frequency);
-    formData.append('startDate', data.startDate.toISOString());
+    payload.set('frequency', data.frequency);
+    payload.set('startDate', data.startDate.toISOString());
     if (data.endDate) {
-      formData.append('endDate', data.endDate.toISOString());
+      payload.set('endDate', data.endDate.toISOString());
     }
-    formData.append('dueOffsetDays', String(data.dueOffsetDays));
+    payload.set('dueOffsetDays', String(data.dueOffsetDays));
     if (data.weeklyDays && data.weeklyDays.length > 0) {
-      formData.append('weeklyDays', JSON.stringify(data.weeklyDays));
+      payload.set('weeklyDays', JSON.stringify(data.weeklyDays));
     }
     if (data.monthlyDay !== undefined) {
-      formData.append('monthlyDay', String(data.monthlyDay));
+      payload.set('monthlyDay', String(data.monthlyDay));
     }
     if (data.yearlyMonth !== undefined) {
-      formData.append('yearlyMonth', String(data.yearlyMonth));
+      payload.set('yearlyMonth', String(data.yearlyMonth));
     }
     if (data.yearlyDay !== undefined) {
-      formData.append('yearlyDay', String(data.yearlyDay));
+      payload.set('yearlyDay', String(data.yearlyDay));
     }
 
-    createRecurringTaskItem(formData, {
+    createRecurringTaskItem(payload, {
       onSuccess: (response) => {
         if (response.success) {
           form.reset();
           onSuccess?.();
+        } else {
+          toast.error(response.error ?? 'An unexpected error occurred');
         }
+      },
+      onError: (error) => {
+        toast.error(error.message ?? 'An unexpected error occurred');
       },
     });
   };
@@ -332,29 +339,41 @@ export function CreateRecurringTaskForm({
 
         {/* Yearly Date Picker */}
         {frequency === 'yearly' && (
-          <FormField
-            control={form.control}
-            name="yearlyMonth"
-            render={({ field: monthField }) => (
-              <FormField
-                control={form.control}
-                name="yearlyDay"
-                render={({ field: dayField }) => (
+          <div className="space-y-2">
+            <FormField
+              control={form.control}
+              name="yearlyMonth"
+              render={({ field: monthField }) => {
+                const dayValue = form.getValues('yearlyDay');
+                return (
                   <FormItem>
                     <FormControl>
                       <YearlyDatePicker
                         month={monthField.value}
-                        day={dayField.value}
+                        day={dayValue}
                         onMonthChange={monthField.onChange}
-                        onDayChange={dayField.onChange}
+                        onDayChange={(day) =>
+                          form.setValue('yearlyDay', day, {
+                            shouldValidate: true,
+                          })
+                        }
                       />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
-                )}
-              />
-            )}
-          />
+                );
+              }}
+            />
+            <FormField
+              control={form.control}
+              name="yearlyDay"
+              render={() => (
+                <FormItem>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+          </div>
         )}
 
         {/* Start Date */}
