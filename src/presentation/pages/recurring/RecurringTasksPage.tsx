@@ -1,14 +1,13 @@
 'use client';
 
-import { Suspense, useState } from 'react';
+import { useState } from 'react';
 
-import { FallbackView } from '@/src/presentation/components/loader/FallbackView';
 import { CreateRecurringTaskButton } from '@/src/presentation/components/recurring/CreateRecurringTaskButton';
 import { RecurringTaskItemsList } from '@/src/presentation/components/recurring/RecurringTaskItemsList';
 import { Toggle } from '@/src/presentation/components/ui/toggle';
 import { useRecurringTaskItems } from '@/src/presentation/hooks/recurring/useRecurringTaskItems';
 
-function RecurringTasksPageContent() {
+export function RecurringTasksPage() {
   const [showInactive, setShowInactive] = useState(false);
   const { data: items, isLoading } = useRecurringTaskItems(!showInactive);
 
@@ -34,13 +33,5 @@ function RecurringTasksPageContent() {
       {/* List */}
       <RecurringTaskItemsList items={items || []} isLoading={isLoading} />
     </main>
-  );
-}
-
-export function RecurringTasksPage() {
-  return (
-    <Suspense fallback={<FallbackView />}>
-      <RecurringTasksPageContent />
-    </Suspense>
   );
 }

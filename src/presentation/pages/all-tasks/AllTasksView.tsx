@@ -1,12 +1,11 @@
 'use client';
 
-import { Suspense, useState } from 'react';
-import { FallbackView } from '../../components/loader/FallbackView';
+import { useState } from 'react';
 import { TaskFilters } from '../../hooks/tasks/types';
 import { Filters } from './subcomponents/Filters';
 import { TaskListSection } from './subcomponents/TaskListSection';
 
-function AllTasksViewContent() {
+export function AllTasksView() {
   const [filters, setFilters] = useState<TaskFilters>({
     categoryId: undefined,
     showCompleted: 'IsNotCompleted',
@@ -20,13 +19,5 @@ function AllTasksViewContent() {
       <Filters filters={filters} setFilters={setFilters} />
       <TaskListSection filters={filters} />
     </main>
-  );
-}
-
-export function AllTasksView() {
-  return (
-    <Suspense fallback={<FallbackView />}>
-      <AllTasksViewContent />
-    </Suspense>
   );
 }
