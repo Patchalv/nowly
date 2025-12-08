@@ -1,13 +1,13 @@
 'use client';
 
-import { Label } from '../ui/label';
+import { Label } from '@/src/presentation/components/ui/label';
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from '../ui/select';
+} from '@/src/presentation/components/ui/select';
 
 interface YearlyDatePickerProps {
   month: number | undefined;

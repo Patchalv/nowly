@@ -1,7 +1,7 @@
 'use client';
 
-import { Label } from '../ui/label';
-import { Toggle } from '../ui/toggle';
+import { Label } from '@/src/presentation/components/ui/label';
+import { Toggle } from '@/src/presentation/components/ui/toggle';
 
 interface WeeklyDaysPickerProps {
   value: number[];

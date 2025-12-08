@@ -1,7 +1,7 @@
 'use client';
 
-import { Label } from '../ui/label';
-import { Input } from '../ui/input';
+import { Input } from '@/src/presentation/components/ui/input';
+import { Label } from '@/src/presentation/components/ui/label';
 
 interface DueOffsetInputProps {
   value: number;
