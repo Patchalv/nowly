@@ -1,5 +1,16 @@
 'use client';
 
+import type { UseMutationResult } from '@tanstack/react-query';
+import {
+  useInfiniteQuery,
+  useMutation,
+  useQuery,
+  useQueryClient,
+} from '@tanstack/react-query';
+import { addWeeks, isSameDay, isSameWeek, startOfWeek } from 'date-fns';
+import { useEffect, useMemo } from 'react';
+import { toast } from 'sonner';
+
 import { createTaskAction } from '@/app/actions/tasks/createTaskAction';
 import { deleteTaskAction } from '@/app/actions/tasks/deleteTaskAction';
 import {
@@ -13,16 +24,6 @@ import { CACHE, PAGINATION } from '@/src/config/constants';
 import { queryKeys } from '@/src/config/query-keys';
 import type { Task } from '@/src/domain/model/Task';
 import { handleError } from '@/src/shared/errors/handler';
-import type { UseMutationResult } from '@tanstack/react-query';
-import {
-  useInfiniteQuery,
-  useMutation,
-  useQuery,
-  useQueryClient,
-} from '@tanstack/react-query';
-import { addWeeks, isSameDay, isSameWeek, startOfWeek } from 'date-fns';
-import { useEffect, useMemo } from 'react';
-import { toast } from 'sonner';
 import type {
   CreateTaskActionResponse,
   CreateTaskMutationInput,
@@ -451,6 +452,10 @@ export function useToggleTaskCompleted(): UseMutationResult<
       // to pick up newly generated tasks from the recurring item
       if (hasRecurringItem) {
         queryClient.invalidateQueries({ queryKey: queryKeys.tasks.all });
+        // Also invalidate recurring items since lastGeneratedDate may have changed
+        queryClient.invalidateQueries({
+          queryKey: queryKeys.recurringItems.all,
+        });
       } else if (previousQueries && previousQueries.size > 0) {
         previousQueries.forEach((_previousData, queryKeyStr) => {
           const queryKey = JSON.parse(queryKeyStr) as readonly [
