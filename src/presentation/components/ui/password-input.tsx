@@ -1,9 +1,9 @@
 'use client';
 
-import * as React from 'react';
 import { Eye, EyeOff } from 'lucide-react';
+import * as React from 'react';
 
-import { cn } from '@/src/shared/utils/index';
+import { cn } from '@/src/shared/utils/cn';
 import { Input } from './input';
 
 const PasswordInput = React.forwardRef<
