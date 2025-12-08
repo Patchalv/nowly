@@ -1,17 +1,13 @@
+import * as Sentry from '@sentry/nextjs';
+
 import type { Task } from '@/src/domain/model/Task';
 import type { IRecurringTaskItemRepository } from '@/src/infrastructure/repositories/recurring-task-item/IRecurringTaskItemRepository';
 import type { ITaskRepository } from '@/src/infrastructure/repositories/task/ITaskRepository';
-import { generateTasksFromRecurringItem } from '@/src/infrastructure/services/taskGenerationService';
-import { logger } from '@sentry/nextjs';
+import {
+  generateTasksFromRecurringItem,
+  toDateKey,
+} from '@/src/infrastructure/services/taskGenerationService';
 import { EnsureTasksGeneratedResponse } from './types';
-
-/**
- * Converts a Date to an ISO date string (YYYY-MM-DD) for comparison.
- * Uses UTC to avoid timezone issues with date comparisons.
- */
-function toDateKey(date: Date): string {
-  return date.toISOString().split('T')[0];
-}
 
 /**
  * Ensures tasks are generated for all active recurring items that need generation.
@@ -33,6 +29,7 @@ export async function ensureTasksGenerated(
   recurringRepository: IRecurringTaskItemRepository,
   taskRepository: ITaskRepository
 ): Promise<EnsureTasksGeneratedResponse> {
+  const { logger } = Sentry;
   try {
     // Get all recurring items that need task generation
     const itemsNeedingGeneration =

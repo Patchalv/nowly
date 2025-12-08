@@ -1,13 +1,13 @@
-// src/infrastructure/services/taskGenerationService.ts
 import { RRule } from 'rrule';
+
 import type {
-  RecurringTaskItem,
   RecurringFrequency,
+  RecurringTaskItem,
 } from '@/src/domain/types/recurring';
 import type {
-  TaskPriority,
-  DailySection,
   BonusSection,
+  DailySection,
+  TaskPriority,
 } from '@/src/domain/types/tasks';
 import { generateNextPosition } from '@/src/infrastructure/utils/position';
 
@@ -48,9 +48,9 @@ export interface GeneratedTaskData {
  * Converts a Date to an ISO date string (YYYY-MM-DD) for comparison.
  * Uses UTC to avoid timezone issues with date comparisons.
  */
-function toDateKey(date: Date): string {
+export const toDateKey = (date: Date): string => {
   return date.toISOString().split('T')[0];
-}
+};
 
 /**
  * Calculates the due date based on scheduled date and offset days.

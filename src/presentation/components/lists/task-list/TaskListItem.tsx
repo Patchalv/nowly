@@ -1,6 +1,12 @@
 'use client';
+import { useSortable } from '@dnd-kit/sortable';
+import { CSS } from '@dnd-kit/utilities';
+import { Repeat } from 'lucide-react';
+import { forwardRef } from 'react';
 
 import type { Task } from '@/src/domain/model/Task';
+import { PriorityBadge } from '@/src/presentation/components/badge/PriorityBadge';
+import { UpdateDatePickerButton } from '@/src/presentation/components/date-picker/UpdateDatePickerButton';
 import {
   Item,
   ItemActions,
@@ -9,11 +15,6 @@ import {
   ItemTitle,
 } from '@/src/presentation/components/ui/item';
 import { cn } from '@/src/shared/utils/cn';
-import { useSortable } from '@dnd-kit/sortable';
-import { CSS } from '@dnd-kit/utilities';
-import { forwardRef } from 'react';
-import { PriorityBadge } from '../../badge/PriorityBadge';
-import { UpdateDatePickerButton } from '../../date-picker/UpdateDatePickerButton';
 import { TaskCheckbox } from './TaskCheckbox';
 import { TaskListItemDrawer } from './TaskListItemDrawer';
 
@@ -56,7 +57,12 @@ export const TaskListItemContent = forwardRef<
               {task.title}
             </ItemTitle>
             <ItemDescription>
-              {task.priority && <PriorityBadge priority={task.priority} />}
+              <div className="flex items-center gap-2">
+                {task.priority && <PriorityBadge priority={task.priority} />}
+                {task.recurringItemId && (
+                  <Repeat className="h-3 w-3 text-muted-foreground" />
+                )}
+              </div>
             </ItemDescription>
           </div>
         </div>
