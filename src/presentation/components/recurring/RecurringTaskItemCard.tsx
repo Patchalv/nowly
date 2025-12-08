@@ -9,7 +9,6 @@ import {
 import { useState } from 'react';
 
 import type { RecurringTaskItem } from '@/src/domain/types/recurring';
-import { getNextOccurrences } from '@/src/infrastructure/utils/rruleBuilder';
 import { PriorityBadge } from '@/src/presentation/components/badge/PriorityBadge';
 import {
   AlertDialog,
@@ -40,6 +39,7 @@ import { useToggleRecurringTaskItemActive } from '@/src/presentation/hooks/recur
 import { cn } from '@/src/shared/utils/cn';
 import { formatDisplayDate } from '@/src/shared/utils/date-formatting';
 import { getIconComponent } from '@/src/shared/utils/icons';
+import { getNextOccurrences } from '@/src/shared/utils/recurrence';
 import { RecurrenceDescription } from './RecurrenceDescription';
 
 interface RecurringTaskItemCardProps {
