@@ -1,6 +1,7 @@
 import { RRule } from 'rrule';
 
 import type { RecurringFrequency } from '@/src/domain/types/recurring';
+import { handleError } from '@/src/shared/errors';
 
 interface RecurrenceDescriptionProps {
   frequency: RecurringFrequency;
@@ -28,6 +29,7 @@ export function RecurrenceDescription({
       );
     } catch {
       // Fall through to simple frequency text if parsing fails
+      handleError.silent(new Error('Failed to parse rrule string'));
     }
   }
 

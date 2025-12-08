@@ -30,7 +30,7 @@ import type {
  * ```
  *
  * @remarks
- * - Automatically invalidates recurring items and task queries on success
+ * - Automatically invalidates recurring items, task, and overdue count queries on success
  * - Field errors are accessible via `error.fieldErrors` in the error object
  * - Errors are logged to Sentry via centralized error handling
  */

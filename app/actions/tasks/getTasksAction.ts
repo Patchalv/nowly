@@ -1,4 +1,5 @@
 'use server';
+import * as Sentry from '@sentry/nextjs';
 
 import { ensureTasksGenerated } from '@/src/application/recurring/ensureTasksGenerated.usecase';
 import {
@@ -11,9 +12,9 @@ import { SupabaseTaskRepository } from '@/src/infrastructure/repositories/task/S
 import { createClient } from '@/src/infrastructure/supabase/server';
 import { TaskFilters } from '@/src/presentation/hooks/tasks/types';
 import { handleError } from '@/src/shared/errors';
-import { logger } from '@sentry/nextjs';
 
 export async function getTasksAction(date: Date) {
+  const { logger } = Sentry;
   const supabase = await createClient();
 
   // Get authenticated user
@@ -59,29 +60,25 @@ export async function getTasksByWeekAction(date: Date) {
 
   // Ensure recurring tasks are generated before fetching
   // This is the "lazy generation" that happens transparently when viewing dates
-  const startTime = Date.now();
-  const generationResponse = await ensureTasksGenerated(
-    user.id,
-    recurringRepository,
-    taskRepository
-  );
-  const generationTime = Date.now() - startTime;
-
-  // Log generation metrics
-  if (generationResponse.success) {
-    const taskCount = generationResponse.generatedTasks?.length || 0;
-    if (taskCount > 0) {
-      logger.info('Lazy task generation completed', {
-        userId: user.id,
-        tasksGenerated: taskCount,
-        generationTimeMs: generationTime,
-        weekDate: date.toISOString(),
-      });
+  const generationResponse = await Sentry.startSpan(
+    { name: 'ensureTasksGenerated', op: 'task.generation' },
+    async (span) => {
+      const response = await ensureTasksGenerated(
+        user.id,
+        recurringRepository,
+        taskRepository
+      );
+      if (response.success) {
+        const taskCount = response.generatedTasks?.length || 0;
+        span.setAttribute('tasks.generated', taskCount);
+        span.setAttribute('week.date', date.toISOString());
+      } else {
+        // Log error but don't block task fetching
+        handleError.silent(response.error);
+      }
+      return response;
     }
-  } else {
-    // Log error but don't block task fetching
-    handleError.silent(generationResponse.error);
-  }
+  );
 
   // Fetch tasks for the week (will include newly generated tasks)
   const response = await listTasksByWeek(user.id, date, taskRepository);
@@ -91,7 +88,7 @@ export async function getTasksByWeekAction(date: Date) {
     return { success: false, error, tasks: [] };
   }
 
-  return response;
+  return { ...response, generationResponse };
 }
 
 export async function listTasksAction(filters: TaskFilters, page: number) {

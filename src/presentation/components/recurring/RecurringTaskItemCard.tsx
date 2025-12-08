@@ -6,7 +6,7 @@ import {
   MoreVertical,
   PauseCircle,
 } from 'lucide-react';
-import { useState } from 'react';
+import { useState, useTransition } from 'react';
 
 import type { RecurringTaskItem } from '@/src/domain/types/recurring';
 import { PriorityBadge } from '@/src/presentation/components/badge/PriorityBadge';
@@ -47,6 +47,7 @@ interface RecurringTaskItemCardProps {
 }
 
 export function RecurringTaskItemCard({ item }: RecurringTaskItemCardProps) {
+  const [_, startTransition] = useTransition();
   const [menuOpen, setMenuOpen] = useState(false);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
 
@@ -61,9 +62,11 @@ export function RecurringTaskItemCard({ item }: RecurringTaskItemCardProps) {
   const nextOccurrence = getNextOccurrences(item.rruleString, new Date(), 1)[0];
 
   const handleToggleActive = () => {
-    toggleActive.mutate({
-      recurringItemId: item.id,
-      isActive: !item.isActive,
+    startTransition(() => {
+      toggleActive.mutate({
+        recurringItemId: item.id,
+        isActive: !item.isActive,
+      });
     });
     setMenuOpen(false);
   };
@@ -77,6 +80,10 @@ export function RecurringTaskItemCard({ item }: RecurringTaskItemCardProps) {
     setMenuOpen(false);
     setDeleteDialogOpen(true);
   };
+
+  const CategoryIcon = category ? getIconComponent(category.icon) : null;
+
+  const isPending = toggleActive.isPending || deleteItem.isPending;
 
   return (
     <>
@@ -105,6 +112,7 @@ export function RecurringTaskItemCard({ item }: RecurringTaskItemCardProps) {
                     size="sm"
                     onClick={handleToggleActive}
                     className="justify-start"
+                    disabled={isPending}
                   >
                     {item.isActive ? 'Pause' : 'Resume'}
                   </Button>
@@ -113,6 +121,7 @@ export function RecurringTaskItemCard({ item }: RecurringTaskItemCardProps) {
                     size="sm"
                     onClick={handleDeleteClick}
                     className="justify-start text-destructive hover:text-destructive"
+                    disabled={isPending}
                   >
                     Delete
                   </Button>
@@ -131,15 +140,12 @@ export function RecurringTaskItemCard({ item }: RecurringTaskItemCardProps) {
           {/* Badges row */}
           <div className="flex flex-wrap items-center gap-2">
             {/* Category badge */}
-            {category && (
+            {CategoryIcon && category && (
               <span
                 className="flex items-center gap-1.5 text-xs font-medium px-2 py-1 rounded-md"
                 style={{ backgroundColor: category.color + '20' }}
               >
-                {(() => {
-                  const IconComponent = getIconComponent(category.icon);
-                  return <IconComponent className="size-3" />;
-                })()}
+                <CategoryIcon className="size-3" />
                 {category.name}
               </span>
             )}
