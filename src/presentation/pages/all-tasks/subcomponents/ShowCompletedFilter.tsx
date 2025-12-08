@@ -9,22 +9,22 @@ import { TaskFilters } from '@/src/presentation/hooks/tasks/types';
 
 interface ShowCompletedFiltersProps {
   filters: TaskFilters;
-  setFilters: (filters: TaskFilters) => void;
+  handleFiltersChange: (filters: TaskFilters) => void;
 }
 
 export const ShowCompletedFilters = ({
   filters,
-  setFilters,
+  handleFiltersChange,
 }: ShowCompletedFiltersProps) => {
   const handleShowCompletedChange = (checked: boolean) => {
-    setFilters({
+    handleFiltersChange({
       ...filters,
       showCompleted: checked ? 'All' : 'IsNotCompleted',
     });
   };
 
   return (
-    <Item variant="outline" size="sm" className="px-4 py-2">
+    <Item variant="outline" size="sm" className="px-4 py-2 w-[200px]">
       <ItemActions>
         <Checkbox
           checked={filters.showCompleted === 'All'}
