@@ -34,7 +34,7 @@ function createMockRecurringItem(
       frequency,
       startDate,
       endDate: overrides.endDate ?? undefined,
-      weeklyDays: overrides.frequency === 'weekly' ? [1, 3, 5] : undefined,
+      weeklyDays: overrides.frequency === 'weekly' ? [0, 2, 4] : undefined,
       monthlyDay: overrides.frequency === 'monthly' ? 15 : undefined,
       yearlyMonth: overrides.frequency === 'yearly' ? 7 : undefined,
       yearlyDay: overrides.frequency === 'yearly' ? 4 : undefined,

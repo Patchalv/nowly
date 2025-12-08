@@ -15,7 +15,6 @@ import {
 import { buildRRuleString } from '../../utils/rruleBuilder';
 import type { IRecurringTaskItemRepository } from './IRecurringTaskItemRepository';
 
-// eslint-disable-next-line prettier/prettier
 export class SupabaseRecurringTaskItemRepository implements IRecurringTaskItemRepository {
   constructor(private client: SupabaseClient<Database>) {}
 

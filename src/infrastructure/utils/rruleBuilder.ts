@@ -3,16 +3,16 @@ import { RRule, Weekday } from 'rrule';
 import type { RecurringFrequency } from '@/src/domain/types/recurring';
 
 /**
- * Maps JavaScript day numbers (0=Sunday, 6=Saturday) to RRule weekday constants
+ * Maps JavaScript day numbers (0=Monday, 6=Sunday) to RRule weekday constants
  */
 const WEEKDAY_MAP: Record<number, Weekday> = {
-  0: RRule.SU,
-  1: RRule.MO,
-  2: RRule.TU,
-  3: RRule.WE,
-  4: RRule.TH,
-  5: RRule.FR,
-  6: RRule.SA,
+  0: RRule.MO,
+  1: RRule.TU,
+  2: RRule.WE,
+  3: RRule.TH,
+  4: RRule.FR,
+  5: RRule.SA,
+  6: RRule.SU,
 };
 
 /**
@@ -22,7 +22,7 @@ export interface BuildRRuleOptions {
   frequency: RecurringFrequency;
   startDate: Date;
   endDate?: Date;
-  weeklyDays?: number[]; // 0-6, Sunday = 0
+  weeklyDays?: number[]; // 0-6, Monday = 0, Sunday = 6
   monthlyDay?: number; // 1-31
   yearlyMonth?: number; // 1-12
   yearlyDay?: number; // 1-31

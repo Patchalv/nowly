@@ -45,7 +45,7 @@ function createMockRecurringItem(
       frequency,
       startDate,
       endDate: overrides.endDate ?? undefined,
-      weeklyDays: frequency === 'weekly' ? [1, 3, 5] : undefined,
+      weeklyDays: frequency === 'weekly' ? [0, 2, 4] : undefined,
       monthlyDay: frequency === 'monthly' ? 15 : undefined,
       yearlyMonth: frequency === 'yearly' ? 7 : undefined,
       yearlyDay: frequency === 'yearly' ? 4 : undefined,
@@ -179,7 +179,7 @@ describe('createRecurringTaskItem', () => {
       startDate: new Date('2025-01-01T00:00:00Z'),
       priority: 'high',
       dueOffsetDays: 0,
-      weeklyDays: [1], // Monday only
+      weeklyDays: [0], // Monday only
     };
 
     const createdItem = createMockRecurringItem({
@@ -189,7 +189,7 @@ describe('createRecurringTaskItem', () => {
       rruleString: buildRRuleString({
         frequency: 'weekly',
         startDate: new Date('2025-01-01T00:00:00Z'),
-        weeklyDays: [1],
+        weeklyDays: [0],
       }),
     });
 
