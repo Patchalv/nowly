@@ -7,7 +7,7 @@ import {
   getISOWeek,
   getWeekDates,
   isSameDay,
-} from '@/src/shared/utils';
+} from '@/src/shared/utils/date';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 import { useEffect, useState } from 'react';
 

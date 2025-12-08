@@ -4,7 +4,7 @@ import { Task } from '@/src/domain/model/Task';
 import { CalendarPlusIcon } from 'lucide-react';
 
 import { handleError } from '@/src/shared/errors';
-import { cn } from '@/src/shared/utils';
+import { cn } from '@/src/shared/utils/cn';
 import { useId, useState } from 'react';
 import { useUpdateTask } from '../../hooks/tasks/useTasks';
 import { TooltipButton } from '../buttons/TooltipButton';

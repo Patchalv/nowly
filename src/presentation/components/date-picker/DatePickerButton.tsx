@@ -3,7 +3,7 @@
 import { CalendarPlusIcon } from 'lucide-react';
 import * as React from 'react';
 
-import { cn } from '@/src/shared/utils';
+import { cn } from '@/src/shared/utils/cn';
 import { TooltipButton } from '../buttons/TooltipButton';
 import { Calendar } from '../ui/calendar';
 import { Popover, PopoverContent, PopoverTrigger } from '../ui/popover';
