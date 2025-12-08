@@ -133,7 +133,7 @@ export function CreateRecurringTaskForm({
       title: '',
       description: undefined,
       categoryId: undefined,
-      priority: 'medium',
+      priority: undefined,
       dailySection: undefined,
       bonusSection: undefined,
       frequency: 'daily',
@@ -187,13 +187,10 @@ export function CreateRecurringTaskForm({
     }
 
     createRecurringTaskItem(payload, {
-      onSuccess: (response) => {
-        if (response.success) {
-          form.reset();
-          onSuccess?.();
-        } else {
-          toast.error(response.error ?? 'An unexpected error occurred');
-        }
+      onSuccess: () => {
+        toast.success('Recurring task created successfully');
+        form.reset();
+        onSuccess?.();
       },
       onError: (error) => {
         toast.error(error.message ?? 'An unexpected error occurred');

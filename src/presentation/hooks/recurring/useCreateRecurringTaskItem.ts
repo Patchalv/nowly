@@ -5,7 +5,6 @@ import {
   UseMutationResult,
   useQueryClient,
 } from '@tanstack/react-query';
-import { toast } from 'sonner';
 
 import { createRecurringTaskItemAction } from '@/app/actions/recurring/createRecurringTaskItemAction';
 import { queryKeys } from '@/src/config/query-keys';
@@ -52,10 +51,20 @@ export function useCreateRecurringTaskItem(): UseMutationResult<
     },
     onSuccess: () => {
       // Invalidate recurring items queries to refetch fresh data
-      queryClient.invalidateQueries({ queryKey: queryKeys.recurringItems.all });
+      queryClient.invalidateQueries({
+        queryKey: queryKeys.recurringItems.all,
+        refetchType: 'active',
+      });
       // Invalidate task queries as new tasks may have been generated
-      queryClient.invalidateQueries({ queryKey: queryKeys.tasks.all });
-      toast.success('Recurring task created successfully');
+      queryClient.invalidateQueries({
+        queryKey: queryKeys.tasks.all,
+        refetchType: 'active',
+      });
+      // Invalidate overdue count as new tasks may affect overdue status
+      queryClient.invalidateQueries({
+        queryKey: queryKeys.overdue.count,
+        refetchType: 'active',
+      });
     },
   });
 }
