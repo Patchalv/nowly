@@ -1,13 +1,14 @@
 'use client';
 
 import { useRouter, useSearchParams } from 'next/navigation';
-import { useTransition } from 'react';
+import { Suspense, useTransition } from 'react';
 
 import { WeekCarousel } from '@/src/presentation/pages/daily/subcomponents/week-carousel/WeekCarousel';
 import { formatDateForURL, parseDateFromURL } from '@/src/shared/utils/date';
+import { FallbackView } from '../../components/loader/FallbackView';
 import { TaskListSection } from './subcomponents/task-list/TaskListSection';
 
-export function DailyView() {
+const DailyViewContent = () => {
   const router = useRouter();
   const searchParams = useSearchParams();
   const [, startTransition] = useTransition();
@@ -38,5 +39,13 @@ export function DailyView() {
       {/* Task list */}
       <TaskListSection date={selectedDate} />
     </main>
+  );
+};
+
+export function DailyView() {
+  return (
+    <Suspense fallback={<FallbackView />}>
+      <DailyViewContent />
+    </Suspense>
   );
 }
