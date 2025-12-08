@@ -1,10 +1,12 @@
 'use server';
 
+import { ensureTasksGenerated } from '@/src/application/recurring/ensureTasksGenerated.usecase';
 import {
   findByUserIdAndFilters,
   listTasksByDate,
   listTasksByWeek,
 } from '@/src/application/tasks/listTasks.usecase';
+import { SupabaseRecurringTaskItemRepository } from '@/src/infrastructure/repositories/recurring-task-item/SupabaseRecurringTaskItemRepository';
 import { SupabaseTaskRepository } from '@/src/infrastructure/repositories/task/SupabaseTaskRepository';
 import { createClient } from '@/src/infrastructure/supabase/server';
 import { TaskFilters } from '@/src/presentation/hooks/tasks/types';
@@ -51,9 +53,38 @@ export async function getTasksByWeekAction(date: Date) {
     return { success: false, error, tasks: [] };
   }
 
-  // Execute use case
-  const repository = new SupabaseTaskRepository(supabase);
-  const response = await listTasksByWeek(user.id, date, repository);
+  // Instantiate repositories
+  const taskRepository = new SupabaseTaskRepository(supabase);
+  const recurringRepository = new SupabaseRecurringTaskItemRepository(supabase);
+
+  // Ensure recurring tasks are generated before fetching
+  // This is the "lazy generation" that happens transparently when viewing dates
+  const startTime = Date.now();
+  const generationResponse = await ensureTasksGenerated(
+    user.id,
+    recurringRepository,
+    taskRepository
+  );
+  const generationTime = Date.now() - startTime;
+
+  // Log generation metrics
+  if (generationResponse.success) {
+    const taskCount = generationResponse.generatedTasks?.length || 0;
+    if (taskCount > 0) {
+      logger.info('Lazy task generation completed', {
+        userId: user.id,
+        tasksGenerated: taskCount,
+        generationTimeMs: generationTime,
+        weekDate: date.toISOString(),
+      });
+    }
+  } else {
+    // Log error but don't block task fetching
+    handleError.silent(generationResponse.error);
+  }
+
+  // Fetch tasks for the week (will include newly generated tasks)
+  const response = await listTasksByWeek(user.id, date, taskRepository);
 
   if (!response.success) {
     const error = handleError.silent(response.error);
