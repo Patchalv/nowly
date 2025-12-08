@@ -15,6 +15,7 @@ export const TaskSearch = ({
       type="text"
       className="max-w-[400px]"
       placeholder="Search tasks"
+      value={filters.search}
       onChange={(e) =>
         handleFiltersChange({ ...filters, search: e.target.value })
       }
