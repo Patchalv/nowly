@@ -9,13 +9,23 @@ interface WeeklyDaysPickerProps {
 }
 
 const DAYS = [
-  { value: 0, label: 'S' }, // Sunday
-  { value: 1, label: 'M' }, // Monday
-  { value: 2, label: 'T' }, // Tuesday
-  { value: 3, label: 'W' }, // Wednesday
-  { value: 4, label: 'T' }, // Thursday
-  { value: 5, label: 'F' }, // Friday
-  { value: 6, label: 'S' }, // Saturday
+  { value: 0, label: 'M' }, // Monday
+  { value: 1, label: 'T' }, // Tuesday
+  { value: 2, label: 'W' }, // Wednesday
+  { value: 3, label: 'T' }, // Thursday
+  { value: 4, label: 'F' }, // Friday
+  { value: 5, label: 'S' }, // Saturday
+  { value: 6, label: 'S' }, // Sunday
+];
+
+const DAYS_NAMES = [
+  'Monday',
+  'Tuesday',
+  'Wednesday',
+  'Thursday',
+  'Friday',
+  'Saturday',
+  'Sunday',
 ];
 
 export function WeeklyDaysPicker({ value, onChange }: WeeklyDaysPickerProps) {
@@ -38,7 +48,7 @@ export function WeeklyDaysPicker({ value, onChange }: WeeklyDaysPickerProps) {
             size="sm"
             pressed={value.includes(day.value)}
             onPressedChange={() => handleDayToggle(day.value)}
-            aria-label={`Toggle ${['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'][day.value]}`}
+            aria-label={`Toggle ${DAYS_NAMES[day.value]}`}
           >
             {day.label}
           </Toggle>
