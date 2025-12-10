@@ -23,11 +23,30 @@ export async function createTaskAction(formData: FormData) {
 
   // Parse and validate input
   const scheduledDateStr = formData.get('scheduledDate');
+  const priorityStr = formData.get('priority');
+  const categoryIdStr = formData.get('categoryId');
+
+  // Parse priority: empty string or undefined becomes undefined, valid enum values are passed through
+  const priority =
+    priorityStr && priorityStr !== '' && typeof priorityStr === 'string'
+      ? (priorityStr as 'high' | 'medium' | 'low')
+      : undefined;
+
+  // Parse categoryId: empty string becomes null, undefined stays undefined, valid UUID is passed through
+  const categoryId =
+    categoryIdStr === ''
+      ? null
+      : categoryIdStr && typeof categoryIdStr === 'string'
+        ? categoryIdStr
+        : undefined;
+
   const result = createTaskSchema.safeParse({
     title: formData.get('title'),
     scheduledDate: scheduledDateStr
       ? new Date(scheduledDateStr as string)
       : null,
+    priority,
+    categoryId,
   });
 
   if (!result.success) {

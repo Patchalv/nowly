@@ -1,13 +1,13 @@
 import { TaskListDropdownMenu } from '@/src/presentation/pages/daily/subcomponents/task-list/TaskListDropdownMenu';
 
 interface TaskListHeadingProps {
-  title: string;
+  title?: string;
   showCompleted: boolean;
   setShowCompleted: (showCompleted: boolean) => void;
 }
 
 export const TaskListHeading = ({
-  title,
+  title = '',
   showCompleted,
   setShowCompleted,
 }: TaskListHeadingProps) => {

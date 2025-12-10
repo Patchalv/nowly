@@ -61,6 +61,7 @@ export const TaskListSection = ({ date }: TaskListSectionProps) => {
         tasks={activeTasks}
         isLoading={isLoading}
         showCategoryBackground
+        currentDate={date}
       />
 
       {/* Completed tasks - static list (no drag-and-drop), only shown when showCompleted is true */}

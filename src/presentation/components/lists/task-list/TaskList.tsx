@@ -19,12 +19,14 @@ interface TaskListProps {
   tasks: Task[];
   isLoading?: boolean;
   showCategoryBackground?: boolean;
+  currentDate?: Date;
 }
 
 export const TaskList = ({
   tasks,
   isLoading,
   showCategoryBackground = false,
+  currentDate,
 }: TaskListProps) => {
   const { sensors, handleDragStart, handleDragEnd, activeTask } =
     useTaskDragAndDrop(tasks);
@@ -49,7 +51,7 @@ export const TaskList = ({
   if (!tasks || tasks.length === 0) {
     return (
       <section className="p-4">
-        <TaskListEmpty />
+        <TaskListEmpty currentDate={currentDate} />
       </section>
     );
   }

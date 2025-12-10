@@ -78,6 +78,21 @@ export function useCreateTask(): UseMutationResult<
         ? new Date(scheduledDateStr as string)
         : null;
 
+      // Extract priority and categoryId from FormData for optimistic update
+      const priorityStr = formData.get('priority');
+      const priority =
+        priorityStr && priorityStr !== '' && typeof priorityStr === 'string'
+          ? (priorityStr as 'high' | 'medium' | 'low')
+          : null;
+
+      const categoryIdStr = formData.get('categoryId');
+      const categoryId =
+        categoryIdStr === ''
+          ? null
+          : categoryIdStr && typeof categoryIdStr === 'string'
+            ? categoryIdStr
+            : null;
+
       // Snapshot previous values for rollback
       const previousQueries = new Map<string, Task[] | undefined>();
 
@@ -100,8 +115,8 @@ export function useCreateTask(): UseMutationResult<
           dueDate: null,
           completed: false,
           completedAt: null,
-          categoryId: null,
-          priority: null,
+          categoryId,
+          priority,
           dailySection: null,
           bonusSection: null,
           position: 'a0',
