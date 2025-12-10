@@ -9,7 +9,7 @@ export default function ProtectedLayout({
   return (
     <div className="w-full h-screen sm:h-full overflow-hidden flex flex-col sm:flex-row">
       <Sidebar />
-      <div className="w-full max-w-4xl mx-auto h-full overflow-y-auto pb-16 sm:pb-0 flex-1 min-h-0">
+      <div className="w-full max-w-4xl mx-auto h-full overflow-y-auto pb-[calc(4rem+env(safe-area-inset-bottom))] sm:pb-0 flex-1 min-h-0">
         {children}
       </div>
       <MobileBottomBar />
