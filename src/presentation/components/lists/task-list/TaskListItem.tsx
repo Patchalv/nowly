@@ -2,7 +2,7 @@
 import { useSortable } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
 import { Repeat } from 'lucide-react';
-import { forwardRef } from 'react';
+import { forwardRef, useState } from 'react';
 
 import type { Category } from '@/src/domain/model/Category';
 import type { Task } from '@/src/domain/model/Task';
@@ -46,8 +46,8 @@ export const TaskListItemContent = forwardRef<
     },
     ref
   ) => {
-    // Convert hex color to rgba with opacity for better visibility
-    const getCategoryBackground = () => {
+    // Generate category styling: left border accent + subtle background
+    const getCategoryStyles = () => {
       if (!showCategoryBackground || !category) {
         return undefined;
       }
@@ -57,20 +57,42 @@ export const TaskListItemContent = forwardRef<
       const g = parseInt(hex.substring(2, 4), 16);
       const b = parseInt(hex.substring(4, 6), 16);
 
-      return `rgba(${r}, ${g}, ${b}, 0.4)`;
+      // Adjust opacity based on completion state
+      const bgOpacity = task.completed ? 0.04 : 0.08;
+      const hoverBgOpacity = task.completed ? 0.06 : 0.12;
+      const borderOpacity = task.completed ? 0.5 : 1;
+
+      return {
+        background: `rgba(${r}, ${g}, ${b}, ${bgOpacity})`,
+        hoverBackground: `rgba(${r}, ${g}, ${b}, ${hoverBgOpacity})`,
+        borderColor: `rgba(${r}, ${g}, ${b}, ${borderOpacity})`,
+      };
     };
+
+    const categoryStyles = getCategoryStyles();
+    const hasCategory = showCategoryBackground && category;
+    const [isHovered, setIsHovered] = useState(false);
 
     return (
       <Item
-        variant="outline"
+        variant={hasCategory ? 'default' : 'outline'}
         className={cn(
-          'w-full hover:bg-accent/50 transition-colors duration-100',
+          'w-full transition-all duration-200',
+          hasCategory && 'border-l-4',
+          !hasCategory && 'hover:bg-accent/50',
           className
         )}
         style={{
-          backgroundColor: getCategoryBackground(),
+          backgroundColor: hasCategory
+            ? isHovered
+              ? categoryStyles?.hoverBackground
+              : categoryStyles?.background
+            : undefined,
+          borderLeftColor: categoryStyles?.borderColor,
           ...style, // Merge in any additional styles (e.g., drag transform)
         }}
+        onMouseEnter={() => setIsHovered(true)}
+        onMouseLeave={() => setIsHovered(false)}
         ref={ref}
         {...props}
       >
