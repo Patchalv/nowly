@@ -1,4 +1,4 @@
-import { Category } from '@/src/domain/model/Category';
+import type { Category } from '@/src/domain/model/Category';
 import { Task } from '@/src/domain/model/Task';
 import { InfiniteList } from '@/src/presentation/components/lists/InfiniteList';
 import { TaskListItemContent } from '@/src/presentation/components/lists/task-list/TaskListItem';

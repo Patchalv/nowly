@@ -1,6 +1,6 @@
 'use client';
 
-import { Category } from '@/src/domain/model/Category';
+import type { Category } from '@/src/domain/model/Category';
 import { Task } from '@/src/domain/model/Task';
 import {
   generatePositionBetween,
