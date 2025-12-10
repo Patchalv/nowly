@@ -120,6 +120,7 @@ function createMockTaskRepository(): ITaskRepository {
     createBatch: vi.fn(),
     getByRecurringItemId: vi.fn(),
     deleteUncompletedByRecurringItemId: vi.fn(),
+    bulkUpdateUncompletedByRecurringItemId: vi.fn(),
   };
 }
 
