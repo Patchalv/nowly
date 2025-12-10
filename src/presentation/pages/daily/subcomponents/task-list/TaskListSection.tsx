@@ -12,6 +12,7 @@ import { useTasksByDate } from '@/src/presentation/hooks/tasks/useTasks';
 import { useLocalStorage } from '@/src/presentation/hooks/useLocalStorage';
 import { TaskListHeading } from '@/src/presentation/pages/daily/subcomponents/task-list/TaskListHeading';
 
+
 interface TaskListSectionProps {
   date: Date;
 }
@@ -57,7 +58,7 @@ export const TaskListSection = ({ date }: TaskListSectionProps) => {
       <OverdueTasksBanner isToday={isToday} />
 
       {/* Active tasks - always shown with drag-and-drop */}
-      <TaskList tasks={activeTasks} isLoading={isLoading} />
+      <TaskList tasks={activeTasks} isLoading={isLoading} showCategoryBackground />
 
       {/* Completed tasks - static list (no drag-and-drop), only shown when showCompleted is true */}
       {showCompleted && completedTasks.length > 0 && (
