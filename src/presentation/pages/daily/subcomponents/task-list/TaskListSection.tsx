@@ -78,9 +78,11 @@ export const TaskListSection = ({ date }: TaskListSectionProps) => {
         </div>
       )}
 
-      <div>
-        <CreateTaskDrawer variant="ghost" defaultScheduledDate={date} />
-      </div>
+      {activeTasks.length > 0 && (
+        <div>
+          <CreateTaskDrawer variant="ghost" defaultScheduledDate={date} />
+        </div>
+      )}
     </section>
   );
 };
