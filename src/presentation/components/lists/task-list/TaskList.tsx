@@ -50,7 +50,7 @@ export const TaskList = ({
 
   if (!tasks || tasks.length === 0) {
     return (
-      <section className="p-4">
+      <section className="py-4">
         <TaskListEmpty currentDate={currentDate} />
       </section>
     );
