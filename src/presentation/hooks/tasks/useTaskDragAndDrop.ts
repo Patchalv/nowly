@@ -19,7 +19,12 @@ import { useReorderTask } from '@/src/presentation/hooks/tasks/useTasks';
  * @param tasks - Array of tasks to enable drag-and-drop for
  * @returns Object containing sensors, event handlers, and active task state
  */
-export function useTaskDragAndDrop(tasks: Task[]) {
+export function useTaskDragAndDrop(tasks: Task[]): {
+  sensors: ReturnType<typeof useSensors>;
+  handleDragStart: (event: DragStartEvent) => void;
+  handleDragEnd: (event: DragEndEvent) => void;
+  activeTask: Task | null;
+} {
   const [activeTask, setActiveTask] = useState<Task | null>(null);
   const reorderTask = useReorderTask();
   const rebalanceTasks = useRebalanceTasks();

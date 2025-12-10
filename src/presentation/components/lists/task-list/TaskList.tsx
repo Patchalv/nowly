@@ -1,7 +1,7 @@
 'use client';
 
 import type { Category } from '@/src/domain/model/Category';
-import { Task } from '@/src/domain/model/Task';
+import type { Task } from '@/src/domain/model/Task';
 import { ItemGroup } from '@/src/presentation/components/ui/item';
 import { Skeleton } from '@/src/presentation/components/ui/skeleton';
 import { useCategories } from '@/src/presentation/hooks/categories/useCategories';
