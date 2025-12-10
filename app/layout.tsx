@@ -13,7 +13,7 @@ const geistMono = Geist_Mono({
   subsets: ['latin'],
 });
 
-const viewport: Viewport = {
+export const viewport: Viewport = {
   width: 'device-width',
   initialScale: 1,
   viewportFit: 'cover',
@@ -53,7 +53,6 @@ export const metadata: Metadata = {
     ],
   },
   manifest: '/manifest.json',
-  viewport,
 };
 
 export default function RootLayout({
