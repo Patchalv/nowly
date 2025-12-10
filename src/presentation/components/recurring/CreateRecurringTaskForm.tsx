@@ -58,7 +58,9 @@ const formSchema = z
     startDate: z.date(),
     endDate: z.date().optional(),
     dueOffsetDays: z.number().int().min(0).max(365),
-    weeklyDays: z.array(z.number().int().min(0).max(6)).optional(),
+    weeklyDays: z
+      .array(z.number().int().min(0).max(6)) // JavaScript native: 0=Sunday through 6=Saturday
+      .optional(),
     monthlyDay: z.number().int().min(1).max(31).optional(),
     yearlyMonth: z.number().int().min(1).max(12).optional(),
     yearlyDay: z.number().int().min(1).max(31).optional(),
@@ -133,7 +135,7 @@ export function CreateRecurringTaskForm({
       title: '',
       description: undefined,
       categoryId: undefined,
-      priority: 'medium',
+      priority: undefined,
       dailySection: undefined,
       bonusSection: undefined,
       frequency: 'daily',
@@ -187,13 +189,10 @@ export function CreateRecurringTaskForm({
     }
 
     createRecurringTaskItem(payload, {
-      onSuccess: (response) => {
-        if (response.success) {
-          form.reset();
-          onSuccess?.();
-        } else {
-          toast.error(response.error ?? 'An unexpected error occurred');
-        }
+      onSuccess: () => {
+        toast.success('Recurring task created successfully');
+        form.reset();
+        onSuccess?.();
       },
       onError: (error) => {
         toast.error(error.message ?? 'An unexpected error occurred');

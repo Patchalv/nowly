@@ -1,3 +1,5 @@
+'use client';
+
 import { LogoutButton } from '@/src/presentation/components/buttons/LogoutButton';
 import { Skeleton } from '@/src/presentation/components/ui/skeleton';
 import { useUserProfile } from '@/src/presentation/hooks/user/useUser';

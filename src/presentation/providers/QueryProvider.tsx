@@ -13,7 +13,7 @@ function makeQueryClient() {
         gcTime: 10 * 60 * 1000,
         retry: 1,
         refetchOnWindowFocus: isProduction,
-        refetchOnMount: false,
+        refetchOnMount: true,
       },
       mutations: {
         retry: false,

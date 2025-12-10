@@ -1,15 +1,14 @@
 'use client';
 
-import { Suspense, useState } from 'react';
+import { useState } from 'react';
 import { useDebouncedCallback } from 'use-debounce';
 
 import { UI } from '@/src/config/constants';
-import { FallbackView } from '../../components/loader/FallbackView';
-import { TaskFilters } from '../../hooks/tasks/types';
-import { Filters } from './subcomponents/Filters';
-import { TaskListSection } from './subcomponents/TaskListSection';
+import { TaskFilters } from '@/src/presentation/hooks/tasks/types';
+import { Filters } from '@/src/presentation/pages/all-tasks/subcomponents/Filters';
+import { TaskListSection } from '@/src/presentation/pages/all-tasks/subcomponents/TaskListSection';
 
-function AllTasksViewContent() {
+export function AllTasksView() {
   const [filters, setFilters] = useState<TaskFilters>({
     categoryId: undefined,
     showCompleted: 'IsNotCompleted',
@@ -34,13 +33,5 @@ function AllTasksViewContent() {
       />
       <TaskListSection filters={filters} />
     </main>
-  );
-}
-
-export function AllTasksView() {
-  return (
-    <Suspense fallback={<FallbackView />}>
-      <AllTasksViewContent />
-    </Suspense>
   );
 }

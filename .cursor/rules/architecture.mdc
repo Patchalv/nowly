@@ -400,6 +400,8 @@ export function useCreateTask() {
 
 ### Server Action Pattern
 
+**FormData Actions (Form Submissions):**
+
 ```typescript
 // app/actions/createTaskAction.ts
 'use server';
@@ -432,14 +434,64 @@ export async function createTaskAction(formData: FormData) {
 }
 ```
 
+**Non-FormData Actions (Query/Fetch Actions):**
+
+For server actions that accept non-FormData parameters (Date, objects, primitives), Next.js serializes these values when crossing the client-server boundary. Always validate and coerce inputs at the server action boundary.
+
+```typescript
+// app/actions/getTasksAction.ts
+'use server';
+import { z } from 'zod';
+import { isValidDate } from '@/src/shared/utils/date';
+
+// Date schema - handles serialized Date strings from client
+const dateInputSchema = z
+  .union([z.string(), z.date()])
+  .transform((val) => {
+    if (val instanceof Date) return val;
+    const parsed = new Date(val);
+    if (isNaN(parsed.getTime())) {
+      throw new z.ZodError([{
+        code: 'custom',
+        path: [],
+        message: 'Invalid date format',
+      }]);
+    }
+    return parsed;
+  })
+  .pipe(z.date().refine((date) => isValidDate(date)));
+
+export async function getTasksAction(date: Date | string) {
+  // Validate input immediately
+  const dateResult = dateInputSchema.safeParse(date);
+  if (!dateResult.success) {
+    logger.error('Get tasks validation error', { error: dateResult.error });
+    return {
+      success: false,
+      error: 'Invalid date format',
+      tasks: [],
+      errors: dateResult.error.flatten().fieldErrors,
+    };
+  }
+
+  const validatedDate = dateResult.data;
+  // Continue with validated date...
+}
+```
+
+**See [Form Guidelines - Non-FormData Actions](forms.mdc#non-formdata-actions-queryfetch-actions) for complete validation patterns.**
+
 **Rules:**
 
 - ✅ Server Components can instantiate repositories directly
 - ✅ Client Components use hooks that abstract repository access
 - ✅ Server Actions handle repository instantiation
+- ✅ **Server Actions validate ALL inputs** (FormData or direct parameters)
+- ✅ **Handle Next.js serialization** (Date objects become strings, validate and coerce)
 - ✅ Import from application and domain layers
 - ❌ NEVER import infrastructure repositories in Client Components
 - ❌ Don't put business logic in components
+- ❌ Never trust unvalidated input from client
 
 ---
 
@@ -880,6 +932,9 @@ Before committing code:
 - [ ] Server Components can instantiate repositories
 - [ ] Client Components use hooks (no direct repository imports)
 - [ ] Server Actions handle repository instantiation
+- [ ] **Server Actions validate ALL inputs** (FormData or direct parameters)
+- [ ] **Date parameters accept `Date | string`** (reflects Next.js serialization)
+- [ ] **Validation schemas handle serialization** (coerce strings to Date, validate objects)
 - [ ] No business logic in components
 - [ ] Import from application/domain only (not infrastructure repositories)
 - [ ] Auth forms use Server Actions (not client utilities)
