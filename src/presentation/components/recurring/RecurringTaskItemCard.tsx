@@ -40,6 +40,7 @@ import { cn } from '@/src/shared/utils/cn';
 import { formatDisplayDate } from '@/src/shared/utils/date-formatting';
 import { getIconComponent } from '@/src/shared/utils/icons';
 import { getNextOccurrences } from '@/src/shared/utils/recurrence';
+import { EditRecurringTaskItemDialog } from './EditRecurringTaskItemDialog';
 import { RecurrenceDescription } from './RecurrenceDescription';
 
 interface RecurringTaskItemCardProps {
@@ -50,6 +51,7 @@ export function RecurringTaskItemCard({ item }: RecurringTaskItemCardProps) {
   const [_, startTransition] = useTransition();
   const [menuOpen, setMenuOpen] = useState(false);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [editDialogOpen, setEditDialogOpen] = useState(false);
 
   const { data: categories } = useCategories();
   const toggleActive = useToggleRecurringTaskItemActive();
@@ -79,6 +81,11 @@ export function RecurringTaskItemCard({ item }: RecurringTaskItemCardProps) {
   const handleDeleteClick = () => {
     setMenuOpen(false);
     setDeleteDialogOpen(true);
+  };
+
+  const handleEditClick = () => {
+    setMenuOpen(false);
+    setEditDialogOpen(true);
   };
 
   const CategoryIcon = category ? getIconComponent(category.icon) : null;
@@ -171,8 +178,9 @@ export function RecurringTaskItemCard({ item }: RecurringTaskItemCardProps) {
                   <Button
                     variant="ghost"
                     size="sm"
-                    disabled
+                    onClick={handleEditClick}
                     className="justify-start"
+                    disabled={isPending}
                   >
                     Edit
                   </Button>
@@ -200,6 +208,13 @@ export function RecurringTaskItemCard({ item }: RecurringTaskItemCardProps) {
           </ItemActions>
         </ItemContent>
       </Item>
+
+      {/* Edit dialog */}
+      <EditRecurringTaskItemDialog
+        item={item}
+        open={editDialogOpen}
+        onOpenChange={setEditDialogOpen}
+      />
 
       {/* Delete confirmation dialog */}
       <AlertDialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>

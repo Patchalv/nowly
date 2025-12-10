@@ -78,4 +78,13 @@ export interface ITaskRepository {
    * Used when deactivating or deleting a recurring item
    */
   deleteUncompletedByRecurringItemId(recurringItemId: string): Promise<void>;
+
+  /**
+   * Bulk update all uncompleted tasks for a recurring item
+   * Used when updating a recurring item to sync changes to existing tasks
+   */
+  bulkUpdateUncompletedByRecurringItemId(
+    recurringItemId: string,
+    updates: Partial<Task>
+  ): Promise<void>;
 }

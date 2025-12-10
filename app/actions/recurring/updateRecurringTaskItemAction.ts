@@ -1,5 +1,9 @@
 'use server';
 
+import { handleError } from '@/src/shared/logging';
+import { revalidatePath } from 'next/cache';
+import z from 'zod';
+
 import { updateRecurringTaskItem } from '@/src/application/recurring/updateRecurringTaskItem.usecase';
 import { ROUTES } from '@/src/config/constants';
 import {
@@ -9,9 +13,6 @@ import {
 import { SupabaseRecurringTaskItemRepository } from '@/src/infrastructure/repositories/recurring-task-item/SupabaseRecurringTaskItemRepository';
 import { SupabaseTaskRepository } from '@/src/infrastructure/repositories/task/SupabaseTaskRepository';
 import { createClient } from '@/src/infrastructure/supabase/server';
-import { logger } from '@sentry/nextjs';
-import { revalidatePath } from 'next/cache';
-import z from 'zod';
 
 const updateParamsSchema = z.object({
   recurringItemId: z.string().uuid(),
@@ -24,7 +25,7 @@ export async function updateRecurringTaskItemAction(
   // Validate recurringItemId
   const paramsResult = updateParamsSchema.safeParse({ recurringItemId });
   if (!paramsResult.success) {
-    logger.error('Invalid recurring item ID', { error: paramsResult.error });
+    handleError.log(paramsResult.error);
     return { success: false, error: 'Invalid recurring item ID' };
   }
 
@@ -37,16 +38,17 @@ export async function updateRecurringTaskItemAction(
   } = await supabase.auth.getUser();
 
   if (authError || !user) {
-    logger.error('Unauthorized', { error: authError });
+    handleError.log(authError);
     return { success: false, error: 'Unauthorized' };
   }
 
   // Validate input
   const result = updateRecurringTaskItemSchema.safeParse(updates);
   if (!result.success) {
-    logger.error('Update recurring task item validation errors', {
-      error: result.error,
-    });
+    handleError.validation(
+      'Update recurring task item validation failed',
+      result.error
+    );
     return { success: false, errors: result.error.flatten().fieldErrors };
   }
 
@@ -62,7 +64,7 @@ export async function updateRecurringTaskItemAction(
   );
 
   if (!response.success) {
-    logger.error('Update recurring task item error', { error: response.error });
+    handleError.silent(response.error);
     return { success: false, error: response.error };
   }
 

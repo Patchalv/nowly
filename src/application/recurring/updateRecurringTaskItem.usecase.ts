@@ -1,7 +1,8 @@
+import type { Task } from '@/src/domain/model/Task';
 import type { UpdateRecurringTaskItemInput } from '@/src/domain/validation/recurring/recurringTaskItem.schema';
 import type { IRecurringTaskItemRepository } from '@/src/infrastructure/repositories/recurring-task-item/IRecurringTaskItemRepository';
 import type { ITaskRepository } from '@/src/infrastructure/repositories/task/ITaskRepository';
-import { logger } from '@sentry/nextjs';
+import { logger } from '@/src/shared/logging';
 import { MutateRecurringTaskItemResponse } from './types';
 
 /**
@@ -11,6 +12,7 @@ import { MutateRecurringTaskItemResponse } from './types';
  * 1. Verifies the recurring item exists and belongs to the user
  * 2. Updates the recurring item via repository
  * 3. If isActive is changed to false, cleans up future uncompleted tasks
+ * 4. If task template fields are updated, syncs changes to uncompleted tasks
  *
  * @param recurringItemId - The ID of the recurring item to update
  * @param userId - The ID of the user performing the update
@@ -47,6 +49,21 @@ export async function updateRecurringTaskItem(
     const isDeactivating =
       updates.isActive === false && existingItem.isActive === true;
 
+    // Identify which task template fields are being updated
+    // These fields are copied to generated tasks and should be synced to existing uncompleted tasks
+    const taskTemplateFields: (keyof UpdateRecurringTaskItemInput)[] = [
+      'title',
+      'description',
+      'categoryId',
+      'priority',
+      'dailySection',
+      'bonusSection',
+    ];
+
+    const hasTaskTemplateUpdates = taskTemplateFields.some(
+      (field) => updates[field] !== undefined
+    );
+
     // Update the recurring item
     const updatedItem = await recurringRepository.update(
       recurringItemId,
@@ -56,6 +73,33 @@ export async function updateRecurringTaskItem(
     // If deactivating, clean up future uncompleted tasks
     if (isDeactivating) {
       await taskRepository.deleteUncompletedByRecurringItemId(recurringItemId);
+    } else if (hasTaskTemplateUpdates) {
+      // Sync task template field changes to uncompleted tasks
+      const taskUpdates: Partial<Task> = {};
+
+      if (updates.title !== undefined) {
+        taskUpdates.title = updates.title;
+      }
+      if (updates.description !== undefined) {
+        taskUpdates.description = updates.description ?? null;
+      }
+      if (updates.categoryId !== undefined) {
+        taskUpdates.categoryId = updates.categoryId ?? null;
+      }
+      if (updates.priority !== undefined) {
+        taskUpdates.priority = updates.priority ?? null;
+      }
+      if (updates.dailySection !== undefined) {
+        taskUpdates.dailySection = updates.dailySection ?? null;
+      }
+      if (updates.bonusSection !== undefined) {
+        taskUpdates.bonusSection = updates.bonusSection ?? null;
+      }
+
+      await taskRepository.bulkUpdateUncompletedByRecurringItemId(
+        recurringItemId,
+        taskUpdates
+      );
     }
 
     return {

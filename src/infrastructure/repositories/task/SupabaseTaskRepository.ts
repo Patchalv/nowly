@@ -1,7 +1,6 @@
 import type { Task } from '@/src/domain/model/Task';
 import { TaskFilters } from '@/src/presentation/hooks/tasks/types';
-import { handleError } from '@/src/shared/errors/handler';
-import { logger } from '@sentry/nextjs';
+import { handleError, logger } from '@/src/shared/logging';
 import type { SupabaseClient } from '@supabase/supabase-js';
 import type { Database, TaskRow } from '../../supabase/types';
 import {
@@ -440,6 +439,27 @@ export class SupabaseTaskRepository implements ITaskRepository {
       throw new Error(
         `Failed to delete uncompleted tasks by recurring item ID: ${error.message}`
       );
+    }
+  }
+
+  /**
+   * Bulk update all uncompleted tasks for a recurring item
+   * Used when updating a recurring item to sync changes to existing tasks
+   */
+  async bulkUpdateUncompletedByRecurringItemId(
+    recurringItemId: string,
+    updates: Partial<Task>
+  ): Promise<void> {
+    const row = this.toDatabase(updates);
+
+    const { error } = await this.client
+      .from('tasks')
+      .update(row as never)
+      .eq('recurring_item_id', recurringItemId)
+      .eq('completed', false);
+
+    if (error) {
+      handleError.throw(error);
     }
   }
 }

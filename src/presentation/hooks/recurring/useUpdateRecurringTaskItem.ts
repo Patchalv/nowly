@@ -5,14 +5,13 @@ import {
   UseMutationResult,
   useQueryClient,
 } from '@tanstack/react-query';
-import { toast } from 'sonner';
 
 import { updateRecurringTaskItemAction } from '@/app/actions/recurring/updateRecurringTaskItemAction';
 import { queryKeys } from '@/src/config/query-keys';
 import type { RecurringTaskItem } from '@/src/domain/types/recurring';
 import type { ServerActionError } from '@/src/presentation/hooks/tasks/utils';
 import { handleActionResponse } from '@/src/presentation/hooks/tasks/utils';
-import { handleError } from '@/src/shared/errors';
+import { showError, showSuccess } from '@/src/presentation/utils/error-display';
 import type {
   UpdateRecurringItemActionResponse,
   UpdateRecurringItemMutationInput,
@@ -103,14 +102,14 @@ export function useUpdateRecurringTaskItem(): UseMutationResult<
         });
       }
 
-      handleError.toast(error, 'Failed to update recurring task');
+      showError(error, 'Failed to update recurring task');
     },
     onSuccess: () => {
       // Invalidate recurring items queries to refetch fresh data
       queryClient.invalidateQueries({ queryKey: queryKeys.recurringItems.all });
       // Invalidate task queries as tasks may have been updated
       queryClient.invalidateQueries({ queryKey: queryKeys.tasks.all });
-      toast.success('Recurring task updated successfully');
+      showSuccess('Recurring task updated successfully');
     },
   });
 }
