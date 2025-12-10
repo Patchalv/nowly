@@ -292,20 +292,18 @@ export const STORAGE_KEYS = {
 // ------------------------------------------------------------------------------
 
 export const CATEGORY_COLOR_OPTIONS = [
-  '#DF63DD',
-  '#AF7BE9',
-  '#7C5BD1',
-  '#656CF7',
-  '#65E0DF',
-  '#65E0B9',
-  '#AEE76E',
-  '#FADD2B',
-  '#F6A957',
-  '#F8666E',
-  '#F765AC',
-  '#F78EC8',
-  '#95C0E9',
-  '#0EB0A3',
+  '#FFD1DC', // Light pastel pink
+  '#E6E6FA', // Light pastel lavender
+  '#B0E0E6', // Light pastel blue
+  '#B2F5EA', // Light pastel mint
+  '#C8E6C9', // Light pastel green
+  '#FFF9C4', // Light pastel yellow
+  '#FFE5B4', // Light pastel peach
+  '#FFCCCB', // Light pastel coral
+  '#FFB6C1', // Light pastel rose
+  '#DDA0DD', // Light pastel lilac
+  '#ADD8E6', // Light pastel sky blue
+  '#BCE4D4', // Light pastel sage
 ] as const;
 
 // ------------------------------------------------------------------------------
