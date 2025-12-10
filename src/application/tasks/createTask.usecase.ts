@@ -1,8 +1,9 @@
+import { LexoRank } from 'lexorank';
+
 import type { CreateTaskInput } from '@/src/domain/validation/task/task.schema';
 import type { ITaskRepository } from '@/src/infrastructure/repositories/task/ITaskRepository';
 import { generatePositionForNewTask } from '@/src/infrastructure/utils/position';
-import { logger } from '@sentry/nextjs';
-import { LexoRank } from 'lexorank';
+import { logger } from '@/src/shared/logging';
 import { MutateTaskResponse } from './types';
 
 export async function createTask(
@@ -11,6 +12,14 @@ export async function createTask(
   repository: ITaskRepository
 ): Promise<MutateTaskResponse> {
   try {
+    logger.debug('Creating task', {
+      userId,
+      title: input.title,
+      hasScheduledDate: !!input.scheduledDate,
+      categoryId: input.categoryId,
+      priority: input.priority,
+    });
+
     // Generate position for the new task, scoped per user+date
     // If scheduledDate is null, we can't query by date, so use min position
     const scheduledDate = input.scheduledDate ?? null;
@@ -28,17 +37,28 @@ export async function createTask(
       dueDate: null,
       completed: false,
       completedAt: null,
-      categoryId: null,
-      priority: null,
+      categoryId: input.categoryId ?? null,
+      priority: input.priority ?? null,
       dailySection: null,
       bonusSection: null,
       position,
       recurringItemId: null,
     });
 
+    logger.info('Task created', {
+      taskId: task.id,
+      userId,
+      categoryId: task.categoryId,
+      hasScheduledDate: !!task.scheduledDate,
+    });
+
     return { success: true, task };
   } catch (error) {
-    logger.error('Create task error', { error });
+    logger.error('Create task failed', {
+      error: error instanceof Error ? error.message : String(error),
+      userId,
+      title: input.title,
+    });
     return {
       success: false,
       error: error instanceof Error ? error.message : 'Failed to create task',

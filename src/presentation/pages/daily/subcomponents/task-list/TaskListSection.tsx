@@ -61,6 +61,7 @@ export const TaskListSection = ({ date }: TaskListSectionProps) => {
         tasks={activeTasks}
         isLoading={isLoading}
         showCategoryBackground
+        currentDate={date}
       />
 
       {/* Completed tasks - static list (no drag-and-drop), only shown when showCompleted is true */}
@@ -77,9 +78,11 @@ export const TaskListSection = ({ date }: TaskListSectionProps) => {
         </div>
       )}
 
-      <div>
-        <CreateTaskDrawer variant="ghost" defaultScheduledDate={date} />
-      </div>
+      {activeTasks.length > 0 && (
+        <div>
+          <CreateTaskDrawer variant="ghost" defaultScheduledDate={date} />
+        </div>
+      )}
     </section>
   );
 };

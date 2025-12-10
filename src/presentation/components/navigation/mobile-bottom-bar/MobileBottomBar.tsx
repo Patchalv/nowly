@@ -14,7 +14,7 @@ export const MobileBottomBar = () => {
   const { getIconClasses, iconStrokeWidth } = useNavigationStyles();
 
   return (
-    <div className="fixed bottom-0 left-0 right-0 z-50 flex sm:hidden items-center justify-around bg-accent-foreground border-t border-sidebar-border py-2">
+    <div className="fixed bottom-0 left-0 right-0 z-50 flex sm:hidden items-center justify-around bg-accent-foreground border-t border-sidebar-border pt-2 pb-[calc(0.5rem+env(safe-area-inset-bottom))]">
       <Link href={ROUTES.DAILY}>
         <CalendarCheckIcon
           strokeWidth={iconStrokeWidth}

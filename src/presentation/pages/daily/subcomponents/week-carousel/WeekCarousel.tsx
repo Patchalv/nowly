@@ -112,7 +112,7 @@ export function WeekCarousel({
           {/* Week number */}
           <div className="flex shrink-0 flex-col items-center justify-center px-1 sm:px-2">
             <span className="text-xs font-medium text-muted-foreground">W</span>
-            <span className="text-sm font-bold text-teal-600">
+            <span className="text-sm font-bold text-primary bg-primary/10 rounded-md px-1.5 py-0.5">
               {weekNumber}
             </span>
           </div>
@@ -122,13 +122,13 @@ export function WeekCarousel({
 
           {/* Days grid */}
           <div className="flex flex-1 items-center justify-around gap-0.5 sm:gap-1">
-            {days.map((day, index) => {
+            {days.map((day) => {
               const isSelected = day.isSelected;
               const isToday = day.isToday;
 
               return (
                 <button
-                  key={index}
+                  key={day.date.toISOString().slice(0, 10)}
                   onClick={() => handleDateClick(day.date)}
                   className={`
                     flex min-w-8 flex-col items-center justify-center
@@ -136,9 +136,9 @@ export function WeekCarousel({
                     sm:min-w-10 sm:px-2 sm:py-1.5
                     ${
                       isSelected
-                        ? 'bg-teal-600 text-white'
+                        ? 'bg-primary text-primary-foreground'
                         : isToday
-                          ? 'ring-2 ring-teal-600 hover:bg-muted'
+                          ? 'ring-2 ring-primary hover:bg-muted'
                           : 'hover:bg-muted'
                     }
                   `}
@@ -148,7 +148,7 @@ export function WeekCarousel({
                   <span
                     className={`
                       text-xs font-medium
-                      ${isSelected ? 'text-white' : 'text-muted-foreground'}
+                      ${isSelected ? 'text-primary-foreground' : 'text-muted-foreground'}
                     `}
                   >
                     {day.dayOfWeek}
@@ -156,7 +156,7 @@ export function WeekCarousel({
                   <span
                     className={`
                       text-sm font-semibold
-                      ${isSelected ? 'text-white' : 'text-foreground'}
+                      ${isSelected ? 'text-primary-foreground' : 'text-foreground'}
                     `}
                   >
                     {day.dayOfMonth}
