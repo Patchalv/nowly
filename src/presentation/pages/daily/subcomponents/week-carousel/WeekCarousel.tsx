@@ -122,13 +122,13 @@ export function WeekCarousel({
 
           {/* Days grid */}
           <div className="flex flex-1 items-center justify-around gap-0.5 sm:gap-1">
-            {days.map((day, index) => {
+            {days.map((day) => {
               const isSelected = day.isSelected;
               const isToday = day.isToday;
 
               return (
                 <button
-                  key={index}
+                  key={day.date.toISOString().slice(0, 10)}
                   onClick={() => handleDateClick(day.date)}
                   className={`
                     flex min-w-8 flex-col items-center justify-center
