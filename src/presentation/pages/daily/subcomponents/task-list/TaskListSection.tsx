@@ -6,8 +6,9 @@ import { TaskListItemContent } from '@/src/presentation/components/lists/task-li
 import { OverdueTasksBanner } from '@/src/presentation/components/overdue/OverdueTasksBanner';
 import { ItemGroup } from '@/src/presentation/components/ui/item';
 import { useTasksByDate } from '@/src/presentation/hooks/tasks/useTasks';
+import { useLocalStorage } from '@/src/presentation/hooks/useLocalStorage';
 import { isSameDay } from 'date-fns';
-import { useMemo, useState } from 'react';
+import { useMemo } from 'react';
 import { TaskListHeading } from './TaskListHeading';
 
 interface TaskListSectionProps {
@@ -15,7 +16,10 @@ interface TaskListSectionProps {
 }
 
 export const TaskListSection = ({ date }: TaskListSectionProps) => {
-  const [showCompleted, setShowCompleted] = useState(false);
+  const [showCompleted, setShowCompleted] = useLocalStorage(
+    'daily-show-completed',
+    false
+  );
   const { data: tasks, isLoading, error } = useTasksByDate(date);
   const isToday = isSameDay(date, new Date());
 
