@@ -2,5 +2,14 @@
     enabled = true
     port = 54321
     
-    [db]
+[db]
     port = 54322
+
+[db.seed]
+    enabled = true
+    sql_paths = ['./supabase/seed.sql']
+
+# Disable seeding for production (main branch)
+# Seed data should only run on preview/feature branches, not in production
+[remotes.main.db.seed]
+    enabled = false
