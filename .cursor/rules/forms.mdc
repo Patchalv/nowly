@@ -196,6 +196,8 @@ export function CreateEntityForm() {
 
 ## 🚀 Server Actions
 
+### FormData Actions (Form Submissions)
+
 ```typescript
 // app/actions/createEntityAction.ts
 "use server";
@@ -247,6 +249,210 @@ export function CreateEntityForm() {
     });
   };
 }
+```
+
+### Non-FormData Actions (Query/Fetch Actions)
+
+**Critical**: Next.js server actions serialize parameters when crossing the client-server boundary. Date objects become ISO strings, and complex objects are serialized. Always validate and coerce inputs at the server action boundary.
+
+#### Date Parameter Validation
+
+```typescript
+// app/actions/getTasksAction.ts
+"use server";
+import { z } from "zod";
+import { isValidDate } from "@/src/shared/utils/date";
+
+// Date schema - handles serialized Date strings from client
+const dateInputSchema = z
+  .union([z.string(), z.date()]) // Accept both string (serialized) and Date
+  .transform((val) => {
+    if (val instanceof Date) return val;
+    const parsed = new Date(val);
+    if (isNaN(parsed.getTime())) {
+      throw new z.ZodError([
+        {
+          code: "custom",
+          path: [],
+          message: "Invalid date format",
+        },
+      ]);
+    }
+    return parsed;
+  })
+  .pipe(
+    z.date().refine((date) => isValidDate(date), {
+      message: "Invalid date",
+    })
+  );
+
+export async function getTasksAction(date: Date | string) {
+  // Validate input
+  const dateResult = dateInputSchema.safeParse(date);
+  if (!dateResult.success) {
+    logger.error("Get tasks validation error", { error: dateResult.error });
+    return {
+      success: false,
+      error: "Invalid date format",
+      tasks: [],
+      errors: dateResult.error.flatten().fieldErrors,
+    };
+  }
+
+  const validatedDate = dateResult.data;
+
+  // Continue with validated date...
+  const response = await listTasksByDate(userId, validatedDate, repository);
+  return response;
+}
+```
+
+#### Object Parameter Validation
+
+```typescript
+// app/actions/listTasksAction.ts
+"use server";
+import { z } from "zod";
+
+// Define validation schema matching the expected object structure
+const taskFiltersSchema = z.object({
+  categoryId: z.string().uuid().nullable().optional(),
+  showCompleted: z.enum(["IsCompleted", "IsNotCompleted", "All"]),
+  showScheduled: z.enum(["IsScheduled", "IsNotScheduled", "All"]),
+  search: z.string().optional(),
+});
+
+const pageSchema = z.number().int().min(1).default(1);
+
+export async function listTasksAction(
+  filters: TaskFilters,
+  page: number
+) {
+  // Validate inputs
+  const filtersResult = taskFiltersSchema.safeParse(filters);
+  const pageResult = pageSchema.safeParse(page);
+
+  if (!filtersResult.success) {
+    logger.error("List tasks filters validation error", {
+      error: filtersResult.error,
+    });
+    return {
+      success: false,
+      error: "Invalid filters format",
+      tasks: [],
+      errors: filtersResult.error.flatten().fieldErrors,
+    };
+  }
+
+  if (!pageResult.success) {
+    logger.error("List tasks page validation error", {
+      error: pageResult.error,
+    });
+    return {
+      success: false,
+      error: "Invalid page number",
+      tasks: [],
+      errors: pageResult.error.flatten().fieldErrors,
+    };
+  }
+
+  const validatedFilters = filtersResult.data;
+  const validatedPage = pageResult.data;
+
+  // Continue with validated inputs...
+  const response = await findByUserIdAndFilters(
+    userId,
+    validatedFilters,
+    validatedPage,
+    repository
+  );
+  return response;
+}
+```
+
+#### Validation Best Practices
+
+**1. Always validate at server action boundary**
+
+- ✅ Validate immediately after function parameters
+- ✅ Before any authentication or business logic
+- ✅ Use `safeParse` to handle errors gracefully
+
+**2. Handle Next.js serialization**
+
+- ✅ Accept `Date | string` for date parameters (reflects serialization reality)
+- ✅ Use Zod transforms to coerce strings to Date objects
+- ✅ Validate object structures match expected types
+
+**3. Consistent error responses**
+
+```typescript
+// Standard error response format
+{
+  success: false,
+  error: string, // User-friendly message
+  tasks: [], // Empty array/appropriate default
+  errors?: Record<string, string[]>, // Field-level errors
+}
+```
+
+**4. Log validation errors**
+
+```typescript
+if (!result.success) {
+  logger.error("Action validation error", { error: result.error });
+  return {
+    success: false,
+    error: "Invalid input format",
+    // ... rest of error response
+  };
+}
+```
+
+**5. Type signatures reflect reality**
+
+```typescript
+// ✅ Good - reflects Next.js serialization
+export async function getTasksAction(date: Date | string)
+
+// ❌ Bad - doesn't match runtime behavior
+export async function getTasksAction(date: Date)
+```
+
+#### Common Validation Patterns
+
+**Date validation with coercion:**
+```typescript
+const dateInputSchema = z
+  .union([z.string(), z.date()])
+  .transform((val) => {
+    if (val instanceof Date) return val;
+    const parsed = new Date(val);
+    if (isNaN(parsed.getTime())) {
+      throw new z.ZodError([{
+        code: "custom",
+        path: [],
+        message: "Invalid date format",
+      }]);
+    }
+    return parsed;
+  })
+  .pipe(z.date().refine((date) => isValidDate(date)));
+```
+
+**Number validation:**
+```typescript
+const pageSchema = z.number().int().min(1).default(1);
+```
+
+**Enum validation:**
+```typescript
+const statusSchema = z.enum(["active", "inactive", "pending"]);
+```
+
+**Optional UUID:**
+```typescript
+const categoryIdSchema = z.string().uuid().nullable().optional();
 ```
 
 ---
