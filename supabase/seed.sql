@@ -154,7 +154,7 @@ BEGIN
             'morning',
             'essential',
             'a0',
-            NULL
+            CURRENT_DATE
         );
     END IF;
 
@@ -188,7 +188,7 @@ BEGIN
             'afternoon',
             'bonus',
             'a1',
-            NULL
+            CURRENT_DATE
         );
     END IF;
 
@@ -222,7 +222,7 @@ BEGIN
             'evening',
             'essential',
             'a2',
-            NULL
+            CURRENT_DATE
         );
     END IF;
 
@@ -256,7 +256,7 @@ BEGIN
             NULL,
             'bonus',
             'a3',
-            NULL
+            CURRENT_DATE
         );
     END IF;
 
@@ -290,7 +290,7 @@ BEGIN
             NULL,
             NULL,
             'a4',
-            NULL
+            CURRENT_DATE
         );
     END IF;
 
