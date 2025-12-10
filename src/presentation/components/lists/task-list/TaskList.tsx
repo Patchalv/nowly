@@ -185,7 +185,7 @@ export const TaskList = ({
         <ItemGroup className="flex flex-col gap-3 overflow-y-auto">
           {sortedTasks.map((task) => {
             const category = task.categoryId
-              ? categoryMap.get(task.categoryId)
+              ? (categoryMap.get(task.categoryId) ?? null)
               : null;
             return (
               <SortableTaskListItem
@@ -206,7 +206,7 @@ export const TaskList = ({
               task={activeTask}
               category={
                 activeTask.categoryId
-                  ? categoryMap.get(activeTask.categoryId)
+                  ? (categoryMap.get(activeTask.categoryId) ?? null)
                   : null
               }
               showCategoryBackground={showCategoryBackground}
