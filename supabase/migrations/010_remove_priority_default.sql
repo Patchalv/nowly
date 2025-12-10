@@ -3,15 +3,12 @@
 -- Migration: 010
 -- Description: Remove DEFAULT 'medium' and NOT NULL constraints from 
 --              recurring_task_items.priority column to allow null priority
+--              for new items. Existing items with 'medium' priority are preserved.
 -- ============================================================================
 
--- Update existing rows with 'medium' priority to NULL for consistency
-UPDATE recurring_task_items
-SET priority = NULL
-WHERE priority = 'medium';
-
 -- Alter the column to remove DEFAULT and NOT NULL constraints
--- This makes priority nullable with no default value
+-- This makes priority nullable with no default value for new items
+-- Existing rows with 'medium' priority will remain unchanged
 ALTER TABLE recurring_task_items
 ALTER COLUMN priority DROP DEFAULT,
 ALTER COLUMN priority DROP NOT NULL;

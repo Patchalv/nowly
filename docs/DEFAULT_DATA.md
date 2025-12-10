@@ -42,5 +42,5 @@ Default data creation is tested end-to-end in NOWLY-55 with real user signup flo
 Users can:
 
 - Delete default categories if not needed
-- Edit default categories (name, color, emoji)
+- Edit default categories (name, color, icon)
 - Add additional categories
