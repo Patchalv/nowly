@@ -35,7 +35,9 @@ export const createRecurringTaskItemSchema = z
     dueOffsetDays: z.number().int().min(0).max(365).default(0),
 
     // Frequency-specific configuration
-    weeklyDays: z.array(z.number().int().min(0).max(6)).optional(),
+    weeklyDays: z
+      .array(z.number().int().min(0).max(6)) // JavaScript native: 0=Sunday, 1=Monday, ..., 6=Saturday
+      .optional(),
     monthlyDay: z.number().int().min(1).max(31).optional(),
     yearlyMonth: z.number().int().min(1).max(12).optional(),
     yearlyDay: z.number().int().min(1).max(31).optional(),

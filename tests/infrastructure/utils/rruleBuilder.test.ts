@@ -73,7 +73,7 @@ describe('rruleBuilder utilities', () => {
         const result = buildRRuleString({
           frequency: 'weekly',
           startDate: new Date('2025-01-01T00:00:00Z'),
-          weeklyDays: [0, 2, 4], // Mon, Wed, Fri
+          weeklyDays: [1, 3, 5], // Mon, Wed, Fri (JavaScript native)
         });
 
         expect(result).toContain('FREQ=WEEKLY');
@@ -87,18 +87,18 @@ describe('rruleBuilder utilities', () => {
         const result = buildRRuleString({
           frequency: 'weekly',
           startDate: new Date('2025-01-01T00:00:00Z'),
-          weeklyDays: [0], // Monday only
+          weeklyDays: [1], // Monday only (JavaScript native)
         });
 
         expect(result).toContain('FREQ=WEEKLY');
         expect(result).toContain('MO');
       });
 
-      it('should handle Sunday (day 6)', () => {
+      it('should handle Sunday (day 0)', () => {
         const result = buildRRuleString({
           frequency: 'weekly',
           startDate: new Date('2025-01-01T00:00:00Z'),
-          weeklyDays: [6], // Sunday
+          weeklyDays: [0], // Sunday (JavaScript native)
         });
 
         expect(result).toContain('FREQ=WEEKLY');
@@ -109,7 +109,7 @@ describe('rruleBuilder utilities', () => {
         const result = buildRRuleString({
           frequency: 'weekly',
           startDate: new Date('2025-01-01T00:00:00Z'),
-          weeklyDays: [0, 7, -1, 2], // Only 0 and 2 are valid
+          weeklyDays: [1, 7, -1, 3], // Only 1 and 3 are valid (JavaScript native)
         });
 
         expect(result).toContain('FREQ=WEEKLY');

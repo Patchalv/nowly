@@ -1,18 +1,19 @@
 // src/infrastructure/utils/rruleBuilder.ts
-import { RRule, Weekday } from 'rrule';
 import type { RecurringFrequency } from '@/src/domain/types/recurring';
+import { RRule, Weekday } from 'rrule';
 
 /**
- * Maps JavaScript day numbers (0=Monday, 6=Sunday) to RRule weekday constants
+ * Maps JavaScript's native day numbers to RRule weekday constants
+ * JavaScript: 0=Sunday, 1=Monday, 2=Tuesday, ..., 6=Saturday
  */
 const WEEKDAY_MAP: Record<number, Weekday> = {
-  0: RRule.MO,
-  1: RRule.TU,
-  2: RRule.WE,
-  3: RRule.TH,
-  4: RRule.FR,
-  5: RRule.SA,
-  6: RRule.SU,
+  0: RRule.SU, // Sunday
+  1: RRule.MO, // Monday
+  2: RRule.TU, // Tuesday
+  3: RRule.WE, // Wednesday
+  4: RRule.TH, // Thursday
+  5: RRule.FR, // Friday
+  6: RRule.SA, // Saturday
 };
 
 /**
@@ -22,7 +23,7 @@ export interface BuildRRuleOptions {
   frequency: RecurringFrequency;
   startDate: Date;
   endDate?: Date;
-  weeklyDays?: number[]; // 0-6, Monday = 0, Sunday = 6
+  weeklyDays?: number[]; // JavaScript native: 0=Sunday, 1=Monday, ..., 6=Saturday
   monthlyDay?: number; // 1-31
   yearlyMonth?: number; // 1-12
   yearlyDay?: number; // 1-31
@@ -39,11 +40,11 @@ export interface BuildRRuleOptions {
  * buildRRuleString({ frequency: 'daily', startDate: new Date('2025-01-01') });
  *
  * @example
- * // Weekly on Mon/Wed/Fri
+ * // Weekly on Mon/Wed/Fri (using JavaScript native day numbers)
  * buildRRuleString({
  *   frequency: 'weekly',
  *   startDate: new Date('2025-01-01'),
- *   weeklyDays: [1, 3, 5]
+ *   weeklyDays: [1, 3, 5] // 1=Monday, 3=Wednesday, 5=Friday
  * });
  */
 export function buildRRuleString(options: BuildRRuleOptions): string {

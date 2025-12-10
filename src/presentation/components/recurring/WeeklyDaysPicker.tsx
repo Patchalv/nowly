@@ -8,24 +8,18 @@ interface WeeklyDaysPickerProps {
   onChange: (days: number[]) => void;
 }
 
+/**
+ * Days of the week for selection, displayed Monday-first
+ * Values use JavaScript's native day numbers: 0=Sunday, 1=Monday, ..., 6=Saturday
+ */
 const DAYS = [
-  { value: 0, label: 'M' }, // Monday
-  { value: 1, label: 'T' }, // Tuesday
-  { value: 2, label: 'W' }, // Wednesday
-  { value: 3, label: 'T' }, // Thursday
-  { value: 4, label: 'F' }, // Friday
-  { value: 5, label: 'S' }, // Saturday
-  { value: 6, label: 'S' }, // Sunday
-];
-
-const DAYS_NAMES = [
-  'Monday',
-  'Tuesday',
-  'Wednesday',
-  'Thursday',
-  'Friday',
-  'Saturday',
-  'Sunday',
+  { value: 1, label: 'M', name: 'Monday' }, // Monday (JS: 1)
+  { value: 2, label: 'T', name: 'Tuesday' }, // Tuesday (JS: 2)
+  { value: 3, label: 'W', name: 'Wednesday' }, // Wednesday (JS: 3)
+  { value: 4, label: 'T', name: 'Thursday' }, // Thursday (JS: 4)
+  { value: 5, label: 'F', name: 'Friday' }, // Friday (JS: 5)
+  { value: 6, label: 'S', name: 'Saturday' }, // Saturday (JS: 6)
+  { value: 0, label: 'S', name: 'Sunday' }, // Sunday (JS: 0)
 ];
 
 export function WeeklyDaysPicker({ value, onChange }: WeeklyDaysPickerProps) {
@@ -48,7 +42,7 @@ export function WeeklyDaysPicker({ value, onChange }: WeeklyDaysPickerProps) {
             size="sm"
             pressed={value.includes(day.value)}
             onPressedChange={() => handleDayToggle(day.value)}
-            aria-label={`Toggle ${DAYS_NAMES[day.value]}`}
+            aria-label={`Toggle ${day.name}`}
           >
             {day.label}
           </Toggle>

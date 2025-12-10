@@ -1158,14 +1158,18 @@ interface WeeklyDaysPickerProps {
   onChange: (days: number[]) => void;
 }
 
+/**
+ * Days of the week for selection, displayed Monday-first
+ * Values use JavaScript's native day numbers: 0=Sunday, 1=Monday, ..., 6=Saturday
+ */
 const DAYS = [
-  { value: 0, label: 'S', full: 'Sunday' },
-  { value: 1, label: 'M', full: 'Monday' },
-  { value: 2, label: 'T', full: 'Tuesday' },
-  { value: 3, label: 'W', full: 'Wednesday' },
-  { value: 4, label: 'T', full: 'Thursday' },
-  { value: 5, label: 'F', full: 'Friday' },
-  { value: 6, label: 'S', full: 'Saturday' },
+  { value: 1, label: 'M', full: 'Monday' },    // JavaScript: 1
+  { value: 2, label: 'T', full: 'Tuesday' },   // JavaScript: 2
+  { value: 3, label: 'W', full: 'Wednesday' }, // JavaScript: 3
+  { value: 4, label: 'T', full: 'Thursday' },  // JavaScript: 4
+  { value: 5, label: 'F', full: 'Friday' },    // JavaScript: 5
+  { value: 6, label: 'S', full: 'Saturday' },  // JavaScript: 6
+  { value: 0, label: 'S', full: 'Sunday' },    // JavaScript: 0
 ];
 
 export function WeeklyDaysPicker({ value, onChange }: WeeklyDaysPickerProps) {
@@ -1196,6 +1200,8 @@ export function WeeklyDaysPicker({ value, onChange }: WeeklyDaysPickerProps) {
   );
 }
 ```
+
+**Note:** Day values use JavaScript's native numbering (0=Sunday through 6=Saturday) but are displayed Monday-first for better UX.
 
 ### 8.4 Create Recurring Task Form
 
