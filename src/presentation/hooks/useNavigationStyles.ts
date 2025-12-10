@@ -7,7 +7,7 @@ export const useNavigationStyles = () => {
   const isActive = (route: string) => pathname === route;
 
   const getIconClasses = (route: string) => {
-    const baseClasses = 'size-10 p-1 rounded-md';
+    const baseClasses = 'size-9 p-1 rounded-md';
     const activeClasses = 'text-accent-foreground bg-primary-foreground';
     const inactiveClasses =
       'text-primary-foreground hover:text-accent-foreground hover:bg-primary-foreground';
