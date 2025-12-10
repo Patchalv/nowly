@@ -117,6 +117,7 @@ export const CreateTaskForm = ({
                     onChange={field.onChange}
                   />
                 </FormControl>
+                <FormMessage />
               </FormItem>
             )}
           />
@@ -131,6 +132,7 @@ export const CreateTaskForm = ({
                     onChange={field.onChange}
                   />
                 </FormControl>
+                <FormMessage />
               </FormItem>
             )}
           />
