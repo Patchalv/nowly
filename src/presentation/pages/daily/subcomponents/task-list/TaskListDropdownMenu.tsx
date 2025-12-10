@@ -24,29 +24,27 @@ export function TaskListDropdownMenu({
   setShowCompleted,
 }: TaskListDropdownMenuProps) {
   return (
-    <>
-      <DropdownMenu modal={false}>
-        <DropdownMenuTrigger asChild>
-          <Button variant="outline" aria-label="Open menu" size="icon-sm">
-            <MoreVerticalIcon />
-          </Button>
-        </DropdownMenuTrigger>
-        <DropdownMenuContent className="w-40" align="end">
-          <DropdownMenuLabel>Display options</DropdownMenuLabel>
-          <DropdownMenuGroup>
-            <DropdownMenuItem className="flex items-center gap-3">
-              <Checkbox
-                id="show-completed"
-                checked={showCompleted}
-                onCheckedChange={(checked) =>
-                  setShowCompleted(checked as boolean)
-                }
-              />
-              <Label htmlFor="show-completed">Show completed</Label>
-            </DropdownMenuItem>
-          </DropdownMenuGroup>
-        </DropdownMenuContent>
-      </DropdownMenu>
-    </>
+    <DropdownMenu modal={false}>
+      <DropdownMenuTrigger asChild>
+        <Button variant="outline" aria-label="Open menu" size="icon-sm">
+          <MoreVerticalIcon />
+        </Button>
+      </DropdownMenuTrigger>
+      <DropdownMenuContent className="w-40" align="end">
+        <DropdownMenuLabel>Display options</DropdownMenuLabel>
+        <DropdownMenuGroup>
+          <DropdownMenuItem className="flex items-center gap-3">
+            <Checkbox
+              id="show-completed"
+              checked={showCompleted}
+              onCheckedChange={(checked) =>
+                setShowCompleted(checked as boolean)
+              }
+            />
+            <Label htmlFor="show-completed">Show completed</Label>
+          </DropdownMenuItem>
+        </DropdownMenuGroup>
+      </DropdownMenuContent>
+    </DropdownMenu>
   );
 }

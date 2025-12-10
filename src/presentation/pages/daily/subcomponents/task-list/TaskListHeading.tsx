@@ -1,4 +1,4 @@
-import { TaskListDropdownMenu } from './TaskListDropdownMenu';
+import { TaskListDropdownMenu } from '@/src/presentation/pages/daily/subcomponents/task-list/TaskListDropdownMenu';
 
 interface TaskListHeadingProps {
   title: string;

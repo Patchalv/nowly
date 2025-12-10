@@ -1,5 +1,8 @@
 'use client';
 
+import { isSameDay } from 'date-fns';
+import { useMemo } from 'react';
+
 import { CreateTaskDrawer } from '@/src/presentation/components/dialog/create-task-drawer/CreateTaskDrawer';
 import { TaskList } from '@/src/presentation/components/lists/task-list/TaskList';
 import { TaskListItemContent } from '@/src/presentation/components/lists/task-list/TaskListItem';
@@ -7,9 +10,7 @@ import { OverdueTasksBanner } from '@/src/presentation/components/overdue/Overdu
 import { ItemGroup } from '@/src/presentation/components/ui/item';
 import { useTasksByDate } from '@/src/presentation/hooks/tasks/useTasks';
 import { useLocalStorage } from '@/src/presentation/hooks/useLocalStorage';
-import { isSameDay } from 'date-fns';
-import { useMemo } from 'react';
-import { TaskListHeading } from './TaskListHeading';
+import { TaskListHeading } from '@/src/presentation/pages/daily/subcomponents/task-list/TaskListHeading';
 
 interface TaskListSectionProps {
   date: Date;
@@ -29,8 +30,11 @@ export const TaskListSection = ({ date }: TaskListSectionProps) => {
 
     const active = tasks.filter((task) => !task.completed);
     const completed = tasks.filter((task) => task.completed);
+    const completedSorted = completed.sort((a, b) =>
+      a.position.localeCompare(b.position)
+    );
 
-    return { activeTasks: active, completedTasks: completed };
+    return { activeTasks: active, completedTasks: completedSorted };
   }, [tasks]);
 
   // Error state
@@ -62,11 +66,9 @@ export const TaskListSection = ({ date }: TaskListSectionProps) => {
             Completed ({completedTasks.length})
           </h2>
           <ItemGroup className="flex flex-col gap-3">
-            {completedTasks
-              .sort((a, b) => a.position.localeCompare(b.position))
-              .map((task) => (
-                <TaskListItemContent key={task.id} task={task} />
-              ))}
+            {completedTasks.map((task) => (
+              <TaskListItemContent key={task.id} task={task} />
+            ))}
           </ItemGroup>
         </div>
       )}
