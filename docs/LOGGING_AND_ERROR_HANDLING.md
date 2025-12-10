@@ -1156,7 +1156,7 @@ if (!result.success) {
 
 ## Decision Tree
 
-```
+```text
 Need to log something?
 │
 ├─ Is it an error/exception?
