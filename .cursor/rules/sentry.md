@@ -69,60 +69,99 @@ async function fetchUserData(userId) {
 
 # Logs
 
-Where logs are used, ensure Sentry is imported using `import * as Sentry from "@sentry/nextjs"`
-Enable logging in Sentry using `Sentry.init({ _experiments: { enableLogs: true } })`
-Reference the logger using `const { logger } = Sentry`
-Sentry offers a consoleLoggingIntegration that can be used to log specific console error types automatically without instrumenting the individual logger calls
+## ⚠️ DEPRECATED: Direct Sentry Logger Import
+
+**DO NOT** import logger directly from Sentry in application code:
+
+```javascript
+// ❌ DEPRECATED - Do not use
+import { logger } from '@sentry/nextjs';
+import * as Sentry from '@sentry/nextjs';
+const { logger } = Sentry;
+```
+
+**Instead**, use the unified logging system:
+
+```javascript
+// ✅ USE THIS - Unified logging system
+import { logger, handleError } from '@/src/shared/logging';
+```
+
+See [.cursor/rules/logging.md](.cursor/rules/logging.md) and [docs/LOGGING_AND_ERROR_HANDLING.md](../../docs/LOGGING_AND_ERROR_HANDLING.md) for complete guide.
 
 ## Configuration
 
-In NextJS the client side Sentry initialization is in `instrumentation-client.ts`, the server initialization is in `sentry.server.config.ts` and the edge initialization is in `sentry.edge.config.ts`
-Initialization does not need to be repeated in other files, it only needs to happen the files mentioned above. You should use `import * as Sentry from "@sentry/nextjs"` to reference Sentry functionality
+Sentry is already configured with smart log sampling in:
 
-### Baseline
+- `instrumentation-client.ts` (client-side)
+- `sentry.server.config.ts` (server-side)
+- `sentry.edge.config.ts` (edge runtime)
+
+**Logging is enabled with:**
+
+- `enableLogs: true`
+- `beforeSendLog` hook for smart sampling (production only)
+- Sampling rates: trace 5%, debug 10%, info 20%, warn/error/fatal 100%
+
+**You should NOT modify these files** unless updating Sentry configuration itself.
+
+### Baseline Configuration (Reference Only)
 
 ```javascript
 import * as Sentry from '@sentry/nextjs';
+import { env, isProduction } from './src/config/env';
 
 Sentry.init({
-  dsn: 'https://98c19802e4803c0e199d33221a5d63d1@o4508054876061696.ingest.de.sentry.io/4510324496793680',
+  dsn: env.NEXT_PUBLIC_SENTRY_DSN,
+  tracesSampleRate: isProduction ? 0.1 : 1,
+  enableLogs: true,
 
-  _experiments: {
-    enableLogs: true,
+  // Smart log sampling in production
+  beforeSendLog: (logEvent) => {
+    if (!isProduction) return logEvent;
+
+    const samplingRates = {
+      trace: 0.05,
+      debug: 0.1,
+      info: 0.2,
+      warn: 1.0,
+      error: 1.0,
+      fatal: 1.0,
+    };
+
+    const rate = samplingRates[logEvent.level] || 1.0;
+    return Math.random() < rate ? logEvent : null;
   },
+
+  sendDefaultPii: !isProduction,
+  environment: env.VERCEL_ENV,
 });
 ```
 
-### Logger Integration
+## Logging in Application Code
 
-```javascript
-Sentry.init({
-  dsn: 'https://98c19802e4803c0e199d33221a5d63d1@o4508054876061696.ingest.de.sentry.io/4510324496793680',
-  integrations: [
-    // send console.log, console.warn, and console.error calls as logs to Sentry
-    Sentry.consoleLoggingIntegration({ levels: ['log', 'warn', 'error'] }),
-  ],
-});
+**Use the unified logging system** instead of direct Sentry logger:
+
+```typescript
+// Import from unified system
+import { logger, handleError } from '@/src/shared/logging';
+
+// Structured logging with context objects
+logger.info('Task created', { taskId: task.id, userId: user.id });
+logger.error('Operation failed', { error: error.message, userId });
+
+// Error handling by layer
+// Server actions: handleError.log()
+// Repositories: handleError.throw()
+// Validation: handleError.validation()
 ```
 
-## Logger Examples
+**Benefits of unified system:**
 
-`logger.fmt` is a template literal function that should be used to bring variables into the structured logs.
+- Clean architecture boundaries
+- Layer-appropriate error handling
+- Consistent structured logging
+- Development prefixes ([ERROR], [WARN])
+- Single import location
 
-```javascript
-logger.trace('Starting database connection', { database: 'users' });
-logger.debug(logger.fmt`Cache miss for user: ${userId}`);
-logger.info('Updated profile', { profileId: 345 });
-logger.warn('Rate limit reached for endpoint', {
-  endpoint: '/api/results/',
-  isEnterprise: false,
-});
-logger.error('Failed to process payment', {
-  orderId: 'order_123',
-  amount: 99.99,
-});
-logger.fatal('Database connection pool exhausted', {
-  database: 'users',
-  activeConnections: 100,
-});
-```
+See [.cursor/rules/logging.md](.cursor/rules/logging.md) for complete usage guide.

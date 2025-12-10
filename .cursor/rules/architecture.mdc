@@ -131,6 +131,7 @@ export type CreateTaskInput = z.infer<typeof createTaskSchema>;
 - ✅ Zod for validation (allowed as it's pure)
 - ❌ No database types (snake_case, ISO strings)
 - ❌ No UI concerns
+- ❌ No logging (pure domain logic only)
 
 ---
 
@@ -200,9 +201,13 @@ export async function createTask(
 - ✅ Accept repositories as parameters (dependency injection)
 - ✅ Return domain entities
 - ✅ Use Request/Response types
+- ✅ Use `logger.*` for logging (import from `@/src/shared/logging`)
+- ✅ Return error objects `{ success: false, error: string }`
 - ❌ No direct Supabase client usage
 - ❌ No React hooks or components
 - ❌ No database-specific logic
+- ❌ No `handleError.*` methods (too much infrastructure coupling)
+- ❌ No UI feedback (toasts, etc.)
 
 ---
 
@@ -301,8 +306,12 @@ export class SupabaseTaskRepository implements TaskRepository {
 - ✅ Repository methods return domain entities
 - ✅ Handle all database-specific logic here
 - ✅ Implement repository interfaces
+- ✅ Use `handleError.throw()` for database errors (import from `@/src/shared/logging`)
+- ✅ Use `logger.debug()` for query details (sparingly)
 - ❌ Don't expose database types outside this layer
 - ❌ Don't put business logic in repositories
+- ❌ Don't use `handleError.log()` (use throw to propagate errors)
+- ❌ Don't use UI feedback methods (showError, etc.)
 
 ---
 
@@ -451,11 +460,13 @@ const dateInputSchema = z
     if (val instanceof Date) return val;
     const parsed = new Date(val);
     if (isNaN(parsed.getTime())) {
-      throw new z.ZodError([{
-        code: 'custom',
-        path: [],
-        message: 'Invalid date format',
-      }]);
+      throw new z.ZodError([
+        {
+          code: 'custom',
+          path: [],
+          message: 'Invalid date format',
+        },
+      ]);
     }
     return parsed;
   })
@@ -489,9 +500,13 @@ export async function getTasksAction(date: Date | string) {
 - ✅ **Server Actions validate ALL inputs** (FormData or direct parameters)
 - ✅ **Handle Next.js serialization** (Date objects become strings, validate and coerce)
 - ✅ Import from application and domain layers
+- ✅ **Server Actions**: Use `handleError.log()`, `handleError.validation()` (import from `@/src/shared/logging`)
+- ✅ **Client Components**: Use `showError()`, `showSuccess()` for UI feedback (import from `@/src/presentation/utils/error-display`)
 - ❌ NEVER import infrastructure repositories in Client Components
 - ❌ Don't put business logic in components
 - ❌ Never trust unvalidated input from client
+- ❌ **Server Actions**: NEVER use `showError()` (client-side only)
+- ❌ **Client Components**: NEVER use `handleError.throw()` (wrong layer)
 
 ---
 
@@ -909,6 +924,7 @@ Before committing code:
 - [ ] Only pure TypeScript types and interfaces
 - [ ] No references to database types (snake_case, ISO strings)
 - [ ] Validation schemas use Zod
+- [ ] No logging (pure domain logic only)
 
 ### Application Layer
 
@@ -919,6 +935,9 @@ Before committing code:
 - [ ] Server Actions use server Supabase client
 - [ ] Server Actions validate with Zod schemas
 - [ ] Server Actions return typed results
+- [ ] Use `logger.*` for logging (from `@/src/shared/logging`)
+- [ ] Return error objects `{ success: false, error: string }`
+- [ ] No `handleError.*` methods in use cases
 
 ### Infrastructure Layer
 
@@ -926,6 +945,8 @@ Before committing code:
 - [ ] Transform data at boundary (toDomain/toDatabase)
 - [ ] Return domain entities from repository methods
 - [ ] No business logic in repositories
+- [ ] Use `handleError.throw()` for database errors
+- [ ] Use `logger.debug()` for query details (sparingly)
 
 ### Presentation Layer
 
@@ -939,6 +960,10 @@ Before committing code:
 - [ ] Import from application/domain only (not infrastructure repositories)
 - [ ] Auth forms use Server Actions (not client utilities)
 - [ ] Forms use useTransition for pending states
+- [ ] **Server Actions**: Use `handleError.log()` and `handleError.validation()`
+- [ ] **Server Actions**: Never use `showError()` (client-side only)
+- [ ] **Client Components**: Use `showError()`/`showSuccess()` for UI feedback
+- [ ] **Client Components**: Never use `handleError.throw()` (wrong layer)
 
 ---
 
@@ -954,3 +979,5 @@ Before committing code:
 **Key Rule:** Arrows point inward. Outer layers depend on inner layers, never the reverse.
 
 **Auth-Specific Rule:** All auth operations use Server Actions. No client-side auth utilities for form submissions.
+
+**Logging & Error Handling:** See [logging.md](logging.md) and [docs/LOGGING_AND_ERROR_HANDLING.md](../../docs/LOGGING_AND_ERROR_HANDLING.md) for complete guide on unified logging system and layer-specific error handling patterns.
