@@ -1,5 +1,6 @@
 'use client';
 
+import { Category } from '@/src/domain/model/Category';
 import { Task } from '@/src/domain/model/Task';
 import {
   generatePositionBetween,
@@ -7,6 +8,7 @@ import {
 } from '@/src/infrastructure/utils/position';
 import { ItemGroup } from '@/src/presentation/components/ui/item';
 import { Skeleton } from '@/src/presentation/components/ui/skeleton';
+import { useCategories } from '@/src/presentation/hooks/categories/useCategories';
 import { useRebalanceTasks } from '@/src/presentation/hooks/tasks/useRebalanceTasks';
 import { useReorderTask } from '@/src/presentation/hooks/tasks/useTasks';
 import {
@@ -23,19 +25,31 @@ import {
   SortableContext,
   verticalListSortingStrategy,
 } from '@dnd-kit/sortable';
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
 import { TaskListEmpty } from './TaskListEmpty';
 import { SortableTaskListItem, TaskListItemContent } from './TaskListItem';
 
 interface TaskListProps {
   tasks: Task[];
   isLoading?: boolean;
+  showCategoryBackground?: boolean;
 }
 
-export const TaskList = ({ tasks, isLoading }: TaskListProps) => {
+export const TaskList = ({
+  tasks,
+  isLoading,
+  showCategoryBackground = false,
+}: TaskListProps) => {
   const [activeTask, setActiveTask] = useState<Task | null>(null);
   const reorderTask = useReorderTask();
   const rebalanceTasks = useRebalanceTasks();
+  const { data: categories } = useCategories();
+
+  const categoryMap = useMemo(() => {
+    const map = new Map<string, Category>();
+    categories?.forEach((cat) => map.set(cat.id, cat));
+    return map;
+  }, [categories]);
 
   // Configure sensors for drag detection
   const sensors = useSensors(
@@ -169,16 +183,34 @@ export const TaskList = ({ tasks, isLoading }: TaskListProps) => {
         strategy={verticalListSortingStrategy}
       >
         <ItemGroup className="flex flex-col gap-3 overflow-y-auto">
-          {sortedTasks.map((task) => (
-            <SortableTaskListItem key={task.id} task={task} />
-          ))}
+          {sortedTasks.map((task) => {
+            const category = task.categoryId
+              ? categoryMap.get(task.categoryId)
+              : null;
+            return (
+              <SortableTaskListItem
+                key={task.id}
+                task={task}
+                category={category}
+                showCategoryBackground={showCategoryBackground}
+              />
+            );
+          })}
         </ItemGroup>
       </SortableContext>
 
       <DragOverlay>
         {activeTask ? (
           <div className="opacity-80">
-            <TaskListItemContent task={activeTask} />
+            <TaskListItemContent
+              task={activeTask}
+              category={
+                activeTask.categoryId
+                  ? categoryMap.get(activeTask.categoryId)
+                  : null
+              }
+              showCategoryBackground={showCategoryBackground}
+            />
           </div>
         ) : null}
       </DragOverlay>

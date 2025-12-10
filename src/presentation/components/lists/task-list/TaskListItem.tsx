@@ -4,6 +4,7 @@ import { CSS } from '@dnd-kit/utilities';
 import { Repeat } from 'lucide-react';
 import { forwardRef } from 'react';
 
+import type { Category } from '@/src/domain/model/Category';
 import type { Task } from '@/src/domain/model/Task';
 import { PriorityBadge } from '@/src/presentation/components/badge/PriorityBadge';
 import { UpdateDatePickerButton } from '@/src/presentation/components/date-picker/UpdateDatePickerButton';
@@ -20,6 +21,8 @@ import { TaskListItemDrawer } from './TaskListItemDrawer';
 
 interface TaskListItemContentProps extends React.ComponentPropsWithoutRef<'div'> {
   task: Task;
+  category?: Category | null;
+  showCategoryBackground?: boolean;
   className?: string;
 }
 
@@ -31,61 +34,102 @@ interface TaskListItemContentProps extends React.ComponentPropsWithoutRef<'div'>
 export const TaskListItemContent = forwardRef<
   HTMLDivElement,
   TaskListItemContentProps
->(({ task, className, ...props }, ref) => {
-  return (
-    <Item
-      variant="outline"
-      className={cn(
-        'w-full hover:bg-accent/50 transition-colors duration-100',
-        className
-      )}
-      ref={ref}
-      {...props}
-    >
-      <ItemContent className="flex flex-row gap-4 items-center justify-between">
-        <div className="flex flex-row gap-4 items-center">
-          <ItemActions>
-            <TaskCheckbox task={task} />
-          </ItemActions>
-          <div className="flex flex-col gap-1">
-            <ItemTitle
-              className={cn(
-                'font-semibold',
-                task.completed && 'line-through text-muted-foreground'
-              )}
-            >
-              {task.title}
-            </ItemTitle>
-            <ItemDescription>
-              <div className="flex items-center gap-2">
-                {task.priority && <PriorityBadge priority={task.priority} />}
-                {task.recurringItemId && (
-                  <Repeat className="h-3 w-3 text-muted-foreground" />
+>(
+  (
+    {
+      task,
+      category,
+      showCategoryBackground = false,
+      className,
+      style,
+      ...props
+    },
+    ref
+  ) => {
+    // Convert hex color to rgba with opacity for better visibility
+    const getCategoryBackground = () => {
+      if (!showCategoryBackground || !category) {
+        return undefined;
+      }
+
+      const hex = category.color.replace('#', '');
+      const r = parseInt(hex.substring(0, 2), 16);
+      const g = parseInt(hex.substring(2, 4), 16);
+      const b = parseInt(hex.substring(4, 6), 16);
+
+      return `rgba(${r}, ${g}, ${b}, 0.4)`;
+    };
+
+    return (
+      <Item
+        variant="outline"
+        className={cn(
+          'w-full hover:bg-accent/50 transition-colors duration-100',
+          className
+        )}
+        style={{
+          backgroundColor: getCategoryBackground(),
+          ...style, // Merge in any additional styles (e.g., drag transform)
+        }}
+        ref={ref}
+        {...props}
+      >
+        <ItemContent className="flex flex-row gap-4 items-center justify-between">
+          <div className="flex flex-row gap-4 items-center">
+            <ItemActions>
+              <TaskCheckbox task={task} />
+            </ItemActions>
+            <div className="flex flex-col gap-1">
+              <ItemTitle
+                className={cn(
+                  'font-semibold',
+                  task.completed && 'line-through text-muted-foreground'
                 )}
-              </div>
-            </ItemDescription>
+              >
+                {task.title}
+              </ItemTitle>
+              <ItemDescription>
+                <div className="flex items-center gap-2">
+                  {category && (
+                    <span className="text-xs text-muted-foreground">
+                      # {category.name}
+                    </span>
+                  )}
+                  {task.priority && <PriorityBadge priority={task.priority} />}
+                  {task.recurringItemId && (
+                    <Repeat className="h-3 w-3 text-muted-foreground" />
+                  )}
+                </div>
+              </ItemDescription>
+            </div>
           </div>
-        </div>
-        <ItemActions>
-          <UpdateDatePickerButton task={task} />
-          <TaskListItemDrawer task={task} />
-        </ItemActions>
-      </ItemContent>
-    </Item>
-  );
-});
+          <ItemActions>
+            <UpdateDatePickerButton task={task} />
+            <TaskListItemDrawer task={task} />
+          </ItemActions>
+        </ItemContent>
+      </Item>
+    );
+  }
+);
 
 TaskListItemContent.displayName = 'TaskListItemContent';
 
 interface SortableTaskListItemProps {
   task: Task;
+  category?: Category | null;
+  showCategoryBackground?: boolean;
 }
 
 /**
  * Sortable wrapper component that uses useSortable hook and renders TaskListItemContent.
  * Use this in sortable lists (e.g., within SortableContext).
  */
-export const SortableTaskListItem = ({ task }: SortableTaskListItemProps) => {
+export const SortableTaskListItem = ({
+  task,
+  category,
+  showCategoryBackground,
+}: SortableTaskListItemProps) => {
   const {
     attributes,
     listeners,
@@ -103,6 +147,8 @@ export const SortableTaskListItem = ({ task }: SortableTaskListItemProps) => {
   return (
     <TaskListItemContent
       task={task}
+      category={category}
+      showCategoryBackground={showCategoryBackground}
       ref={setNodeRef}
       style={style}
       className={cn(isDragging && 'opacity-50 cursor-grabbing')}
