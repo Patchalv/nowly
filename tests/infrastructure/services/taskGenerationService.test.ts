@@ -26,7 +26,7 @@ function createMockRecurringItem(
     title: 'Test Recurring Task',
     description: 'Test description',
     categoryId: 'category-789',
-    priority: 'medium',
+    priority: null,
     dailySection: 'morning',
     bonusSection: 'essential',
     frequency,

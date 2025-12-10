@@ -26,7 +26,7 @@ export const createRecurringTaskItemSchema = z
     title: z.string().min(1, 'Title is required').max(255, 'Title too long'),
     description: z.string().max(1000, 'Description too long').optional(),
     categoryId: z.string().uuid('Invalid category ID').optional(),
-    priority: taskPrioritySchema.default('medium'),
+    priority: taskPrioritySchema.optional(),
     dailySection: dailySectionSchema.optional(),
     bonusSection: bonusSectionSchema.optional(),
     frequency: recurringFrequencySchema,

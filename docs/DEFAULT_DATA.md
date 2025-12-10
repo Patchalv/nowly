@@ -16,11 +16,11 @@ When a new user signs up, the following happens automatically:
 - Trigger: `create_user_default_categories`
 - Creates 3 default categories:
 
-| Name     | Emoji | Color           | Position |
-| -------- | ----- | --------------- | -------- |
-| Work     | 💼    | #3B82F6 (Blue)  | a0       |
-| Personal | 🏠    | #10B981 (Green) | a1       |
-| Health   | ❤️    | #EF4444 (Red)   | a2       |
+| Name     | Icon      | Color                  | Position |
+| -------- | --------- | ---------------------- | -------- |
+| Work     | Briefcase | #B0E0E6 (Pastel Blue)  | a0       |
+| Personal | Home      | #C8E6C9 (Pastel Green) | a1       |
+| Health   | Heart     | #FFB6C1 (Pastel Rose)  | a2       |
 
 - Runs after user_profile INSERT
 - Uses lexorank positioning for ordering
@@ -42,5 +42,5 @@ Default data creation is tested end-to-end in NOWLY-55 with real user signup flo
 Users can:
 
 - Delete default categories if not needed
-- Edit default categories (name, color, emoji)
+- Edit default categories (name, color, icon)
 - Add additional categories

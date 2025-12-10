@@ -150,8 +150,8 @@ export function RecurringTaskItemCard({ item }: RecurringTaskItemCardProps) {
               </span>
             )}
 
-            {/* Priority badge (only if not medium) */}
-            {item.priority && item.priority !== 'medium' && (
+            {/* Priority badge (only if priority is set) */}
+            {item.priority && (
               <span className="text-xs">
                 <PriorityBadge priority={item.priority} />
               </span>

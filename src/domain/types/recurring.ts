@@ -22,7 +22,7 @@ export interface RecurringTaskItem {
   title: string;
   description: string | null;
   categoryId: string | null;
-  priority: TaskPriority;
+  priority: TaskPriority | null;
   dailySection: DailySection | null;
   bonusSection: BonusSection | null;
 
