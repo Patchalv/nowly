@@ -1,10 +1,11 @@
 'use client';
 
+import { isSameDay } from 'date-fns';
+
 import { CreateTaskDrawer } from '@/src/presentation/components/dialog/create-task-drawer/CreateTaskDrawer';
 import { TaskList } from '@/src/presentation/components/lists/task-list/TaskList';
 import { OverdueTasksBanner } from '@/src/presentation/components/overdue/OverdueTasksBanner';
 import { useTasksByDate } from '@/src/presentation/hooks/tasks/useTasks';
-import { isSameDay } from 'date-fns';
 
 interface TaskListSectionProps {
   date: Date;
@@ -28,7 +29,7 @@ export const TaskListSection = ({ date }: TaskListSectionProps) => {
       {/* Overdue banner - only shows when viewing today with overdue tasks */}
       <OverdueTasksBanner isToday={isToday} />
 
-      <TaskList tasks={tasks} isLoading={isLoading} />
+      <TaskList tasks={tasks} isLoading={isLoading} showCategoryBackground />
       <div>
         <CreateTaskDrawer variant="ghost" defaultScheduledDate={date} />
       </div>
