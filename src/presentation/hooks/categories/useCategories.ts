@@ -4,12 +4,14 @@ import { getCategoriesAction } from '@/app/actions/categories/getCategoriesActio
 import { updateCategoryAction } from '@/app/actions/categories/updateCategoryAction';
 import { CACHE } from '@/src/config/constants';
 import { queryKeys } from '@/src/config/query-keys';
+import type { Category } from '@/src/domain/model/Category';
 import { handleError } from '@/src/shared/errors';
 import {
   useMutation,
   UseMutationResult,
   useQuery,
   useQueryClient,
+  UseQueryResult,
 } from '@tanstack/react-query';
 import { handleActionResponse, ServerActionError } from '../tasks/utils';
 import {
@@ -24,15 +26,15 @@ import {
 /**
  * Fetch the categories for the current user
  */
-export function useCategories() {
-  return useQuery({
+export function useCategories(): UseQueryResult<Category[], Error> {
+  return useQuery<Category[], Error>({
     queryKey: queryKeys.categories.all,
-    queryFn: async () => {
+    queryFn: async (): Promise<Category[]> => {
       const response = await getCategoriesAction();
       if (!response.success) {
         handleError.throw(response.error);
       }
-      return response.categories;
+      return response.categories ?? [];
     },
     staleTime: CACHE.CATEGORIES_STALE_TIME_MS,
   });
