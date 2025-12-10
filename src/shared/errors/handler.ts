@@ -1,11 +1,25 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
+/**
+ * @deprecated This module is deprecated. Use the unified logging system instead:
+ *
+ * ```typescript
+ * // ✅ NEW: Use unified logging system
+ * import { logger, handleError } from '@/src/shared/logging';
+ * import { showError, showSuccess } from '@/src/presentation/utils/error-display';
+ * ```
+ *
+ * See docs/LOGGING_AND_ERROR_HANDLING.md for migration guide.
+ * See .cursor/rules/logging.md for usage guidelines.
+ */
+
 import * as Sentry from '@sentry/nextjs';
 import { toast } from 'sonner';
 import type { AppError } from './app-errors';
 import { parseSupabaseError } from './parser';
 
 /**
- * Log error to Sentry (will be implemented with Sentry setup)
+ * Log error to Sentry
+ * @deprecated Use handleError from @/src/shared/logging instead
  */
 function logToSentry(error: AppError) {
   if (process.env.NODE_ENV === 'development') {
@@ -34,10 +48,13 @@ function logToSentry(error: AppError) {
 
 /**
  * Handle errors with different strategies
+ * @deprecated Use handleError from @/src/shared/logging instead
  */
 export const handleError = {
   /**
    * Show toast notification and log to Sentry
+   * @deprecated Use showError() from @/src/presentation/utils/error-display in client components
+   * or handleError.log() from @/src/shared/logging in server actions
    */
   toast: (error: Error | any, customMessage?: string) => {
     const appError = parseSupabaseError(error);
@@ -50,6 +67,7 @@ export const handleError = {
 
   /**
    * Log to Sentry and return the error
+   * @deprecated Use handleError.log() from @/src/shared/logging instead
    */
   return: (error: Error | any): AppError => {
     const appError = parseSupabaseError(error);
@@ -60,6 +78,7 @@ export const handleError = {
 
   /**
    * Log to Sentry and throw the error
+   * @deprecated Use handleError.throw() from @/src/shared/logging instead
    */
   throw: (error: Error | any): never => {
     const appError = parseSupabaseError(error);
@@ -70,6 +89,7 @@ export const handleError = {
 
   /**
    * Silent logging (no toast, no throw)
+   * @deprecated Use handleError.silent() from @/src/shared/logging instead
    */
   silent: (error: Error | any): AppError => {
     const appError = parseSupabaseError(error);
