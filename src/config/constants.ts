@@ -91,17 +91,17 @@ export const DEFAULT_CATEGORY_ICON = 'Tag' as const;
 export const DEFAULT_CATEGORIES = [
   {
     name: 'Work',
-    color: '#3B82F6', // blue-500
+    color: '#B0E0E6', // Light pastel blue (from CATEGORY_COLOR_OPTIONS)
     icon: 'Briefcase',
   },
   {
     name: 'Personal',
-    color: '#10B981', // green-500
+    color: '#C8E6C9', // Light pastel green (from CATEGORY_COLOR_OPTIONS)
     icon: 'Home',
   },
   {
     name: 'Health',
-    color: '#EF4444', // red-500
+    color: '#FFB6C1', // Light pastel rose (from CATEGORY_COLOR_OPTIONS)
     icon: 'Heart',
   },
 ] as const;
