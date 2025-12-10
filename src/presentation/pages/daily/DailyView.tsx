@@ -3,10 +3,10 @@
 import { useRouter, useSearchParams } from 'next/navigation';
 import { Suspense, useTransition } from 'react';
 
+import { FallbackView } from '@/src/presentation/components/loader/FallbackView';
+import { TaskListSection } from '@/src/presentation/pages/daily/subcomponents/task-list/TaskListSection';
 import { WeekCarousel } from '@/src/presentation/pages/daily/subcomponents/week-carousel/WeekCarousel';
 import { formatDateForURL, parseDateFromURL } from '@/src/shared/utils/date';
-import { FallbackView } from '../../components/loader/FallbackView';
-import { TaskListSection } from './subcomponents/task-list/TaskListSection';
 
 const DailyViewContent = () => {
   const router = useRouter();

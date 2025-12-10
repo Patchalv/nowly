@@ -1,7 +1,5 @@
-'use client';
-
-import { AccountDetailsSection } from './subcomponents/AccountSection';
-import { CategoriesSection } from './subcomponents/categories/CategoriesSection';
+import { AccountDetailsSection } from '@/src/presentation/pages/settings/subcomponents/AccountSection';
+import { CategoriesSection } from '@/src/presentation/pages/settings/subcomponents/categories/CategoriesSection';
 
 export function SettingsView() {
   return (
