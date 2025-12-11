@@ -111,7 +111,7 @@ export const updateRecurringTaskItemSchema = z.object({
     .nullable()
     .optional(),
   categoryId: z.string().uuid('Invalid category ID').nullable().optional(),
-  priority: taskPrioritySchema.optional(),
+  priority: taskPrioritySchema.nullable().optional(),
   dailySection: dailySectionSchema.nullable().optional(),
   bonusSection: bonusSectionSchema.nullable().optional(),
   endDate: z.coerce.date().nullable().optional(),

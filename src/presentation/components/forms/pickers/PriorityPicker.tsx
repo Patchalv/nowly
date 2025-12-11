@@ -7,7 +7,7 @@ import { Button } from '../../ui/button';
 import { Popover, PopoverContent, PopoverTrigger } from '../../ui/popover';
 
 interface PriorityPickerProps {
-  value?: TaskPriority;
+  value?: TaskPriority | null;
   onChange: (value: TaskPriority | null) => void;
 }
 

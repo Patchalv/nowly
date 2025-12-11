@@ -10,6 +10,11 @@ import {
 } from '@/src/config/constants';
 import type { RecurringTaskItem } from '@/src/domain/types/recurring';
 import type { UpdateRecurringTaskItemInput } from '@/src/domain/validation/recurring/recurringTaskItem.schema';
+import {
+  bonusSectionSchema,
+  dailySectionSchema,
+  taskPrioritySchema,
+} from '@/src/domain/validation/task/task.schema';
 import { DatePickerButton } from '@/src/presentation/components/date-picker/DatePickerButton';
 import { CategoryPicker } from '@/src/presentation/components/forms/pickers/CategoryPicker';
 import { PriorityPicker } from '@/src/presentation/components/forms/pickers/PriorityPicker';
@@ -57,12 +62,9 @@ const editFormSchema = z.object({
     .nullable()
     .optional(),
   categoryId: z.string().uuid('Invalid category ID').nullable().optional(),
-  priority: z.enum(['high', 'medium', 'low']).optional(),
-  dailySection: z
-    .enum(['morning', 'afternoon', 'evening'])
-    .nullable()
-    .optional(),
-  bonusSection: z.enum(['essential', 'bonus']).nullable().optional(),
+  priority: taskPrioritySchema.nullable().optional(),
+  dailySection: dailySectionSchema.nullable().optional(),
+  bonusSection: bonusSectionSchema.nullable().optional(),
   endDate: z.date().nullable().optional(),
 });
 
@@ -110,7 +112,7 @@ export function EditRecurringTaskItemDialog({
       updates.categoryId = data.categoryId ?? null;
     }
     if (data.priority !== (item.priority ?? undefined)) {
-      updates.priority = data.priority ?? undefined;
+      updates.priority = data.priority ?? null;
     }
     if (data.dailySection !== (item.dailySection ?? undefined)) {
       updates.dailySection = data.dailySection ?? null;
