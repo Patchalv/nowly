@@ -24,7 +24,7 @@ export const PriorityPicker = ({ value, onChange }: PriorityPickerProps) => {
           btnVariant="ghost"
           btnSize="icon"
           btnContent={
-            value !== undefined ? (
+            value != null ? (
               <FlagIcon
                 className="size-4"
                 style={{ color: PRIORITY_CONFIG[value as TaskPriority].color }}

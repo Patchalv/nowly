@@ -9,12 +9,10 @@ import {
   DAILY_SECTION_CONFIG,
 } from '@/src/config/constants';
 import type { RecurringTaskItem } from '@/src/domain/types/recurring';
-import type { UpdateRecurringTaskItemInput } from '@/src/domain/validation/recurring/recurringTaskItem.schema';
 import {
-  bonusSectionSchema,
-  dailySectionSchema,
-  taskPrioritySchema,
-} from '@/src/domain/validation/task/task.schema';
+  updateRecurringTaskItemSchema,
+  type UpdateRecurringTaskItemInput,
+} from '@/src/domain/validation/recurring/recurringTaskItem.schema';
 import { DatePickerButton } from '@/src/presentation/components/date-picker/DatePickerButton';
 import { CategoryPicker } from '@/src/presentation/components/forms/pickers/CategoryPicker';
 import { PriorityPicker } from '@/src/presentation/components/forms/pickers/PriorityPicker';
@@ -48,23 +46,8 @@ import { useUpdateRecurringTaskItem } from '@/src/presentation/hooks/recurring/u
 
 /**
  * Form schema for editing a recurring task item
- * Uses z.date() instead of z.coerce.date() since we're working with Date objects in the form
  */
-const editFormSchema = z.object({
-  title: z
-    .string()
-    .min(1, 'Title is required')
-    .max(255, 'Title too long')
-    .optional(),
-  description: z
-    .string()
-    .max(1000, 'Description too long')
-    .nullable()
-    .optional(),
-  categoryId: z.string().uuid('Invalid category ID').nullable().optional(),
-  priority: taskPrioritySchema.nullable().optional(),
-  dailySection: dailySectionSchema.nullable().optional(),
-  bonusSection: bonusSectionSchema.nullable().optional(),
+const editFormSchema = updateRecurringTaskItemSchema.extend({
   endDate: z.date().nullable().optional(),
 });
 
@@ -98,6 +81,9 @@ export function EditRecurringTaskItemDialog({
     },
   });
 
+  const normalizeDescription = (value: string | null | undefined) =>
+    value == null || value.trim() === '' ? null : value;
+
   const onSubmit = (data: EditFormData) => {
     // Build updates object with only changed fields
     const updates: UpdateRecurringTaskItemInput = {};
@@ -105,9 +91,13 @@ export function EditRecurringTaskItemDialog({
     if (data.title !== item.title) {
       updates.title = data.title;
     }
-    if (data.description !== (item.description ?? undefined)) {
-      updates.description = data.description ?? null;
+    if (
+      normalizeDescription(data.description) !==
+      normalizeDescription(item.description)
+    ) {
+      updates.description = normalizeDescription(data.description);
     }
+
     if (data.categoryId !== (item.categoryId ?? undefined)) {
       updates.categoryId = data.categoryId ?? null;
     }
@@ -196,7 +186,7 @@ export function EditRecurringTaskItemDialog({
                     <Textarea
                       placeholder="Add more details (optional)"
                       {...field}
-                      value={field.value ?? ''}
+                      value={field.value ?? undefined}
                     />
                   </FormControl>
                   <FormMessage />
