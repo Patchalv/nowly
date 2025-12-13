@@ -11,7 +11,7 @@ interface FiltersProps {
 
 export const Filters = ({ filters, handleFiltersChange }: FiltersProps) => {
   return (
-    <div className="flex flex-col gap-4 justify-center items-center">
+    <div className="w-full flex flex-col gap-4 justify-center items-center">
       <TaskSearch filters={filters} handleFiltersChange={handleFiltersChange} />
 
       <div className="w-full flex gap-4 justify-center items-center">

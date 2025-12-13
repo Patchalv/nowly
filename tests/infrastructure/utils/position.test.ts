@@ -146,6 +146,9 @@ describe('position generation utilities', () => {
         deleteUncompletedByRecurringItemId: vi
           .fn()
           .mockResolvedValue(undefined),
+        bulkUpdateUncompletedByRecurringItemId: vi
+          .fn()
+          .mockResolvedValue(undefined),
       };
 
       const result = await generatePositionForNewTask(
@@ -217,6 +220,9 @@ describe('position generation utilities', () => {
         deleteUncompletedByRecurringItemId: vi
           .fn()
           .mockResolvedValue(undefined),
+        bulkUpdateUncompletedByRecurringItemId: vi
+          .fn()
+          .mockResolvedValue(undefined),
       };
 
       const result = await generatePositionForNewTask(
@@ -249,6 +255,9 @@ describe('position generation utilities', () => {
         createBatch: vi.fn().mockResolvedValue([]),
         getByRecurringItemId: vi.fn().mockResolvedValue([]),
         deleteUncompletedByRecurringItemId: vi
+          .fn()
+          .mockResolvedValue(undefined),
+        bulkUpdateUncompletedByRecurringItemId: vi
           .fn()
           .mockResolvedValue(undefined),
       };
@@ -330,6 +339,9 @@ describe('position generation utilities', () => {
         deleteUncompletedByRecurringItemId: vi
           .fn()
           .mockResolvedValue(undefined),
+        bulkUpdateUncompletedByRecurringItemId: vi
+          .fn()
+          .mockResolvedValue(undefined),
       };
 
       // Generate position for date1
@@ -407,6 +419,9 @@ describe('position generation utilities', () => {
         createBatch: vi.fn().mockResolvedValue([]),
         getByRecurringItemId: vi.fn().mockResolvedValue([]),
         deleteUncompletedByRecurringItemId: vi
+          .fn()
+          .mockResolvedValue(undefined),
+        bulkUpdateUncompletedByRecurringItemId: vi
           .fn()
           .mockResolvedValue(undefined),
       };

@@ -15,7 +15,7 @@ export const CategoryFilters = ({
 
   if (isLoading) {
     return (
-      <div className="flex gap-4 justify-center">
+      <div className="w-full flex gap-4 justify-center">
         {[...Array(3)].map((_, i) => (
           <Skeleton key={i} className="h-10 w-20" />
         ))}
@@ -33,7 +33,7 @@ export const CategoryFilters = ({
   }
 
   return (
-    <section className="flex gap-4 justify-center">
+    <section className="w-full flex gap-4 md:justify-center overflow-x-auto">
       <Button
         variant={selectedCategoryId === null ? 'default' : 'outline'}
         onClick={() => onCategorySelect(null)}

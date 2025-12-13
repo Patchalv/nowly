@@ -7,7 +7,7 @@ import { Button } from '../../ui/button';
 import { Popover, PopoverContent, PopoverTrigger } from '../../ui/popover';
 
 interface PriorityPickerProps {
-  value?: TaskPriority;
+  value?: TaskPriority | null;
   onChange: (value: TaskPriority | null) => void;
 }
 
@@ -24,10 +24,10 @@ export const PriorityPicker = ({ value, onChange }: PriorityPickerProps) => {
           btnVariant="ghost"
           btnSize="icon"
           btnContent={
-            value !== undefined ? (
+            value != null ? (
               <FlagIcon
                 className="size-4"
-                style={{ color: PRIORITY_CONFIG[value as TaskPriority].color }}
+                style={{ color: PRIORITY_CONFIG[value].color }}
               />
             ) : (
               <FlagOffIcon className="size-4" />

@@ -22,12 +22,12 @@ import {
 } from '@/src/presentation/components/ui/alert-dialog';
 import { Button } from '@/src/presentation/components/ui/button';
 import {
-  Card,
-  CardAction,
-  CardContent,
-  CardHeader,
-  CardTitle,
-} from '@/src/presentation/components/ui/card';
+  Item,
+  ItemActions,
+  ItemContent,
+  ItemDescription,
+  ItemTitle,
+} from '@/src/presentation/components/ui/item';
 import {
   Popover,
   PopoverContent,
@@ -40,6 +40,7 @@ import { cn } from '@/src/shared/utils/cn';
 import { formatDisplayDate } from '@/src/shared/utils/date-formatting';
 import { getIconComponent } from '@/src/shared/utils/icons';
 import { getNextOccurrences } from '@/src/shared/utils/recurrence';
+import { EditRecurringTaskItemDialog } from './EditRecurringTaskItemDialog';
 import { RecurrenceDescription } from './RecurrenceDescription';
 
 interface RecurringTaskItemCardProps {
@@ -50,6 +51,7 @@ export function RecurringTaskItemCard({ item }: RecurringTaskItemCardProps) {
   const [_, startTransition] = useTransition();
   const [menuOpen, setMenuOpen] = useState(false);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [editDialogOpen, setEditDialogOpen] = useState(false);
 
   const { data: categories } = useCategories();
   const toggleActive = useToggleRecurringTaskItemActive();
@@ -81,16 +83,90 @@ export function RecurringTaskItemCard({ item }: RecurringTaskItemCardProps) {
     setDeleteDialogOpen(true);
   };
 
+  const handleEditClick = () => {
+    setMenuOpen(false);
+    setEditDialogOpen(true);
+  };
+
   const CategoryIcon = category ? getIconComponent(category.icon) : null;
 
   const isPending = toggleActive.isPending || deleteItem.isPending;
 
   return (
     <>
-      <Card className="w-full">
-        <CardHeader>
-          <CardTitle>{item.title}</CardTitle>
-          <CardAction>
+      <Item variant="outline" size="sm" className="w-full">
+        <ItemContent className="flex flex-row gap-4 items-center justify-between">
+          <div className="flex flex-col gap-1">
+            <ItemTitle className="font-semibold">{item.title}</ItemTitle>
+            <ItemDescription>
+              <div className="flex flex-wrap items-center gap-1.5">
+                {/* Recurrence description */}
+                <RecurrenceDescription
+                  frequency={item.frequency}
+                  rruleString={item.rruleString}
+                />
+
+                {/* Category badge */}
+                {CategoryIcon && category && (
+                  <>
+                    <span className="text-muted-foreground">•</span>
+                    <span
+                      className="flex items-center gap-1 text-xs font-medium px-1.5 py-0.5 rounded"
+                      style={{ backgroundColor: category.color + '20' }}
+                    >
+                      <CategoryIcon className="size-3" />
+                      {category.name}
+                    </span>
+                  </>
+                )}
+
+                {/* Priority badge (only if priority is set) */}
+                {item.priority && (
+                  <>
+                    <span className="text-muted-foreground">•</span>
+                    <span className="text-xs">
+                      <PriorityBadge priority={item.priority} />
+                    </span>
+                  </>
+                )}
+
+                {/* Status badge */}
+                <span className="text-muted-foreground">•</span>
+                <span
+                  className={cn(
+                    'flex items-center gap-1 text-xs font-medium px-1.5 py-0.5 rounded',
+                    item.isActive
+                      ? 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400'
+                      : 'bg-gray-100 text-gray-800 dark:bg-gray-800 dark:text-gray-400'
+                  )}
+                >
+                  {item.isActive ? (
+                    <>
+                      <CheckCircle2 className="size-3" />
+                      Active
+                    </>
+                  ) : (
+                    <>
+                      <PauseCircle className="size-3" />
+                      Paused
+                    </>
+                  )}
+                </span>
+
+                {/* Next occurrence */}
+                {nextOccurrence && (
+                  <>
+                    <span className="text-muted-foreground">•</span>
+                    <span className="flex items-center gap-1 text-xs text-muted-foreground">
+                      <Calendar className="size-3" />
+                      Next: {formatDisplayDate(nextOccurrence)}
+                    </span>
+                  </>
+                )}
+              </div>
+            </ItemDescription>
+          </div>
+          <ItemActions>
             <Popover open={menuOpen} onOpenChange={setMenuOpen}>
               <PopoverTrigger asChild>
                 <Button variant="ghost" size="icon-sm">
@@ -102,8 +178,9 @@ export function RecurringTaskItemCard({ item }: RecurringTaskItemCardProps) {
                   <Button
                     variant="ghost"
                     size="sm"
-                    disabled
+                    onClick={handleEditClick}
                     className="justify-start"
+                    disabled={isPending}
                   >
                     Edit
                   </Button>
@@ -128,67 +205,16 @@ export function RecurringTaskItemCard({ item }: RecurringTaskItemCardProps) {
                 </div>
               </PopoverContent>
             </Popover>
-          </CardAction>
-        </CardHeader>
-        <CardContent className="space-y-3">
-          {/* Recurrence description */}
-          <RecurrenceDescription
-            frequency={item.frequency}
-            rruleString={item.rruleString}
-          />
+          </ItemActions>
+        </ItemContent>
+      </Item>
 
-          {/* Badges row */}
-          <div className="flex flex-wrap items-center gap-2">
-            {/* Category badge */}
-            {CategoryIcon && category && (
-              <span
-                className="flex items-center gap-1.5 text-xs font-medium px-2 py-1 rounded-md"
-                style={{ backgroundColor: category.color + '20' }}
-              >
-                <CategoryIcon className="size-3" />
-                {category.name}
-              </span>
-            )}
-
-            {/* Priority badge (only if priority is set) */}
-            {item.priority && (
-              <span className="text-xs">
-                <PriorityBadge priority={item.priority} />
-              </span>
-            )}
-
-            {/* Status badge */}
-            <span
-              className={cn(
-                'flex items-center gap-1 text-xs font-medium px-2 py-1 rounded-md',
-                item.isActive
-                  ? 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400'
-                  : 'bg-gray-100 text-gray-800 dark:bg-gray-800 dark:text-gray-400'
-              )}
-            >
-              {item.isActive ? (
-                <>
-                  <CheckCircle2 className="size-3" />
-                  Active
-                </>
-              ) : (
-                <>
-                  <PauseCircle className="size-3" />
-                  Paused
-                </>
-              )}
-            </span>
-          </div>
-
-          {/* Next occurrence */}
-          {nextOccurrence && (
-            <div className="flex items-center gap-2 text-sm text-muted-foreground">
-              <Calendar className="size-4" />
-              <span>Next: {formatDisplayDate(nextOccurrence)}</span>
-            </div>
-          )}
-        </CardContent>
-      </Card>
+      {/* Edit dialog */}
+      <EditRecurringTaskItemDialog
+        item={item}
+        open={editDialogOpen}
+        onOpenChange={setEditDialogOpen}
+      />
 
       {/* Delete confirmation dialog */}
       <AlertDialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
