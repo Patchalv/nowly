@@ -35,6 +35,12 @@ export interface RecurringTaskItem {
   endDate: Date | null;
   dueOffsetDays: number;
 
+  // RRULE configuration parameters (stored for regeneration)
+  weeklyDays?: number[]; // JavaScript native: 0=Sunday, 1=Monday, ..., 6=Saturday
+  monthlyDay?: number; // 1-31
+  yearlyMonth?: number; // 1-12
+  yearlyDay?: number; // 1-31
+
   // Generation tracking
   lastGeneratedDate: Date | null;
   tasksToGenerateAhead: number;

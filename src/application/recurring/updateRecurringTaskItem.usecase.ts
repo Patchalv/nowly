@@ -12,7 +12,8 @@ import { MutateRecurringTaskItemResponse } from './types';
  * 1. Verifies the recurring item exists and belongs to the user
  * 2. Updates the recurring item via repository
  * 3. If isActive is changed to false, cleans up future uncompleted tasks
- * 4. If task template fields are updated, syncs changes to uncompleted tasks
+ * 4. If recurrence parameters are updated, regenerates all tasks by deleting uncompleted tasks and resetting lastGeneratedDate
+ * 5. If task template fields are updated, syncs changes to uncompleted tasks
  *
  * @param recurringItemId - The ID of the recurring item to update
  * @param userId - The ID of the user performing the update
@@ -49,6 +50,20 @@ export async function updateRecurringTaskItem(
     const isDeactivating =
       updates.isActive === false && existingItem.isActive === true;
 
+    // Identify which recurrence parameter fields are being updated
+    // These fields affect which dates should have tasks and require regeneration
+    const recurrenceParameterFields: (keyof UpdateRecurringTaskItemInput)[] = [
+      'startDate',
+      'endDate',
+      'frequency',
+      'rruleString',
+      'dueOffsetDays',
+    ];
+
+    const hasRecurrenceParameterUpdates = recurrenceParameterFields.some(
+      (field) => updates[field] !== undefined
+    );
+
     // Identify which task template fields are being updated
     // These fields are copied to generated tasks and should be synced to existing uncompleted tasks
     const taskTemplateFields: (keyof UpdateRecurringTaskItemInput)[] = [
@@ -73,6 +88,11 @@ export async function updateRecurringTaskItem(
     // If deactivating, clean up future uncompleted tasks
     if (isDeactivating) {
       await taskRepository.deleteUncompletedByRecurringItemId(recurringItemId);
+    } else if (hasRecurrenceParameterUpdates) {
+      // Regenerate tasks when recurrence parameters change
+      // Delete all uncompleted tasks and reset lastGeneratedDate to trigger regeneration
+      await taskRepository.deleteUncompletedByRecurringItemId(recurringItemId);
+      await recurringRepository.updateLastGeneratedDate(recurringItemId, null);
     } else if (hasTaskTemplateUpdates) {
       // Sync task template field changes to uncompleted tasks
       const taskUpdates: Partial<Task> = {};

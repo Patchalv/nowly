@@ -96,6 +96,12 @@ export interface RecurringTaskItemRow {
   end_date: string | null; // DATE: YYYY-MM-DD string
   due_offset_days: number;
 
+  // RRULE configuration parameters (stored for regeneration)
+  weekly_days: number[] | null; // JavaScript native: 0=Sunday, 1=Monday, ..., 6=Saturday
+  monthly_day: number | null; // 1-31
+  yearly_month: number | null; // 1-12
+  yearly_day: number | null; // 1-31
+
   // Generation tracking
   last_generated_date: string | null; // DATE: YYYY-MM-DD string
   tasks_to_generate_ahead: number;

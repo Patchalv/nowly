@@ -50,6 +50,11 @@ export class SupabaseRecurringTaskItemRepository implements IRecurringTaskItemRe
       isActive: row.is_active,
       createdAt: timestampFromDatabase(row.created_at),
       updatedAt: timestampFromDatabase(row.updated_at),
+      // RRULE configuration parameters
+      weeklyDays: row.weekly_days ?? undefined,
+      monthlyDay: row.monthly_day ?? undefined,
+      yearlyMonth: row.yearly_month ?? undefined,
+      yearlyDay: row.yearly_day ?? undefined,
     };
   }
 
@@ -82,6 +87,11 @@ export class SupabaseRecurringTaskItemRepository implements IRecurringTaskItemRe
       last_generated_date: null,
       tasks_to_generate_ahead: 15,
       is_active: true,
+      // Store RRULE configuration parameters for regeneration
+      weekly_days: input.weeklyDays ?? null,
+      monthly_day: input.monthlyDay ?? null,
+      yearly_month: input.yearlyMonth ?? null,
+      yearly_day: input.yearlyDay ?? null,
     };
   }
 
@@ -198,12 +208,36 @@ export class SupabaseRecurringTaskItemRepository implements IRecurringTaskItemRe
 
   /**
    * Update a recurring task item
+   * If endDate changes, regenerates the RRULE string to keep it in sync
    */
   async update(
     id: string,
     input: UpdateRecurringTaskItemInput
   ): Promise<RecurringTaskItem> {
-    const row = this.toDatabase(input);
+    let row = this.toDatabase(input);
+
+    // If endDate is being updated, regenerate the RRULE string
+    if (input.endDate !== undefined) {
+      // Fetch the existing recurring item to get RRULE parameters
+      const existing = await this.getById(id);
+      if (!existing) {
+        throw new Error('Recurring task item not found');
+      }
+
+      // Rebuild RRULE with the updated endDate
+      const rruleString = buildRRuleString({
+        frequency: existing.frequency,
+        startDate: existing.startDate,
+        endDate: input.endDate ?? undefined,
+        weeklyDays: existing.weeklyDays,
+        monthlyDay: existing.monthlyDay,
+        yearlyMonth: existing.yearlyMonth,
+        yearlyDay: existing.yearlyDay,
+      });
+
+      // Add the regenerated rrule_string to the update
+      row = { ...row, rrule_string: rruleString };
+    }
 
     const { data, error } = await this.client
       .from('recurring_task_items')
@@ -241,13 +275,15 @@ export class SupabaseRecurringTaskItemRepository implements IRecurringTaskItemRe
 
   /**
    * Update the last generated date for a recurring task item
+   * Used after generating tasks to track progress
+   * @param date - The date to set, or null to reset generation state
    */
-  async updateLastGeneratedDate(id: string, date: Date): Promise<void> {
-    const dateStr = dateToDatabase(date);
-
+  async updateLastGeneratedDate(id: string, date: Date | null): Promise<void> {
     const { error } = await this.client
       .from('recurring_task_items')
-      .update({ last_generated_date: dateStr } as never)
+      .update({
+        last_generated_date: date ? dateToDatabase(date) : null,
+      } as never)
       .eq('id', id);
 
     if (error) {
