@@ -72,17 +72,17 @@ export function EditRecurringTaskItemDialog({
     mode: 'onBlur',
     defaultValues: {
       title: item.title,
-      description: item.description ?? undefined,
-      categoryId: item.categoryId ?? undefined,
-      priority: item.priority ?? undefined,
-      dailySection: item.dailySection ?? undefined,
-      bonusSection: item.bonusSection ?? undefined,
-      endDate: item.endDate ?? undefined,
+      description: item.description ?? null,
+      categoryId: item.categoryId ?? null,
+      priority: item.priority ?? null,
+      dailySection: item.dailySection ?? null,
+      bonusSection: item.bonusSection ?? null,
+      endDate: item.endDate ?? null,
     },
   });
 
   const normalizeDescription = (value: string | null | undefined) =>
-    value == null || value.trim() === '' ? null : value;
+    value == null || value.trim() === '' ? null : value.trim();
 
   const onSubmit = (data: EditFormData) => {
     // Build updates object with only changed fields
@@ -119,6 +119,7 @@ export function EditRecurringTaskItemDialog({
 
     // Only submit if there are changes
     if (Object.keys(updates).length === 0) {
+      form.reset();
       onOpenChange(false);
       return;
     }
@@ -186,7 +187,7 @@ export function EditRecurringTaskItemDialog({
                     <Textarea
                       placeholder="Add more details (optional)"
                       {...field}
-                      value={field.value ?? undefined}
+                      value={field.value ?? ''}
                     />
                   </FormControl>
                   <FormMessage />
@@ -330,7 +331,10 @@ export function EditRecurringTaskItemDialog({
               <Button
                 type="button"
                 variant="outline"
-                onClick={() => onOpenChange(false)}
+                onClick={() => {
+                  form.reset();
+                  onOpenChange(false);
+                }}
                 disabled={isPending}
               >
                 Cancel
