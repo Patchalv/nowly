@@ -3,17 +3,19 @@ import type {
   CreateRecurringTaskItemInput,
   UpdateRecurringTaskItemInput,
 } from '@/src/domain/validation/recurring/recurringTaskItem.schema';
-import { handleError } from '@/src/shared/errors/handler';
-import { logger } from '@sentry/nextjs';
-import type { SupabaseClient } from '@supabase/supabase-js';
-import type { Database, RecurringTaskItemRow } from '../../supabase/types';
+import type { IRecurringTaskItemRepository } from '@/src/infrastructure/repositories/recurring-task-item/IRecurringTaskItemRepository';
+import type {
+  Database,
+  RecurringTaskItemRow,
+} from '@/src/infrastructure/supabase/types';
 import {
   dateFromDatabase,
   dateToDatabase,
   timestampFromDatabase,
-} from '../../supabase/utils/dates';
-import { buildRRuleString } from '../../utils/rruleBuilder';
-import type { IRecurringTaskItemRepository } from './IRecurringTaskItemRepository';
+} from '@/src/infrastructure/supabase/utils/dates';
+import { buildRRuleString } from '@/src/infrastructure/utils/rruleBuilder';
+import { handleError, logger } from '@/src/shared/logging';
+import type { SupabaseClient } from '@supabase/supabase-js';
 
 export class SupabaseRecurringTaskItemRepository implements IRecurringTaskItemRepository {
   constructor(private client: SupabaseClient<Database>) {}

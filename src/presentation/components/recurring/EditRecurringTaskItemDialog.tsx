@@ -89,16 +89,16 @@ export function EditRecurringTaskItemDialog({
       updates.description = normalizeDescription(data.description);
     }
 
-    if (data.categoryId !== (item.categoryId ?? undefined)) {
+    if ((data.categoryId ?? null) !== (item.categoryId ?? null)) {
       updates.categoryId = data.categoryId ?? null;
     }
-    if (data.priority !== (item.priority ?? undefined)) {
+    if ((data.priority ?? null) !== (item.priority ?? null)) {
       updates.priority = data.priority ?? null;
     }
-    if (data.dailySection !== (item.dailySection ?? undefined)) {
+    if ((data.dailySection ?? null) !== (item.dailySection ?? null)) {
       updates.dailySection = data.dailySection ?? null;
     }
-    if (data.bonusSection !== (item.bonusSection ?? undefined)) {
+    if ((data.bonusSection ?? null) !== (item.bonusSection ?? null)) {
       updates.bonusSection = data.bonusSection ?? null;
     }
     // Compare endDate - handle null/undefined properly

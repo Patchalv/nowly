@@ -1,10 +1,15 @@
-import { DAILY_SECTION_CONFIG } from '@/src/config/constants';
-import type { DailySection } from '@/src/domain/types/tasks';
 import { SunIcon, SunriseIcon, SunsetIcon, XIcon } from 'lucide-react';
 import { useState } from 'react';
-import { TooltipButton } from '../../buttons/TooltipButton';
-import { Button } from '../../ui/button';
-import { Popover, PopoverContent, PopoverTrigger } from '../../ui/popover';
+
+import { DAILY_SECTION_CONFIG } from '@/src/config/constants';
+import type { DailySection } from '@/src/domain/types/tasks';
+import { TooltipButton } from '@/src/presentation/components/buttons/TooltipButton';
+import { Button } from '@/src/presentation/components/ui/button';
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from '@/src/presentation/components/ui/popover';
 
 interface DailySectionPickerProps {
   value: DailySection | null | undefined;

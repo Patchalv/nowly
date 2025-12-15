@@ -1,10 +1,15 @@
-import { BONUS_SECTION_CONFIG } from '@/src/config/constants';
-import type { BonusSection } from '@/src/domain/types/tasks';
 import { CheckCircle2Icon, StarIcon, XIcon } from 'lucide-react';
 import { useState } from 'react';
-import { TooltipButton } from '../../buttons/TooltipButton';
-import { Button } from '../../ui/button';
-import { Popover, PopoverContent, PopoverTrigger } from '../../ui/popover';
+
+import { BONUS_SECTION_CONFIG } from '@/src/config/constants';
+import type { BonusSection } from '@/src/domain/types/tasks';
+import { TooltipButton } from '@/src/presentation/components/buttons/TooltipButton';
+import { Button } from '@/src/presentation/components/ui/button';
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from '@/src/presentation/components/ui/popover';
 
 interface BonusSectionPickerProps {
   value: BonusSection | null | undefined;

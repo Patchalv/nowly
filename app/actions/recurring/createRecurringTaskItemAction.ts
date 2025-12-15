@@ -1,13 +1,14 @@
 'use server';
 
+import { revalidatePath } from 'next/cache';
+
 import { createRecurringTaskItem } from '@/src/application/recurring/createRecurringTaskItem.usecase';
 import { createRecurringTaskItemSchema } from '@/src/domain/validation/recurring/recurringTaskItem.schema';
 import { SupabaseRecurringTaskItemRepository } from '@/src/infrastructure/repositories/recurring-task-item/SupabaseRecurringTaskItemRepository';
 import { SupabaseTaskRepository } from '@/src/infrastructure/repositories/task/SupabaseTaskRepository';
 import { createClient } from '@/src/infrastructure/supabase/server';
+import { logger } from '@/src/shared/logging';
 import { parseDateFromURL } from '@/src/shared/utils/date';
-import { logger } from '@sentry/nextjs';
-import { revalidatePath } from 'next/cache';
 
 export async function createRecurringTaskItemAction(formData: FormData) {
   const supabase = await createClient();
