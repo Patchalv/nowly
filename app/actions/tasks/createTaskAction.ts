@@ -7,6 +7,7 @@ import { createTaskSchema } from '@/src/domain/validation/task/task.schema';
 import { SupabaseTaskRepository } from '@/src/infrastructure/repositories/task/SupabaseTaskRepository';
 import { createClient } from '@/src/infrastructure/supabase/server';
 import { handleError, logger } from '@/src/shared/logging';
+import { parseDateFromURL } from '@/src/shared/utils/date';
 
 export async function createTaskAction(formData: FormData) {
   const supabase = await createClient();
@@ -44,7 +45,7 @@ export async function createTaskAction(formData: FormData) {
   const result = createTaskSchema.safeParse({
     title: formData.get('title'),
     scheduledDate: scheduledDateStr
-      ? new Date(scheduledDateStr as string)
+      ? parseDateFromURL(scheduledDateStr as string)
       : null,
     priority,
     categoryId,

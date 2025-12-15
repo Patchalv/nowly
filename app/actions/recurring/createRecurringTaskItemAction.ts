@@ -5,6 +5,7 @@ import { createRecurringTaskItemSchema } from '@/src/domain/validation/recurring
 import { SupabaseRecurringTaskItemRepository } from '@/src/infrastructure/repositories/recurring-task-item/SupabaseRecurringTaskItemRepository';
 import { SupabaseTaskRepository } from '@/src/infrastructure/repositories/task/SupabaseTaskRepository';
 import { createClient } from '@/src/infrastructure/supabase/server';
+import { parseDateFromURL } from '@/src/shared/utils/date';
 import { logger } from '@sentry/nextjs';
 import { revalidatePath } from 'next/cache';
 
@@ -68,8 +69,10 @@ export async function createRecurringTaskItemAction(formData: FormData) {
     dailySection: formData.get('dailySection') || undefined,
     bonusSection: formData.get('bonusSection') || undefined,
     frequency: formData.get('frequency'),
-    startDate: startDateStr ? new Date(startDateStr as string) : undefined,
-    endDate: endDateStr ? new Date(endDateStr as string) : undefined,
+    startDate: startDateStr
+      ? parseDateFromURL(startDateStr as string)
+      : undefined,
+    endDate: endDateStr ? parseDateFromURL(endDateStr as string) : undefined,
     dueOffsetDays,
     weeklyDays,
     monthlyDay,

@@ -28,6 +28,7 @@ import { Label } from '@/src/presentation/components/ui/label';
 import { Textarea } from '@/src/presentation/components/ui/textarea';
 import { useCreateRecurringTaskItem } from '@/src/presentation/hooks/recurring/useCreateRecurringTaskItem';
 import { cn } from '@/src/shared/utils/cn';
+import { formatDateForURL } from '@/src/shared/utils/date';
 import { toast } from 'sonner';
 import { DueOffsetInput } from './DueOffsetInput';
 import { FrequencySelector } from './FrequencySelector';
@@ -170,9 +171,9 @@ export function CreateRecurringTaskForm({
       payload.set('bonusSection', data.bonusSection);
     }
     payload.set('frequency', data.frequency);
-    payload.set('startDate', data.startDate.toISOString());
+    payload.set('startDate', formatDateForURL(data.startDate));
     if (data.endDate) {
-      payload.set('endDate', data.endDate.toISOString());
+      payload.set('endDate', formatDateForURL(data.endDate));
     }
     payload.set('dueOffsetDays', String(data.dueOffsetDays));
     if (data.weeklyDays && data.weeklyDays.length > 0) {
