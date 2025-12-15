@@ -11,15 +11,30 @@ ADD COLUMN IF NOT EXISTS monthly_day INTEGER,
 ADD COLUMN IF NOT EXISTS yearly_month INTEGER,
 ADD COLUMN IF NOT EXISTS yearly_day INTEGER;
 
--- Add constraints for valid ranges
-ALTER TABLE recurring_task_items
-ADD CONSTRAINT monthly_day_range CHECK (monthly_day IS NULL OR (monthly_day >= 1 AND monthly_day <= 31));
+-- Add constraints for valid ranges (idempotent with exception handling)
+DO $$ 
+BEGIN
+    ALTER TABLE recurring_task_items
+    ADD CONSTRAINT monthly_day_range CHECK (monthly_day IS NULL OR (monthly_day >= 1 AND monthly_day <= 31));
+EXCEPTION 
+    WHEN duplicate_object THEN NULL;
+END $$;
 
-ALTER TABLE recurring_task_items
-ADD CONSTRAINT yearly_month_range CHECK (yearly_month IS NULL OR (yearly_month >= 1 AND yearly_month <= 12));
+DO $$ 
+BEGIN
+    ALTER TABLE recurring_task_items
+    ADD CONSTRAINT yearly_month_range CHECK (yearly_month IS NULL OR (yearly_month >= 1 AND yearly_month <= 12));
+EXCEPTION 
+    WHEN duplicate_object THEN NULL;
+END $$;
 
-ALTER TABLE recurring_task_items
-ADD CONSTRAINT yearly_day_range CHECK (yearly_day IS NULL OR (yearly_day >= 1 AND yearly_day <= 31));
+DO $$ 
+BEGIN
+    ALTER TABLE recurring_task_items
+    ADD CONSTRAINT yearly_day_range CHECK (yearly_day IS NULL OR (yearly_day >= 1 AND yearly_day <= 31));
+EXCEPTION 
+    WHEN duplicate_object THEN NULL;
+END $$;
 
 -- ============================================================================
 -- COMMENTS (Documentation)
