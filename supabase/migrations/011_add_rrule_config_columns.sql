@@ -13,13 +13,13 @@ ADD COLUMN IF NOT EXISTS yearly_day INTEGER;
 
 -- Add constraints for valid ranges
 ALTER TABLE recurring_task_items
-ADD CONSTRAINT IF NOT EXISTS monthly_day_range CHECK (monthly_day IS NULL OR (monthly_day >= 1 AND monthly_day <= 31));
+ADD CONSTRAINT monthly_day_range CHECK (monthly_day IS NULL OR (monthly_day >= 1 AND monthly_day <= 31));
 
 ALTER TABLE recurring_task_items
-ADD CONSTRAINT IF NOT EXISTS yearly_month_range CHECK (yearly_month IS NULL OR (yearly_month >= 1 AND yearly_month <= 12));
+ADD CONSTRAINT yearly_month_range CHECK (yearly_month IS NULL OR (yearly_month >= 1 AND yearly_month <= 12));
 
 ALTER TABLE recurring_task_items
-ADD CONSTRAINT IF NOT EXISTS yearly_day_range CHECK (yearly_day IS NULL OR (yearly_day >= 1 AND yearly_day <= 31));
+ADD CONSTRAINT yearly_day_range CHECK (yearly_day IS NULL OR (yearly_day >= 1 AND yearly_day <= 31));
 
 -- ============================================================================
 -- COMMENTS (Documentation)
