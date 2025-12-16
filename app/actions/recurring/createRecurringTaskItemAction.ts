@@ -1,14 +1,13 @@
 'use server';
 
-import { revalidatePath } from 'next/cache';
-
 import { createRecurringTaskItem } from '@/src/application/recurring/createRecurringTaskItem.usecase';
 import { createRecurringTaskItemSchema } from '@/src/domain/validation/recurring/recurringTaskItem.schema';
 import { SupabaseRecurringTaskItemRepository } from '@/src/infrastructure/repositories/recurring-task-item/SupabaseRecurringTaskItemRepository';
 import { SupabaseTaskRepository } from '@/src/infrastructure/repositories/task/SupabaseTaskRepository';
 import { createClient } from '@/src/infrastructure/supabase/server';
-import { logger } from '@/src/shared/logging';
+import { handleError, logger } from '@/src/shared/logging';
 import { parseDateFromURL } from '@/src/shared/utils/date';
+import { revalidatePath } from 'next/cache';
 
 export async function createRecurringTaskItemAction(formData: FormData) {
   const supabase = await createClient();
@@ -82,9 +81,10 @@ export async function createRecurringTaskItemAction(formData: FormData) {
   });
 
   if (!result.success) {
-    logger.error('Create recurring task item validation errors', {
-      error: result.error,
-    });
+    handleError.validation(
+      'Create recurring task item validation errors',
+      result.error
+    );
     return {
       success: false,
       errors: result.error.flatten().fieldErrors,
@@ -102,7 +102,7 @@ export async function createRecurringTaskItemAction(formData: FormData) {
   );
 
   if (!response.success) {
-    logger.error('Create recurring task item error', { error: response.error });
+    handleError.throw(response.error);
     return {
       success: false,
       error: response.error,

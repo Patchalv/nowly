@@ -1,3 +1,5 @@
+'use client';
+
 import { SunIcon, SunriseIcon, SunsetIcon, XIcon } from 'lucide-react';
 import { useState } from 'react';
 
@@ -16,21 +18,21 @@ interface DailySectionPickerProps {
   onChange: (value: DailySection | null) => void;
 }
 
+const SECTIONS: DailySection[] = ['morning', 'afternoon', 'evening'];
+
+const SECTION_ICONS: Record<DailySection, React.ReactNode> = {
+  morning: <SunriseIcon className="size-4" />,
+  afternoon: <SunIcon className="size-4" />,
+  evening: <SunsetIcon className="size-4" />,
+};
+
 export function DailySectionPicker({
   value,
   onChange,
 }: DailySectionPickerProps) {
   const [open, setOpen] = useState(false);
 
-  const SECTIONS: DailySection[] = ['morning', 'afternoon', 'evening'];
-
-  // Get icon based on value
-  const getIcon = () => {
-    if (value === 'morning') return <SunriseIcon className="size-4" />;
-    if (value === 'afternoon') return <SunIcon className="size-4" />;
-    if (value === 'evening') return <SunsetIcon className="size-4" />;
-    return <XIcon className="size-4" />;
-  };
+  const icon = value ? SECTION_ICONS[value] : <XIcon className="size-4" />;
 
   return (
     <Popover open={open} onOpenChange={setOpen}>
@@ -39,7 +41,7 @@ export function DailySectionPicker({
           tooltip="Daily Section"
           btnVariant="ghost"
           btnSize="icon"
-          btnContent={getIcon()}
+          btnContent={icon}
         />
       </PopoverTrigger>
       <PopoverContent>
