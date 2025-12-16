@@ -4,6 +4,7 @@ import {
 } from '@/src/domain/validation/task/task.schema';
 import { useCreateTask } from '@/src/presentation/hooks/tasks/useTasks';
 import { cn } from '@/src/shared/utils/cn';
+import { formatDateForURL } from '@/src/shared/utils/date';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useForm } from 'react-hook-form';
 import { DatePickerButton } from '../../date-picker/DatePickerButton';
@@ -47,7 +48,7 @@ export const CreateTaskForm = ({
     const formData = new FormData();
     formData.append('title', data.title);
     if (data.scheduledDate) {
-      formData.append('scheduledDate', data.scheduledDate.toISOString());
+      formData.append('scheduledDate', formatDateForURL(data.scheduledDate));
     }
     if (data.priority !== undefined) {
       formData.append('priority', data.priority);

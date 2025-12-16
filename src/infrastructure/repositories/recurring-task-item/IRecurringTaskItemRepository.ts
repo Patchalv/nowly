@@ -45,8 +45,9 @@ export interface IRecurringTaskItemRepository {
   /**
    * Update the last generated date for a recurring task item
    * Used after generating tasks to track progress
+   * @param date - The date to set, or null to reset generation state
    */
-  updateLastGeneratedDate(id: string, date: Date): Promise<void>;
+  updateLastGeneratedDate(id: string, date: Date | null): Promise<void>;
 
   /**
    * Get all active items that need task generation

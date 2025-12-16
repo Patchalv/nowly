@@ -4,17 +4,15 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { useForm } from 'react-hook-form';
 import { z } from 'zod';
 
-import {
-  BONUS_SECTION_CONFIG,
-  DAILY_SECTION_CONFIG,
-} from '@/src/config/constants';
 import type { RecurringTaskItem } from '@/src/domain/types/recurring';
 import {
   updateRecurringTaskItemSchema,
   type UpdateRecurringTaskItemInput,
 } from '@/src/domain/validation/recurring/recurringTaskItem.schema';
 import { DatePickerButton } from '@/src/presentation/components/date-picker/DatePickerButton';
+import { BonusSectionPicker } from '@/src/presentation/components/forms/pickers/BonusSectionPicker';
 import { CategoryPicker } from '@/src/presentation/components/forms/pickers/CategoryPicker';
+import { DailySectionPicker } from '@/src/presentation/components/forms/pickers/DailySectionPicker';
 import { PriorityPicker } from '@/src/presentation/components/forms/pickers/PriorityPicker';
 import { Button } from '@/src/presentation/components/ui/button';
 import {
@@ -34,13 +32,6 @@ import {
   FormMessage,
 } from '@/src/presentation/components/ui/form';
 import { Input } from '@/src/presentation/components/ui/input';
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/src/presentation/components/ui/select';
 import { Textarea } from '@/src/presentation/components/ui/textarea';
 import { useUpdateRecurringTaskItem } from '@/src/presentation/hooks/recurring/useUpdateRecurringTaskItem';
 
@@ -98,16 +89,16 @@ export function EditRecurringTaskItemDialog({
       updates.description = normalizeDescription(data.description);
     }
 
-    if (data.categoryId !== (item.categoryId ?? undefined)) {
+    if ((data.categoryId ?? null) !== (item.categoryId ?? null)) {
       updates.categoryId = data.categoryId ?? null;
     }
-    if (data.priority !== (item.priority ?? undefined)) {
+    if ((data.priority ?? null) !== (item.priority ?? null)) {
       updates.priority = data.priority ?? null;
     }
-    if (data.dailySection !== (item.dailySection ?? undefined)) {
+    if ((data.dailySection ?? null) !== (item.dailySection ?? null)) {
       updates.dailySection = data.dailySection ?? null;
     }
-    if (data.bonusSection !== (item.bonusSection ?? undefined)) {
+    if ((data.bonusSection ?? null) !== (item.bonusSection ?? null)) {
       updates.bonusSection = data.bonusSection ?? null;
     }
     // Compare endDate - handle null/undefined properly
@@ -195,7 +186,7 @@ export function EditRecurringTaskItemDialog({
               )}
             />
 
-            {/* Category and Priority Row */}
+            {/* Category, Priority, Daily Section, and Bonus Section Row */}
             <div className="flex items-center gap-2">
               <FormField
                 control={form.control}
@@ -227,75 +218,37 @@ export function EditRecurringTaskItemDialog({
                   </FormItem>
                 )}
               />
+              <FormField
+                control={form.control}
+                name="dailySection"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormControl>
+                      <DailySectionPicker
+                        value={field.value}
+                        onChange={field.onChange}
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              <FormField
+                control={form.control}
+                name="bonusSection"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormControl>
+                      <BonusSectionPicker
+                        value={field.value}
+                        onChange={field.onChange}
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
             </div>
-
-            {/* Daily Section */}
-            <FormField
-              control={form.control}
-              name="dailySection"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Daily Section</FormLabel>
-                  <Select
-                    value={field.value ?? ''}
-                    onValueChange={(value) =>
-                      field.onChange(value === '' ? null : value)
-                    }
-                  >
-                    <FormControl>
-                      <SelectTrigger>
-                        <SelectValue placeholder="No section" />
-                      </SelectTrigger>
-                    </FormControl>
-                    <SelectContent>
-                      <SelectItem value="">No section</SelectItem>
-                      {Object.entries(DAILY_SECTION_CONFIG).map(
-                        ([value, config]) => (
-                          <SelectItem key={value} value={value}>
-                            {config.icon} {config.label}
-                          </SelectItem>
-                        )
-                      )}
-                    </SelectContent>
-                  </Select>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-
-            {/* Bonus Section */}
-            <FormField
-              control={form.control}
-              name="bonusSection"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Bonus Section</FormLabel>
-                  <Select
-                    value={field.value ?? ''}
-                    onValueChange={(value) =>
-                      field.onChange(value === '' ? null : value)
-                    }
-                  >
-                    <FormControl>
-                      <SelectTrigger>
-                        <SelectValue placeholder="No section" />
-                      </SelectTrigger>
-                    </FormControl>
-                    <SelectContent>
-                      <SelectItem value="">No section</SelectItem>
-                      {Object.entries(BONUS_SECTION_CONFIG).map(
-                        ([value, config]) => (
-                          <SelectItem key={value} value={value}>
-                            {config.icon} {config.label}
-                          </SelectItem>
-                        )
-                      )}
-                    </SelectContent>
-                  </Select>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
 
             {/* End Date */}
             <FormField
