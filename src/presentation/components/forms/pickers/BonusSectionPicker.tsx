@@ -24,7 +24,7 @@ export function BonusSectionPicker({
 }: BonusSectionPickerProps) {
   const [open, setOpen] = useState(false);
 
-  const SECTIONS: BonusSection[] = ['essential', 'bonus'];
+  const SECTIONS = Object.keys(BONUS_SECTION_CONFIG) as BonusSection[];
 
   // Get icon based on value
   const getIcon = () => {
